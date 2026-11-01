@@ -9,8 +9,13 @@ from mangum import Mangum
 from pydantic import BaseModel
 
 from src.config import config
-from src.auth import get_current_user, create_access_token
-from src.adapters import factory
+from src.auth import (
+    get_current_user,
+    register_user,
+    login_user,
+    get_user_profile,
+)
+from src.adapters import factory, caps as caps_store
 from src import handlers
 
 
@@ -78,44 +83,26 @@ class CapRequest(BaseModel):
 
 @app.post("/register")
 def register(req: RegisterRequest) -> dict:
-    """Create a new user account."""
-    from src.adapters.userstore_dynamo_user import create_user
+    """Create a new user account directly in PostgreSQL."""
     try:
-        user = create_user(req.full_name, req.username, req.password)
+        return register_user(req.full_name, req.username, req.password)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
-    return user
 
 
 @app.post("/login")
 def login(req: LoginRequest) -> dict:
-    """Authenticate and return a JWT token."""
-    from src.adapters.userstore_dynamo_user import verify_password
-    user = verify_password(req.username, req.password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = create_access_token({"sub": user["PK"]})
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user_id": user["PK"],
-        "username": user["username"],
-        "full_name": user["full_name"],
-    }
+    """Authenticate and return an RFC 7519 standard JWT access token."""
+    return login_user(req.username, req.password)
 
 
 @app.get("/profile")
 def profile(user_id: str = Depends(get_current_user)) -> dict:
     """Return the current user's profile."""
-    from src.adapters.userstore_dynamo_user import get_user_by_id
-    user = get_user_by_id(user_id)
+    user = get_user_profile(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return {
-        "user_id": user["PK"],
-        "username": user["username"],
-        "full_name": user["full_name"],
-    }
+    return user
 
 
 # =====================================================================
@@ -277,8 +264,7 @@ def get_coach_insights(user_id: str = Depends(get_current_user)) -> dict:
 @app.get("/caps")
 def get_user_caps(user_id: str = Depends(get_current_user)) -> dict:
     """Get the user's active budget caps."""
-    from src.adapters.userstore_dynamo_user import get_caps
-    caps = get_caps(user_id)
+    caps = caps_store.get_caps(user_id)
     return {"caps": caps}
 
 
@@ -288,8 +274,7 @@ def set_user_cap(
     user_id: str = Depends(get_current_user)
 ) -> dict:
     """Set or update a budget cap."""
-    from src.adapters.userstore_dynamo_user import set_cap
-    caps = set_cap(user_id, req.category, req.amount)
+    caps = caps_store.set_cap(user_id, req.category, req.amount)
     return {"status": "updated", "caps": caps}
 
 
@@ -299,8 +284,7 @@ def remove_user_cap(
     user_id: str = Depends(get_current_user)
 ) -> dict:
     """Delete a budget cap."""
-    from src.adapters.userstore_dynamo_user import delete_cap
-    caps = delete_cap(user_id, category)
+    caps = caps_store.delete_cap(user_id, category)
     return {"status": "deleted", "caps": caps}
 
 
