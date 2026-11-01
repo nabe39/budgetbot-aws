@@ -95,39 +95,81 @@ class PostgresUserStore:
     def _init_schema(self):
         with self.conn.cursor() as cur:
             cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id VARCHAR(64) PRIMARY KEY,
+                    username VARCHAR(100) UNIQUE NOT NULL,
+                    full_name VARCHAR(255) NOT NULL,
+                    password_hash VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) UNIQUE,
+                    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username);
+
                 CREATE TABLE IF NOT EXISTS transactions (
                     id BIGSERIAL PRIMARY KEY,
-                    user_id TEXT NOT NULL,
+                    user_id VARCHAR(64) NOT NULL,
                     txn_date DATE NOT NULL,
-                    description TEXT,
-                    amount NUMERIC(14,2),
-                    category TEXT,
-                    confidence TEXT,
-                    created_at TIMESTAMPTZ DEFAULT NOW()
+                    description TEXT NOT NULL,
+                    amount NUMERIC(14,2) NOT NULL,
+                    category VARCHAR(50) NOT NULL DEFAULT 'Other',
+                    confidence VARCHAR(20) DEFAULT 'high',
+                    engine VARCHAR(50) DEFAULT 'nlp_linear_svc',
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
-                CREATE INDEX IF NOT EXISTS txn_user_date_idx ON transactions(user_id, txn_date);
-                CREATE INDEX IF NOT EXISTS txn_user_cat_idx ON transactions(user_id, category);
+                CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, txn_date);
+                CREATE INDEX IF NOT EXISTS idx_transactions_user_category ON transactions(user_id, category);
+
+                CREATE TABLE IF NOT EXISTS budget_caps (
+                    id BIGSERIAL PRIMARY KEY,
+                    user_id VARCHAR(64) NOT NULL,
+                    category VARCHAR(50) NOT NULL,
+                    amount NUMERIC(14,2) NOT NULL CHECK (amount >= 0),
+                    month VARCHAR(7),
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    CONSTRAINT uq_budget_caps_user_category UNIQUE (user_id, category)
+                );
+                CREATE INDEX IF NOT EXISTS idx_budget_caps_user ON budget_caps(user_id);
             """)
 
     def add_transaction(self, user_id: str, txn: dict) -> None:
         with self.conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO transactions (user_id, txn_date, description, amount, category, confidence) "
-                "VALUES (%s, %s, %s, %s, %s, %s)",
-                (user_id, txn["date"], txn["description"], txn["amount"], txn["category"], txn.get("confidence", "")),
+                "INSERT INTO transactions (user_id, txn_date, description, amount, category, confidence, engine) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                (
+                    user_id,
+                    txn["date"],
+                    txn["description"],
+                    float(txn["amount"]),
+                    txn.get("category", "Other"),
+                    txn.get("confidence", "high"),
+                    txn.get("engine", "nlp_linear_svc"),
+                ),
             )
 
     def list_transactions(self, user_id: str, month: str | None = None) -> list:
-        sql = "SELECT txn_date, description, amount, category, confidence FROM transactions WHERE user_id = %s"
+        sql = "SELECT id, txn_date, description, amount, category, confidence, engine FROM transactions WHERE user_id = %s"
         params: list = [user_id]
         if month:
             sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
             params.append(month)
-        sql += " ORDER BY txn_date DESC"
+        sql += " ORDER BY txn_date DESC, id DESC"
         with self.conn.cursor() as cur:
             cur.execute(sql, params)
             return [
-                {"date": str(r[0]), "description": r[1], "amount": float(r[2]), "category": r[3], "confidence": r[4]}
+                {
+                    "id": r[0],
+                    "date": str(r[1]),
+                    "description": r[2],
+                    "amount": float(r[3]),
+                    "category": r[4],
+                    "confidence": r[5],
+                    "engine": r[6],
+                }
                 for r in cur.fetchall()
             ]
 
@@ -141,6 +183,42 @@ class PostgresUserStore:
         with self.conn.cursor() as cur:
             cur.execute(sql, params)
             return {r[0]: {"total": float(r[1]), "count": int(r[2])} for r in cur.fetchall()}
+
+    def update_transaction(self, user_id: str, transaction_id: str, updates: dict) -> dict:
+        if not updates:
+            return {}
+        expr_parts = []
+        params = []
+        for key, val in updates.items():
+            if key == "date":
+                expr_parts.append("txn_date = %s")
+            else:
+                expr_parts.append(f"{key} = %s")
+            params.append(val)
+        params.extend([user_id, transaction_id])
+        sql = (
+            f"UPDATE transactions SET {', '.join(expr_parts)}, updated_at = NOW() "
+            f"WHERE user_id = %s AND id = %s "
+            f"RETURNING id, txn_date, description, amount, category, confidence, engine"
+        )
+        with self.conn.cursor() as cur:
+            cur.execute(sql, params)
+            r = cur.fetchone()
+            if r:
+                return {
+                    "id": r[0],
+                    "date": str(r[1]),
+                    "description": r[2],
+                    "amount": float(r[3]),
+                    "category": r[4],
+                    "confidence": r[5],
+                    "engine": r[6],
+                }
+        return {}
+
+    def delete_transaction(self, user_id: str, transaction_id: str) -> None:
+        with self.conn.cursor() as cur:
+            cur.execute("DELETE FROM transactions WHERE user_id = %s AND id = %s", (user_id, transaction_id))
 
 
 class SQLiteUserStore:

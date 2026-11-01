@@ -1,4 +1,4 @@
-.PHONY: install run test clean db-up db-down db-logs
+.PHONY: install run test clean db-up db-down db-logs migrate
 
 install:
 	python3 -m venv .venv
@@ -21,3 +21,6 @@ db-down:
 
 db-logs:
 	docker compose logs -f db
+
+migrate:
+	python scripts/migrate.py
