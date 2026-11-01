@@ -3,38 +3,14 @@ import csv
 import io
 from typing import Optional
 from src.config import config
+from src.adapters.statement_parser import parse_statement
 
 _local_jobs = {}
 
 
 def _parse_csv(data: bytes) -> list:
-    """Expect CSV columns: date, description, amount. Header row optional."""
-    text = data.decode("utf-8-sig", errors="replace")
-    reader = csv.reader(io.StringIO(text))
-    rows = list(reader)
-    if not rows:
-        return []
-    # Detect header
-    header = [c.lower().strip() for c in rows[0]]
-    if "date" in header and "amount" in header:
-        idx = {col: i for i, col in enumerate(header)}
-        data_rows = rows[1:]
-    else:
-        idx = {"date": 0, "description": 1, "amount": 2}
-        data_rows = rows
-    parsed = []
-    for r in data_rows:
-        if len(r) < 3 or not r[idx.get("date", 0)].strip():
-            continue
-        try:
-            parsed.append({
-                "date": r[idx.get("date", 0)].strip(),
-                "description": r[idx.get("description", 1)].strip(),
-                "amount": float(r[idx.get("amount", 2)].strip().replace(",", "")),
-            })
-        except (ValueError, IndexError):
-            continue
-    return parsed
+    """Parse CSV or tabular statement data with full Vietnamese bank support."""
+    return parse_statement(data, "statement.csv")
 
 
 def handle_upload(
@@ -114,7 +90,7 @@ def handle_upload(
                 else:
                     needs_review.append(txn)
         else:
-            rows = _parse_csv(data)
+            rows = parse_statement(data, filename)
             parsed_count = len(rows)
             for row in rows:
                 cat_result = ai_client.categorize(
@@ -128,10 +104,16 @@ def handle_upload(
                     "confidence": cat_result["confidence"],
                     "engine": cat_result.get("engine", "unknown")
                 }
-                if txn["category"].lower() == "income":
+                cat_lower = txn["category"].lower()
+                if cat_lower == "income":
                     txn["amount"] = abs(txn["amount"])
-                else:
+                elif cat_lower in {"food", "transport", "shopping", "utilities", "entertainment", "health", "subscriptions"}:
                     txn["amount"] = -abs(txn["amount"])
+                else:
+                    if row["amount"] < 0:
+                        txn["amount"] = -abs(txn["amount"])
+                    else:
+                        txn["amount"] = abs(txn["amount"])
 
                 if txn.get("confidence") == "high":
                     userstore.add_transaction(user_id, txn)
@@ -238,24 +220,162 @@ def handle_upload_status(user_id: str, job_id: str, userstore) -> dict:
         return job
 
 
+STANDARD_CATEGORIES = [
+    "Food",
+    "Transport",
+    "Shopping",
+    "Utilities",
+    "Entertainment",
+    "Health",
+    "Subscriptions",
+    "Income",
+    "Transfer",
+    "Other",
+]
+
+CATEGORY_CANONICAL = {c.lower(): c for c in STANDARD_CATEGORIES}
+
+
 def handle_summary(user_id: str, month: Optional[str], userstore) -> dict:
-    summary = userstore.summary(user_id, month=month)
-    total = sum(v["total"] for v in summary.values())
-    sorted_cats = sorted(summary.items(), key=lambda kv: -abs(kv[1]["total"]))
+    raw_summary = userstore.summary(user_id, month=month)
+
+    # Initialize aggregations for all 10 standard categories
+    agg = {cat: {"total": 0.0, "count": 0} for cat in STANDARD_CATEGORIES}
+
+    for cat_raw, v in raw_summary.items():
+        canonical = CATEGORY_CANONICAL.get(str(cat_raw).strip().lower(), "Other")
+        agg[canonical]["total"] += float(v.get("total", 0.0))
+        agg[canonical]["count"] += int(v.get("count", 0))
+
+    # Calculate Total Income:
+    total_income = 0.0
+    for cat, data in agg.items():
+        if cat == "Income":
+            total_income += abs(data["total"])
+        elif data["total"] > 0:
+            total_income += data["total"]
+
+    # Calculate Total Expense:
+    total_expense = 0.0
+    for cat, data in agg.items():
+        if cat == "Income":
+            continue
+        if data["total"] < 0:
+            total_expense += abs(data["total"])
+        elif data["total"] > 0:
+            total_expense += data["total"]
+
+    total_income = round(total_income, 2)
+    total_expense = round(total_expense, 2)
+
+    # Net savings / balance
+    net_savings = round(total_income - total_expense, 2)
+
+    # Savings rate (%)
+    if total_income > 0:
+        savings_rate = round((net_savings / total_income) * 100, 2)
+    else:
+        savings_rate = 0.0
+
+    # Spending allocation breakdown for all 10 standard PascalCase categories
+    spending_allocation = []
+    for cat in STANDARD_CATEGORIES:
+        if cat == "Income":
+            cat_amount = total_income
+            cat_percentage = 0.0
+        else:
+            cat_amount = abs(agg[cat]["total"])
+            cat_percentage = round((cat_amount / total_expense) * 100, 2) if total_expense > 0 else 0.0
+
+        spending_allocation.append({
+            "category": cat,
+            "amount": cat_amount,
+            "percentage": cat_percentage,
+            "count": agg[cat]["count"],
+        })
+
+    # by_category preserving signed amounts for backward compatibility with frontend
+    by_category = {
+        cat: {"total": round(agg[cat]["total"], 2), "count": agg[cat]["count"]}
+        for cat in STANDARD_CATEGORIES
+        if agg[cat]["count"] > 0
+    }
+
+    # Top 3 expense drivers
+    expense_drivers = [
+        {"category": item["category"], "total": item["amount"], "count": item["count"]}
+        for item in spending_allocation
+        if item["category"] != "Income" and item["amount"] > 0
+    ]
+    expense_drivers.sort(key=lambda x: -x["total"])
+    top_3_drivers = expense_drivers[:3]
+
     return {
         "user_id": user_id,
         "month": month,
-        "total_spend": total,
-        "by_category": dict(sorted_cats),
-        "top_3_drivers": [
-            {"category": cat, "total": v["total"], "count": v["count"]}
-            for cat, v in sorted_cats[:3]
-        ],
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "net_savings": net_savings,
+        "savings_rate": savings_rate,
+        "spending_allocation": spending_allocation,
+        "by_category": by_category,
+        "top_3_drivers": top_3_drivers,
+        "total_spend": -total_expense,
     }
 
 
-def handle_list_transactions(user_id: str, month: Optional[str], userstore) -> dict:
-    return {"user_id": user_id, "month": month, "transactions": userstore.list_transactions(user_id, month=month)}
+def handle_list_transactions(
+    user_id: str,
+    month: Optional[str] = None,
+    category: Optional[str] = None,
+    page: Optional[int] = None,
+    page_size: Optional[int] = None,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
+    userstore = None,
+) -> dict:
+    eff_limit = limit if limit is not None else page_size
+    eff_offset = offset
+
+    if page is not None:
+        eff_limit = eff_limit or 20
+        eff_offset = (page - 1) * eff_limit
+    elif eff_limit is not None and eff_offset is None:
+        eff_offset = 0
+
+    if hasattr(userstore, "count_transactions"):
+        total = userstore.count_transactions(user_id=user_id, month=month, category=category)
+    else:
+        all_txns = userstore.list_transactions(user_id=user_id, month=month, category=category)
+        total = len(all_txns)
+
+    txns = userstore.list_transactions(
+        user_id=user_id,
+        month=month,
+        category=category,
+        limit=eff_limit,
+        offset=eff_offset,
+    )
+
+    if eff_limit is not None and eff_limit > 0:
+        total_pages = (total + eff_limit - 1) // eff_limit if total > 0 else 1
+        current_page = page if page is not None else ((eff_offset // eff_limit) + 1 if eff_offset is not None else 1)
+        returned_page_size = eff_limit
+    else:
+        total_pages = 1
+        current_page = 1
+        returned_page_size = total
+
+    return {
+        "user_id": user_id,
+        "month": month,
+        "category": category,
+        "total": total,
+        "page": current_page,
+        "page_size": returned_page_size,
+        "total_pages": total_pages,
+        "transactions": txns,
+    }
 
 
 def handle_chat(user_id: str, message: str, ai_client, userstore, history: list[dict] = None) -> dict:

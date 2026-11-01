@@ -11,6 +11,7 @@ import logging
 import traceback
 
 import boto3
+from src.adapters.statement_parser import parse_statement
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", "INFO"))
@@ -205,8 +206,8 @@ def _process_file(user_id, filename, data, table, region, model_id):
             else:
                 needs_review.append(txn)
     else:
-        # CSV processing
-        rows = _parse_csv(data)
+        # CSV / Excel processing
+        rows = parse_statement(data, filename)
         parsed_count = len(rows)
 
         for row in rows:
@@ -221,10 +222,16 @@ def _process_file(user_id, filename, data, table, region, model_id):
                 "confidence": cat_result["confidence"],
                 "engine": cat_result.get("engine", "unknown"),
             }
-            if txn["category"].lower() == "income":
+            cat_lower = txn["category"].lower()
+            if cat_lower == "income":
                 txn["amount"] = abs(txn["amount"])
-            else:
+            elif cat_lower in {"food", "transport", "shopping", "utilities", "entertainment", "health", "subscriptions"}:
                 txn["amount"] = -abs(txn["amount"])
+            else:
+                if row["amount"] < 0:
+                    txn["amount"] = -abs(txn["amount"])
+                else:
+                    txn["amount"] = abs(txn["amount"])
 
             if txn.get("confidence") == "high":
                 _store_transaction(table, user_id, txn)
@@ -275,35 +282,8 @@ def _extract_text(data, filename, region):
 
 
 def _parse_csv(data):
-    """Parse CSV file into list of transaction dicts."""
-    import csv
-    text = data.decode("utf-8-sig", errors="replace")
-    reader = csv.reader(io.StringIO(text))
-    rows = list(reader)
-    if not rows:
-        return []
-
-    header = [c.lower().strip() for c in rows[0]]
-    if "date" in header and "amount" in header:
-        idx = {col: i for i, col in enumerate(header)}
-        data_rows = rows[1:]
-    else:
-        idx = {"date": 0, "description": 1, "amount": 2}
-        data_rows = rows
-
-    parsed = []
-    for r in data_rows:
-        if len(r) < 3 or not r[idx.get("date", 0)].strip():
-            continue
-        try:
-            parsed.append({
-                "date": r[idx.get("date", 0)].strip(),
-                "description": r[idx.get("description", 1)].strip(),
-                "amount": float(r[idx.get("amount", 2)].strip().replace(",", "")),
-            })
-        except (ValueError, IndexError):
-            continue
-    return parsed
+    """Parse CSV or tabular file using statement parser."""
+    return parse_statement(data, "statement.csv")
 
 
 def _store_transaction(table, user_id, txn):

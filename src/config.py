@@ -35,7 +35,7 @@ class Config:
     # Frontend serving (opt-out so backend can be pure API for split deploys)
     serve_frontend: bool = _env("SERVE_FRONTEND", "true").lower() == "true"
     cors_origins: str = _env("CORS_ORIGINS", "*")
-    jwt_secret: str = _env("JWT_SECRET", "supersecret")
+    jwt_secret: str = _env("JWT_SECRET", "budgetbot-secure-jwt-secret-key-32bytes-auth-token")
     jwt_algorithm: str = _env("JWT_ALGORITHM", "HS256")
     jwt_exp_minutes: int = int(_env("JWT_EXP_MINUTES", "60"))
     users_table: str = _env("USERS_TABLE", "")
