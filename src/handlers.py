@@ -238,19 +238,107 @@ def handle_upload_status(user_id: str, job_id: str, userstore) -> dict:
         return job
 
 
+STANDARD_CATEGORIES = [
+    "Food",
+    "Transport",
+    "Shopping",
+    "Utilities",
+    "Entertainment",
+    "Health",
+    "Subscriptions",
+    "Income",
+    "Transfer",
+    "Other",
+]
+
+CATEGORY_CANONICAL = {c.lower(): c for c in STANDARD_CATEGORIES}
+
+
 def handle_summary(user_id: str, month: Optional[str], userstore) -> dict:
-    summary = userstore.summary(user_id, month=month)
-    total = sum(v["total"] for v in summary.values())
-    sorted_cats = sorted(summary.items(), key=lambda kv: -abs(kv[1]["total"]))
+    raw_summary = userstore.summary(user_id, month=month)
+
+    # Initialize aggregations for all 10 standard categories
+    agg = {cat: {"total": 0.0, "count": 0} for cat in STANDARD_CATEGORIES}
+
+    for cat_raw, v in raw_summary.items():
+        canonical = CATEGORY_CANONICAL.get(str(cat_raw).strip().lower(), "Other")
+        agg[canonical]["total"] += float(v.get("total", 0.0))
+        agg[canonical]["count"] += int(v.get("count", 0))
+
+    # Calculate Total Income:
+    total_income = 0.0
+    for cat, data in agg.items():
+        if cat == "Income":
+            total_income += abs(data["total"])
+        elif data["total"] > 0:
+            total_income += data["total"]
+
+    # Calculate Total Expense:
+    total_expense = 0.0
+    for cat, data in agg.items():
+        if cat == "Income":
+            continue
+        if data["total"] < 0:
+            total_expense += abs(data["total"])
+        elif data["total"] > 0:
+            total_expense += data["total"]
+
+    total_income = round(total_income, 2)
+    total_expense = round(total_expense, 2)
+
+    # Net savings / balance
+    net_savings = round(total_income - total_expense, 2)
+
+    # Savings rate (%)
+    if total_income > 0:
+        savings_rate = round((net_savings / total_income) * 100, 2)
+    else:
+        savings_rate = 0.0
+
+    # Spending allocation breakdown for all 10 standard PascalCase categories
+    spending_allocation = []
+    for cat in STANDARD_CATEGORIES:
+        if cat == "Income":
+            cat_amount = total_income
+            cat_percentage = 0.0
+        else:
+            cat_amount = abs(agg[cat]["total"])
+            cat_percentage = round((cat_amount / total_expense) * 100, 2) if total_expense > 0 else 0.0
+
+        spending_allocation.append({
+            "category": cat,
+            "amount": cat_amount,
+            "percentage": cat_percentage,
+            "count": agg[cat]["count"],
+        })
+
+    # by_category preserving signed amounts for backward compatibility with frontend
+    by_category = {
+        cat: {"total": round(agg[cat]["total"], 2), "count": agg[cat]["count"]}
+        for cat in STANDARD_CATEGORIES
+        if agg[cat]["count"] > 0
+    }
+
+    # Top 3 expense drivers
+    expense_drivers = [
+        {"category": item["category"], "total": item["amount"], "count": item["count"]}
+        for item in spending_allocation
+        if item["category"] != "Income" and item["amount"] > 0
+    ]
+    expense_drivers.sort(key=lambda x: -x["total"])
+    top_3_drivers = expense_drivers[:3]
+
     return {
         "user_id": user_id,
         "month": month,
-        "total_spend": total,
-        "by_category": dict(sorted_cats),
-        "top_3_drivers": [
-            {"category": cat, "total": v["total"], "count": v["count"]}
-            for cat, v in sorted_cats[:3]
-        ],
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "net_savings": net_savings,
+        "savings_rate": savings_rate,
+        "spending_allocation": spending_allocation,
+        "by_category": by_category,
+        "top_3_drivers": top_3_drivers,
+        "total_spend": -total_expense,
     }
 
 
