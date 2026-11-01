@@ -254,8 +254,58 @@ def handle_summary(user_id: str, month: Optional[str], userstore) -> dict:
     }
 
 
-def handle_list_transactions(user_id: str, month: Optional[str], userstore) -> dict:
-    return {"user_id": user_id, "month": month, "transactions": userstore.list_transactions(user_id, month=month)}
+def handle_list_transactions(
+    user_id: str,
+    month: Optional[str] = None,
+    category: Optional[str] = None,
+    page: Optional[int] = None,
+    page_size: Optional[int] = None,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
+    userstore = None,
+) -> dict:
+    eff_limit = limit if limit is not None else page_size
+    eff_offset = offset
+
+    if page is not None:
+        eff_limit = eff_limit or 20
+        eff_offset = (page - 1) * eff_limit
+    elif eff_limit is not None and eff_offset is None:
+        eff_offset = 0
+
+    if hasattr(userstore, "count_transactions"):
+        total = userstore.count_transactions(user_id=user_id, month=month, category=category)
+    else:
+        all_txns = userstore.list_transactions(user_id=user_id, month=month, category=category)
+        total = len(all_txns)
+
+    txns = userstore.list_transactions(
+        user_id=user_id,
+        month=month,
+        category=category,
+        limit=eff_limit,
+        offset=eff_offset,
+    )
+
+    if eff_limit is not None and eff_limit > 0:
+        total_pages = (total + eff_limit - 1) // eff_limit if total > 0 else 1
+        current_page = page if page is not None else ((eff_offset // eff_limit) + 1 if eff_offset is not None else 1)
+        returned_page_size = eff_limit
+    else:
+        total_pages = 1
+        current_page = 1
+        returned_page_size = total
+
+    return {
+        "user_id": user_id,
+        "month": month,
+        "category": category,
+        "total": total,
+        "page": current_page,
+        "page_size": returned_page_size,
+        "total_pages": total_pages,
+        "transactions": txns,
+    }
 
 
 def handle_chat(user_id: str, message: str, ai_client, userstore, history: list[dict] = None) -> dict:

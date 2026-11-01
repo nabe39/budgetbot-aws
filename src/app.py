@@ -59,14 +59,17 @@ class TransactionRequest(BaseModel):
     date: str
     description: str
     amount: float
-    category: str = "uncategorized"
-    confidence: str = "high"
+    category: Optional[str] = "uncategorized"
+    confidence: Optional[str] = "high"
+    engine: Optional[str] = None
 
 class TransactionUpdateRequest(BaseModel):
     date: Optional[str] = None
     description: Optional[str] = None
     amount: Optional[float] = None
     category: Optional[str] = None
+    confidence: Optional[str] = None
+    engine: Optional[str] = None
 
 class TransactionBatchRequest(BaseModel):
     transactions: list[TransactionRequest]
@@ -164,28 +167,69 @@ def summary(
 @app.get("/transactions")
 def list_transactions(
     month: Optional[str] = None,
+    category: Optional[str] = None,
+    page: Optional[int] = None,
+    page_size: Optional[int] = None,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
     user_id: str = Depends(get_current_user),
 ) -> dict:
-    return handlers.handle_list_transactions(user_id, month, userstore)
+    """Retrieve transactions with optional filtering (month, category) and pagination."""
+    return handlers.handle_list_transactions(
+        user_id=user_id,
+        month=month,
+        category=category,
+        page=page,
+        page_size=page_size,
+        limit=limit,
+        offset=offset,
+        userstore=userstore,
+    )
 
 
-@app.post("/transactions")
+@app.get("/transactions/{transaction_id}")
+def get_transaction(
+    transaction_id: str,
+    user_id: str = Depends(get_current_user),
+) -> dict:
+    """Retrieve details of a single transaction by ID."""
+    if hasattr(userstore, "get_transaction"):
+        txn = userstore.get_transaction(user_id, transaction_id)
+    else:
+        all_txns = userstore.list_transactions(user_id)
+        txn = next((t for t in all_txns if str(t.get("id")) == str(transaction_id)), None)
+
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return {"transaction": txn}
+
+
+@app.post("/transactions", status_code=201)
 def create_transaction(
     req: TransactionRequest,
     user_id: str = Depends(get_current_user),
 ) -> dict:
-    """Manually add a single transaction, auto-categorized by AI."""
-    cat_result = ai_client.categorize(req.description, req.amount, req.date)
-    
+    """Manually add a single transaction, auto-categorized by AI if category is omitted."""
+    if req.category and req.category.strip().lower() not in ("uncategorized", "", "none"):
+        category = req.category.strip()
+        confidence = req.confidence or "high"
+        engine = req.engine or "user_input"
+    else:
+        cat_result = ai_client.categorize(req.description, req.amount, req.date)
+        category = cat_result["category"]
+        confidence = cat_result["confidence"]
+        engine = cat_result.get("engine", "nlp_linear_svc")
+
     txn = {
         "date": req.date,
         "description": req.description,
         "amount": req.amount,
-        "category": cat_result["category"],
-        "confidence": cat_result["confidence"],
+        "category": category,
+        "confidence": confidence,
+        "engine": engine,
     }
-    userstore.add_transaction(user_id, txn)
-    return {"status": "created", "transaction": txn}
+    created = userstore.add_transaction(user_id, txn)
+    return {"status": "created", "transaction": created or txn}
 
 
 @app.post("/transactions/batch")
@@ -195,18 +239,20 @@ def create_transaction_batch(
 ) -> dict:
     """Manually add multiple transactions at once (e.g. from manual review)."""
     inserted = 0
+    created_txns = []
     for t_req in req.transactions:
-        # We don't auto-categorize again here, we trust the client's category
         txn = {
             "date": t_req.date,
             "description": t_req.description,
             "amount": t_req.amount,
-            "category": t_req.category,
-            "confidence": "high",  # Since it's user-confirmed, confidence is high
+            "category": t_req.category or "Other",
+            "confidence": t_req.confidence or "high",
+            "engine": t_req.engine or "user_confirmed",
         }
-        userstore.add_transaction(user_id, txn)
+        res = userstore.add_transaction(user_id, txn)
+        created_txns.append(res or txn)
         inserted += 1
-    return {"status": "created", "count": inserted}
+    return {"status": "created", "count": inserted, "transactions": created_txns}
 
 
 @app.put("/transactions/{transaction_id}")
@@ -220,6 +266,8 @@ def update_transaction(
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
     result = userstore.update_transaction(user_id, transaction_id, updates)
+    if not result:
+        raise HTTPException(status_code=404, detail="Transaction not found")
     return {"status": "updated", "transaction": result}
 
 
@@ -229,7 +277,9 @@ def delete_transaction(
     user_id: str = Depends(get_current_user),
 ) -> dict:
     """Delete a transaction."""
-    userstore.delete_transaction(user_id, transaction_id)
+    deleted = userstore.delete_transaction(user_id, transaction_id)
+    if deleted is False:
+        raise HTTPException(status_code=404, detail="Transaction not found")
     return {"status": "deleted", "transaction_id": transaction_id}
 
 
