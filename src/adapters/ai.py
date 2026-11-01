@@ -306,19 +306,53 @@ class LocalAI:
 
     # Order matters: first match wins. Subscriptions BEFORE Entertainment so
     # "Netflix monthly subscription" → Subscriptions (subscription keyword fires).
+    # Bilingual keywords: supports both English and Vietnamese bank statement descriptions
     KEYWORDS = {
-        "Income": ["salary", "deposit credit", "payroll", "incoming transfer"],
-        "Transfer": ["transfer to", "transfer from", "moved to savings"],
-        "Subscriptions": ["subscription", "netflix", "spotify", "openai", "chatgpt", "anthropic",
-                          "claude", "github", "icloud", "google one"],
-        "Food": ["restaurant", "cafe", "coffee", "starbucks", "highlands", "phở", "pho", "food",
-                 "grab food", "shopee food", "lunch", "dinner", "bakery"],
-        "Transport": ["grab", "uber", " be ", "xanh sm", "taxi", "metro", "bus", "petrol", "shell",
-                      "vinfast", "fuel"],
-        "Shopping": ["shopee", "lazada", "tiki", "amazon", "store", "mall", "vincom", "shop"],
-        "Utilities": ["electric", "evn", "water", "internet", "viettel", "vnpt", "fpt", "utility"],
-        "Entertainment": ["cinema", "cgv", "lotte cinema", "concert", "game"],
-        "Health": ["pharmacy", "hospital", "clinic", "guardian", "long chau", "medlatec"],
+        "Income": [
+            "salary", "deposit credit", "payroll", "incoming transfer", "bonus",
+            "lương", "luong", "thu nhập", "thu nhap", "tiền thưởng", "tien thuong",
+            "nhận tiền", "nhan tien", "tra luong", "chuyển khoản đến", "lì xì", "li xi"
+        ],
+        "Transfer": [
+            "transfer to", "transfer from", "moved to savings",
+            "chuyển khoản", "chuyen khoan", "chuyển tiền", "chuyen tien", "chuyển sang"
+        ],
+        "Subscriptions": [
+            "subscription", "netflix", "spotify", "openai", "chatgpt", "anthropic",
+            "claude", "github", "icloud", "google one", "cursor", "youtube premium",
+            "microsoft 365", "thuê bao", "thue bao", "gia hạn"
+        ],
+        "Food": [
+            "restaurant", "cafe", "coffee", "starbucks", "highlands", "phở", "pho", "food",
+            "grab food", "shopee food", "lunch", "dinner", "bakery", "cà phê", "ca phe",
+            "cơm", "com", "bún", "bun", "ăn uống", "an uong", "quán ăn", "quan an",
+            "nhà hàng", "nha hang", "trà sữa", "tra sua", "phúc long", "phuc long",
+            "kfc", "lotteria", "mcdonald"
+        ],
+        "Transport": [
+            "grab", "uber", " be ", "xanh sm", "taxi", "metro", "bus", "petrol", "shell",
+            "vinfast", "fuel", "xăng", "xang", "gửi xe", "gui xe", "vé xe", "ve xe",
+            "mai linh", "gojek"
+        ],
+        "Shopping": [
+            "shopee", "lazada", "tiki", "amazon", "store", "mall", "vincom", "shop",
+            "siêu thị", "sieu thi", "mua sắm", "mua sam", "bách hóa", "winmart",
+            "coopmart", "lotte mart", "aeon", "big c", "topmarket"
+        ],
+        "Utilities": [
+            "electric", "evn", "water", "internet", "viettel", "vnpt", "fpt", "utility",
+            "tiền điện", "tien dien", "tiền nước", "tien nuoc", "tiền mạng", "tien mang",
+            "sawaco", "mobifone", "vinaphone"
+        ],
+        "Entertainment": [
+            "cinema", "cgv", "lotte cinema", "concert", "game", "steam", "nintendo",
+            "rạp phim", "rap phim", "vé xem phim", "ve xem phim", "karaoke", "du lịch"
+        ],
+        "Health": [
+            "pharmacy", "hospital", "clinic", "guardian", "long chau", "medlatec",
+            "thuốc", "thuoc", "khám bệnh", "kham benh", "bệnh viện", "benh vien",
+            "nhà thuốc", "nha thuoc", "pharmacity", "an khang"
+        ],
     }
 
     def categorize(self, description: str, amount: float, date: str) -> dict:

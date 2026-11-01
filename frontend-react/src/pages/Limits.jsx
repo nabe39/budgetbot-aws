@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
 import { formatCurrency } from '../utils/format';
+import { useLanguage } from '../context/LanguageContext';
 
 function Limits() {
+  const { t, getCategoryName } = useLanguage();
   const [caps, setCaps] = useState({});
   const [currentSpends, setCurrentSpends] = useState({});
   const [catInput, setCatInput] = useState('Food');
@@ -56,13 +58,13 @@ function Limits() {
   };
 
   const handleDeleteCap = async (cat) => {
-    if (!window.confirm(`Delete budget cap for ${cat}?`)) return;
+    if (!window.confirm(t('limits.confirm_delete', { category: getCategoryName(cat) }))) return;
     try {
       await apiClient.delete(`/caps/${cat}`);
       fetchData();
     } catch (err) {
       console.error(err);
-      alert('Delete failed');
+      window.alert(t('limits.delete_failed'));
     }
   };
 
@@ -70,6 +72,17 @@ function Limits() {
     setCatInput(cat);
     setAmtInput(limit);
   };
+
+  const categoryOptions = [
+    'Food',
+    'Transport',
+    'Shopping',
+    'Subscriptions',
+    'Entertainment',
+    'Housing',
+    'Utilities',
+    'Health'
+  ];
 
   return (
     <div>
@@ -81,69 +94,90 @@ function Limits() {
         }}>
           <i className="fa-solid fa-triangle-exclamation" style={{fontSize: '1.5rem'}}></i>
           <div>
-            <strong style={{display:'block', marginBottom: '0.2rem'}}>Budget Limit Exceeded!</strong>
-            <span>You have exceeded your {formatCurrency(alert.limit)} limit for {alert.cat}. Current spend is {formatCurrency(alert.spent)}.</span>
+            <strong style={{display:'block', marginBottom: '0.2rem'}}>{t('limits.alert_title')}</strong>
+            <span>
+              {t('limits.alert_desc', {
+                limit: formatCurrency(alert.limit),
+                category: getCategoryName(alert.cat),
+                spent: formatCurrency(alert.spent)
+              })}
+            </span>
           </div>
         </div>
       )}
 
       <div className="card">
-        <h3 style={{marginTop:0}}><i className="fa-solid fa-shield-halved" style={{color:'var(--primary)'}}></i> Set Category Budget Caps</h3>
-        <p style={{color:'var(--text-muted)', fontSize:'0.9rem', marginBottom: '1.5rem'}}>Set spending limits to receive real-time alerts.</p>
+        <h3 style={{marginTop:0}}>
+          <i className="fa-solid fa-shield-halved" style={{color:'var(--primary)'}}></i> {t('limits.title')}
+        </h3>
+        <p style={{color:'var(--text-muted)', fontSize:'0.9rem', marginBottom: '1.5rem'}}>
+          {t('limits.subtitle')}
+        </p>
         
-        <div style={{display:'flex', gap: '1rem', alignItems:'flex-end'}}>
-          <div style={{flex: 1}}>
-            <label style={{display:'block', fontSize:'0.85rem', fontWeight:600, marginBottom:'0.5rem'}}>Category</label>
+        <div style={{display:'flex', gap: '1rem', alignItems:'flex-end', flexWrap: 'wrap'}}>
+          <div style={{flex: '1 1 200px'}}>
+            <label style={{display:'block', fontSize:'0.85rem', fontWeight:600, marginBottom:'0.5rem'}}>
+              {t('limits.cat_label')}
+            </label>
             <select style={{width: '100%'}} value={catInput} onChange={e => setCatInput(e.target.value)}>
-              <option value="Food">Food</option>
-              <option value="Transport">Transport</option>
-              <option value="Shopping">Shopping</option>
-              <option value="Subscriptions">Subscriptions</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Housing">Housing</option>
+              {categoryOptions.map(cat => (
+                <option key={cat} value={cat}>{getCategoryName(cat)}</option>
+              ))}
             </select>
           </div>
-          <div style={{flex: 1}}>
-            <label style={{display:'block', fontSize:'0.85rem', fontWeight:600, marginBottom:'0.5rem'}}>Monthly Cap (đ)</label>
-            <input type="number" placeholder="e.g. 500" style={{width:'100%'}} value={amtInput} onChange={e => setAmtInput(e.target.value)} />
+          <div style={{flex: '1 1 200px'}}>
+            <label style={{display:'block', fontSize:'0.85rem', fontWeight:600, marginBottom:'0.5rem'}}>
+              {t('limits.cap_label')}
+            </label>
+            <input 
+              type="number" 
+              placeholder={t('limits.cap_placeholder')} 
+              style={{width:'100%'}} 
+              value={amtInput} 
+              onChange={e => setAmtInput(e.target.value)} 
+            />
           </div>
-          <button className="btn-primary" onClick={handleSaveCap}>Save Cap</button>
+          <button className="btn-primary" onClick={handleSaveCap} style={{marginTop:0}}>
+            {t('limits.save_btn')}
+          </button>
         </div>
 
-        <h4 style={{marginTop: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem'}}>Active Caps</h4>
+        <h4 style={{marginTop: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem'}}>
+          {t('limits.active_caps')}
+        </h4>
         <table className="txn-table">
           <thead>
             <tr>
-              <th>Category</th>
-              <th>Monthly Limit</th>
-              <th>Current Spend</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>{t('limits.col_cat')}</th>
+              <th>{t('limits.col_limit')}</th>
+              <th>{t('limits.col_spent')}</th>
+              <th>{t('limits.col_status')}</th>
+              <th>{t('limits.col_actions')}</th>
             </tr>
           </thead>
           <tbody>
             {Object.keys(caps).length === 0 ? (
-              <tr><td colSpan="5" style={{textAlign:'center', color: 'var(--text-muted)'}}>No limits set.</td></tr>
+              <tr><td colSpan="5" style={{textAlign:'center', color: 'var(--text-muted)'}}>{t('limits.no_limits')}</td></tr>
             ) : (
               Object.entries(caps).map(([cat, limit]) => {
                 const spent = currentSpends[cat] || 0;
                 const isOver = spent > limit;
                 return (
                   <tr key={cat}>
-                    <td style={{fontWeight:500}}>{cat}</td>
+                    <td style={{fontWeight:500}}>{getCategoryName(cat)}</td>
                     <td>{formatCurrency(limit)}</td>
                     <td style={{color: isOver ? 'var(--error)' : 'var(--text-main)'}}>{formatCurrency(spent)}</td>
                     <td>
                       {isOver 
-                        ? <span style={{background:'#fee2e2', color:'#991b1b', padding:'2px 8px', borderRadius:'12px', fontSize:'0.8rem', fontWeight:600}}>Exceeded</span>
-                        : <span style={{background:'#dcfce7', color:'#166534', padding:'2px 8px', borderRadius:'12px', fontSize:'0.8rem', fontWeight:600}}>On Track</span>
+                        ? <span style={{background:'#fee2e2', color:'#991b1b', padding:'2px 8px', borderRadius:'12px', fontSize:'0.8rem', fontWeight:600}}>{t('limits.status_exceeded')}</span>
+                        : <span style={{background:'#dcfce7', color:'#166534', padding:'2px 8px', borderRadius:'12px', fontSize:'0.8rem', fontWeight:600}}>{t('limits.status_on_track')}</span>
                       }
                     </td>
                     <td>
-                      <button onClick={() => handleEditCap(cat, limit)} style={{background:'transparent', border:'none', color:'var(--primary)', cursor:'pointer', marginRight:'0.5rem'}} title="Edit">
+                      <button onClick={() => handleEditCap(cat, limit)} style={{background:'transparent', border:'none', color:'var(--primary)', cursor:'pointer', marginRight:'0.5rem'}} title={t('limits.edit_tooltip')}>
                         <i className="fa-solid fa-pen-to-square"></i>
                       </button>
-                      <button onClick={() => handleDeleteCap(cat)} style={{background:'transparent', border:'none', color:'var(--error)', cursor:'pointer'}} title="Delete">
+                      <button onClick={() => handleDeleteCap(cat)} style={{background:'transparent', border:'none', color:'var(--error)', cursor:'pointer'}} title={t('limits.delete_tooltip')}>
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>

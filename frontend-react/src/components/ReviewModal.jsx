@@ -3,9 +3,11 @@ import { useUpload } from '../context/UploadContext';
 import apiClient from '../api/client';
 import { formatCurrency } from '../utils/format';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 function ReviewModal() {
   const { reviewTransactions, setReviewTransactions, triggerRefresh } = useUpload();
+  const { t, getCategoryName } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
@@ -32,11 +34,16 @@ function ReviewModal() {
       }
       navigate('/transactions', { replace: true });
     } catch (err) {
-      setErrorMsg('Batch save failed: ' + (err.response?.data?.detail || err.message));
+      setErrorMsg(t('review.batch_failed') + (err.response?.data?.detail || err.message));
     } finally {
       setSaving(false);
     }
   };
+
+  const categoryOptions = [
+    'Food', 'Transport', 'Shopping', 'Utilities', 'Entertainment',
+    'Health', 'Subscriptions', 'Income', 'Transfer', 'Other'
+  ];
 
   return (
     <div style={{
@@ -47,11 +54,10 @@ function ReviewModal() {
     }}>
       <div className="card" style={{ width: '90%', maxWidth: '700px', maxHeight: '80vh', overflowY: 'auto', background: 'var(--glass-bg)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
         <h3 style={{marginTop: 0, color: 'var(--error)'}}>
-          <i className="fa-solid fa-triangle-exclamation"></i> Manual Review Required
+          <i className="fa-solid fa-triangle-exclamation"></i> {t('review.title')}
         </h3>
         <p style={{color: 'var(--text-muted)'}}>
-          The AI was not confident about the following {reviewTransactions.length} transaction(s). 
-          Please confirm or update their categories before saving.
+          {t('review.desc', { count: reviewTransactions.length })}
         </p>
         
         {errorMsg && (
@@ -75,17 +81,19 @@ function ReviewModal() {
                 onChange={(e) => handleReviewCategoryChange(i, e.target.value)}
                 style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
               >
-                {['Food', 'Transport', 'Shopping', 'Utilities', 'Entertainment', 'Health', 'Subscriptions', 'Income', 'Transfer', 'Other'].map(c => (
-                  <option key={c} value={c}>{c}</option>
+                {categoryOptions.map(c => (
+                  <option key={c} value={c}>{getCategoryName(c)}</option>
                 ))}
               </select>
             </div>
           ))}
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-          <button className="btn-outline" onClick={() => setReviewTransactions([])} style={{ borderColor: '#94a3b8', color: '#64748b' }} disabled={saving}>Cancel All</button>
+          <button className="btn-outline" onClick={() => setReviewTransactions([])} style={{ borderColor: '#94a3b8', color: '#64748b' }} disabled={saving}>
+            {t('review.cancel')}
+          </button>
           <button style={{marginTop:'0'}} className="btn-primary" onClick={handleReviewSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Confirm & Save All'}
+            {saving ? t('review.saving') : t('review.confirm')}
           </button>
         </div>
       </div>
