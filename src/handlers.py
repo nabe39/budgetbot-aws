@@ -20,6 +20,7 @@ def handle_upload(
     ai_client,
     storage,
     userstore,
+    auto_commit: bool = True,
 ) -> dict:
     import uuid
     from datetime import datetime, timezone
@@ -42,6 +43,7 @@ def handle_upload(
         inserted = 0
         samples = []
         needs_review = []
+        all_transactions = []
         parsed_count = 0
 
         if filename.lower().endswith((".pdf", ".png", ".jpg", ".jpeg")):
@@ -82,13 +84,21 @@ def handle_upload(
                 else:
                     txn["amount"] = -abs(txn["amount"])
 
-                if txn.get("confidence") == "high":
-                    userstore.add_transaction(user_id, txn)
-                    inserted += 1
+                all_transactions.append(txn)
+
+                if auto_commit:
+                    if txn.get("confidence") == "high":
+                        userstore.add_transaction(user_id, txn)
+                        inserted += 1
+                        if len(samples) < 5:
+                            samples.append(txn)
+                    else:
+                        needs_review.append(txn)
+                else:
+                    if txn.get("confidence") != "high":
+                        needs_review.append(txn)
                     if len(samples) < 5:
                         samples.append(txn)
-                else:
-                    needs_review.append(txn)
         else:
             rows = parse_statement(data, filename)
             parsed_count = len(rows)
@@ -115,13 +125,21 @@ def handle_upload(
                     else:
                         txn["amount"] = abs(txn["amount"])
 
-                if txn.get("confidence") == "high":
-                    userstore.add_transaction(user_id, txn)
-                    inserted += 1
+                all_transactions.append(txn)
+
+                if auto_commit:
+                    if txn.get("confidence") == "high":
+                        userstore.add_transaction(user_id, txn)
+                        inserted += 1
+                        if len(samples) < 5:
+                            samples.append(txn)
+                    else:
+                        needs_review.append(txn)
+                else:
+                    if txn.get("confidence") != "high":
+                        needs_review.append(txn)
                     if len(samples) < 5:
                         samples.append(txn)
-                else:
-                    needs_review.append(txn)
 
         # Store completed job status locally
         _local_jobs[job_id] = {
@@ -133,6 +151,7 @@ def handle_upload(
             "rows_parsed": parsed_count,
             "rows_inserted": inserted,
             "needs_review": needs_review,
+            "all_transactions": all_transactions,
             "sample_categorized": samples,
         }
 
@@ -141,10 +160,11 @@ def handle_upload(
             "filename": filename,
             "stored_at": location,
             "status": "COMPLETED",
-            "message": "File processed successfully (synchronous local mode).",
+            "message": "File processed successfully.",
             "rows_parsed": parsed_count,
             "rows_inserted": inserted,
             "needs_review": needs_review,
+            "all_transactions": all_transactions,
             "sample_categorized": samples,
         }
 
@@ -210,6 +230,7 @@ def handle_upload_status(user_id: str, job_id: str, userstore) -> dict:
             "rows_parsed": result.get("rows_parsed", 0),
             "rows_inserted": result.get("rows_inserted", 0),
             "needs_review": result.get("needs_review", []),
+            "all_transactions": result.get("all_transactions", []),
             "sample_categorized": result.get("sample_categorized", []),
             "error_message": result.get("error_message"),
         }

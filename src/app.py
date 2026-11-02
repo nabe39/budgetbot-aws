@@ -131,6 +131,7 @@ def health() -> dict:
 @app.post("/upload")
 async def upload(
     file: UploadFile = File(...),
+    auto_commit: bool = True,
     user_id: str = Depends(get_current_user),
 ) -> dict:
     data = await file.read()
@@ -143,6 +144,7 @@ async def upload(
         ai_client=ai_client,
         storage=storage,
         userstore=userstore,
+        auto_commit=auto_commit,
     )
 
 
