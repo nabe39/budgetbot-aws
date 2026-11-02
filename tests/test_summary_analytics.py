@@ -209,3 +209,46 @@ def test_summary_edge_cases_empty_and_no_income():
     assert d_exp["net_savings"] == -50000.0
     assert d_exp["savings_rate"] == 0.0  # Cannot divide by zero income
 
+
+
+def test_summary_monthly_trends_comparison():
+    """Verify GET /summary returns multi-month income, expense and net trends for bar chart."""
+    username = f"user_trend_{uuid.uuid4().hex[:8]}"
+    headers, user_id = _get_auth_headers(username=username)
+
+    # March: Income 20M, Food -3M
+    client.post("/transactions", headers=headers, json={"date": "2026-03-05", "description": "Salary Mar", "amount": 20000000.0, "category": "Income"})
+    client.post("/transactions", headers=headers, json={"date": "2026-03-10", "description": "Food Mar", "amount": -3000000.0, "category": "Food"})
+
+    # April: Income 25M, Shopping -5M
+    client.post("/transactions", headers=headers, json={"date": "2026-04-05", "description": "Salary Apr", "amount": 25000000.0, "category": "Income"})
+    client.post("/transactions", headers=headers, json={"date": "2026-04-12", "description": "Shopping Apr", "amount": -5000000.0, "category": "Shopping"})
+
+    # May: Income 30M, Transport -2M
+    client.post("/transactions", headers=headers, json={"date": "2026-05-05", "description": "Salary May", "amount": 30000000.0, "category": "Income"})
+    client.post("/transactions", headers=headers, json={"date": "2026-05-15", "description": "Transport May", "amount": -2000000.0, "category": "Transport"})
+
+    res = client.get("/summary", headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert "monthly_trends" in data
+    trends = data["monthly_trends"]
+    assert len(trends) == 3
+
+    # Check March
+    m_mar = next(t for t in trends if t["month"] == "2026-03")
+    assert m_mar["income"] == 20000000.0
+    assert m_mar["expense"] == 3000000.0
+    assert m_mar["net"] == 17000000.0
+
+    # Check April
+    m_apr = next(t for t in trends if t["month"] == "2026-04")
+    assert m_apr["income"] == 25000000.0
+    assert m_apr["expense"] == 5000000.0
+    assert m_apr["net"] == 20000000.0
+
+    # Check May
+    m_may = next(t for t in trends if t["month"] == "2026-05")
+    assert m_may["income"] == 30000000.0
+    assert m_may["expense"] == 2000000.0
+    assert m_may["net"] == 28000000.0

@@ -331,6 +331,38 @@ def handle_summary(user_id: str, month: Optional[str], userstore) -> dict:
     expense_drivers.sort(key=lambda x: -x["total"])
     top_3_drivers = expense_drivers[:3]
 
+    # Calculate multi-month income & expense comparison trends
+    monthly_trends = []
+    try:
+        all_user_txns = userstore.list_transactions(user_id=user_id)
+        monthly_map = {}
+        for t in all_user_txns:
+            d = str(t.get("date", "")).strip()
+            if len(d) >= 7 and d[4] == "-":
+                m = d[:7]
+            else:
+                continue
+            amt = float(t.get("amount", 0.0))
+            cat = str(t.get("category", "")).strip().lower()
+            if m not in monthly_map:
+                monthly_map[m] = {"income": 0.0, "expense": 0.0}
+            if cat == "income" or amt > 0:
+                monthly_map[m]["income"] += abs(amt)
+            else:
+                monthly_map[m]["expense"] += abs(amt)
+
+        for m in sorted(monthly_map.keys())[-12:]:
+            inc = round(monthly_map[m]["income"], 2)
+            exp = round(monthly_map[m]["expense"], 2)
+            monthly_trends.append({
+                "month": m,
+                "income": inc,
+                "expense": exp,
+                "net": round(inc - exp, 2),
+            })
+    except Exception:
+        monthly_trends = []
+
     return {
         "user_id": user_id,
         "month": month,
@@ -342,6 +374,7 @@ def handle_summary(user_id: str, month: Optional[str], userstore) -> dict:
         "by_category": by_category,
         "top_3_drivers": top_3_drivers,
         "total_spend": -total_expense,
+        "monthly_trends": monthly_trends,
     }
 
 
