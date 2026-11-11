@@ -242,7 +242,10 @@ class PostgresUserStore:
         sql = "SELECT COUNT(*) FROM transactions WHERE user_id = %s"
         params: list = [user_id]
         if month:
-            sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
+            if len(month) == 10:
+                sql += " AND txn_date = %s"
+            else:
+                sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(%s)"
@@ -267,7 +270,10 @@ class PostgresUserStore:
         """
         params: list = [user_id]
         if month:
-            sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
+            if len(month) == 10:
+                sql += " AND txn_date = %s"
+            else:
+                sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(%s)"
@@ -462,7 +468,10 @@ class SQLiteUserStore:
         sql = "SELECT COUNT(*) FROM transactions WHERE user_id = ?"
         params: list = [user_id]
         if month:
-            sql += " AND substr(txn_date, 1, 7) = ?"
+            if len(month) == 10:
+                sql += " AND txn_date = ?"
+            else:
+                sql += " AND substr(txn_date, 1, 7) = ?"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(?)"
@@ -485,7 +494,10 @@ class SQLiteUserStore:
         )
         params: list = [user_id]
         if month:
-            sql += " AND substr(txn_date, 1, 7) = ?"
+            if len(month) == 10:
+                sql += " AND txn_date = ?"
+            else:
+                sql += " AND substr(txn_date, 1, 7) = ?"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(?)"
@@ -683,7 +695,10 @@ class MySQLUserStore:
         sql = "SELECT COUNT(*) FROM transactions WHERE user_id = %s"
         params: list = [user_id]
         if month:
-            sql += " AND DATE_FORMAT(txn_date, '%%Y-%%m') = %s"
+            if len(month) == 10:
+                sql += " AND txn_date = %s"
+            else:
+                sql += " AND DATE_FORMAT(txn_date, '%%Y-%%m') = %s"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(%s)"
@@ -704,7 +719,10 @@ class MySQLUserStore:
         sql = "SELECT id, txn_date, description, amount, category, confidence FROM transactions WHERE user_id = %s"
         params: list = [user_id]
         if month:
-            sql += " AND DATE_FORMAT(txn_date, '%%Y-%%m') = %s"
+            if len(month) == 10:
+                sql += " AND txn_date = %s"
+            else:
+                sql += " AND DATE_FORMAT(txn_date, '%%Y-%%m') = %s"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(%s)"

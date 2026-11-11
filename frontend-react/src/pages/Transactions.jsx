@@ -21,7 +21,7 @@ const STANDARD_CATEGORIES = [
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [month, setMonth] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const [category, setCategory] = useState('');
   const [editingTxn, setEditingTxn] = useState(null);
   const [debug, setDebug] = useState(false);
@@ -55,7 +55,10 @@ function Transactions() {
     setLoading(true);
     try {
       const params = {};
-      if (month) params.month = month;
+      if (selectedDate) {
+        params.date = selectedDate;
+        params.month = selectedDate;
+      }
       if (category) params.category = category;
       const res = await apiClient.get('/transactions', { params });
       setTransactions(res.data.transactions || []);
@@ -73,7 +76,10 @@ function Transactions() {
       setLoading(true);
       try {
         const params = {};
-        if (month) params.month = month;
+        if (selectedDate) {
+          params.date = selectedDate;
+          params.month = selectedDate;
+        }
         if (category) params.category = category;
         const res = await apiClient.get('/transactions', { params });
         if (!isActive) return;
@@ -93,7 +99,7 @@ function Transactions() {
     return () => {
       isActive = false;
     };
-  }, [month, category, refreshTrigger]);
+  }, [selectedDate, category, refreshTrigger]);
 
   const handleDelete = async (id) => {
     if (!window.confirm(t('txn.delete_confirm'))) return;
@@ -451,21 +457,21 @@ function Transactions() {
 
         {/* FILTERS TOOLBAR */}
         <div className="filter-toolbar">
-          {/* Month filter */}
+          {/* Calendar date filter */}
           <div className="filter-item">
             <span className="filter-label">
-              <i className="fa-regular fa-calendar"></i> {t('txn.month')}
+              <i className="fa-regular fa-calendar-days"></i> {t('txn.date_picker')}
             </span>
             <input
-              type="month"
-              value={month}
-              onChange={e => { setMonth(e.target.value); setCurrentPage(1); }}
-              style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+              type="date"
+              value={selectedDate}
+              onChange={e => { setSelectedDate(e.target.value); setCurrentPage(1); }}
+              style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', cursor: 'pointer' }}
             />
-            {month && (
+            {selectedDate && (
               <button
                 className="btn-outline"
-                onClick={() => { setMonth(''); setCurrentPage(1); }}
+                onClick={() => { setSelectedDate(''); setCurrentPage(1); }}
                 title={t('txn.clear')}
                 style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
               >
@@ -534,11 +540,11 @@ function Transactions() {
           <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-muted)' }}>
             <i className="fa-solid fa-receipt" style={{ fontSize: '2.5rem', marginBottom: '1rem', opacity: 0.35 }}></i>
             <p style={{ margin: 0, fontWeight: 500 }}>{t('txn.no_data')}</p>
-            {(month || category) && (
+            {(selectedDate || category) && (
               <button
                 className="btn-outline"
                 style={{ marginTop: '1rem', fontSize: '0.85rem' }}
-                onClick={() => { setMonth(''); setCategory(''); setCurrentPage(1); }}
+                onClick={() => { setSelectedDate(''); setCategory(''); setCurrentPage(1); }}
               >
                 {t('txn.clear_all')}
               </button>
