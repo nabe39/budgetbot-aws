@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import apiClient from '../api/client';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { formatCurrency } from '../utils/format';
+import { useLanguage } from '../context/LanguageContext';
 
 function Coach() {
+  const { t, getCategoryName } = useLanguage();
   const [insights, setInsights] = useState(null);
   const [suggestedCaps, setSuggestedCaps] = useState([]);
   const [chartData, setChartData] = useState(null);
@@ -21,10 +23,10 @@ function Coach() {
         setSuggestedCaps(res.data.suggested_caps || []);
         setChartData(res.data.chartData);
       } else {
-        setError('No insights returned.');
+        setError(t('coach.no_insights'));
       }
     } catch (err) {
-      setError('Failed to load insights. ' + (err.message));
+      setError(t('coach.fail_insights') + (err.message));
     }
     setLoading(false);
   };
@@ -35,7 +37,7 @@ function Coach() {
       await apiClient.post('/caps', { category: cap.category, amount: cap.suggested_cap });
       setSuggestedCaps(suggestedCaps.filter(c => c.category !== cap.category));
     } catch (err) {
-      alert("Failed to set cap: " + err.message);
+      window.alert(t('coach.fail_cap') + err.message);
     }
     setHandlingCap(null);
   };
@@ -63,16 +65,24 @@ function Coach() {
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h2 style={{ marginTop: 0, marginBottom: '0.5rem' }}>
           <i className="fa-solid fa-wand-magic-sparkles" style={{ color: 'var(--primary)', marginRight: '10px' }}></i> 
-          AI Budget Recommendations
+          {t('coach.title')}
         </h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '1rem', maxWidth: '600px', margin: '0 auto' }}>
-          Get personalized, actionable financial advice based on a deep AI analysis of your actual spending patterns.
+          {t('coach.subtitle')}
         </p>
       </div>
       
       <div style={{ textAlign: 'center' }}>
         <button className="btn-primary" onClick={generateInsights} disabled={loading} style={{ padding: '0.8rem 2rem', fontSize: '1.1rem', borderRadius: '30px' }}>
-          {loading ? <><span className="spinner" style={{ borderColor: 'white', borderTopColor: 'transparent' }}></span> Analyzing Data...</> : <><i className="fa-solid fa-bolt"></i> Generate Smart Insights</>}
+          {loading ? (
+            <>
+              <span className="spinner" style={{ borderColor: 'white', borderTopColor: 'transparent' }}></span> {t('coach.btn_analyzing')}
+            </>
+          ) : (
+            <>
+              <i className="fa-solid fa-bolt"></i> {t('coach.btn_generate')}
+            </>
+          )}
         </button>
       </div>
 
@@ -82,7 +92,7 @@ function Coach() {
         {!insights && !loading && (
           <div style={{ textAlign: 'center', padding: '3rem 2rem', background: 'rgba(0,0,0,0.02)', borderRadius: '16px', color: 'var(--text-muted)' }}>
             <i className="fa-solid fa-robot" style={{ fontSize: '3rem', color: '#cbd5e1', marginBottom: '1rem' }}></i>
-            <p>Your AI Coach is ready to review your finances.</p>
+            <p>{t('coach.ready_prompt')}</p>
           </div>
         )}
 
@@ -92,7 +102,7 @@ function Coach() {
             {/* Chart Section */}
             {chartData && chartData.length > 0 && (
               <div style={{ padding: '1.5rem', background: 'var(--glass-bg)', backdropFilter: 'blur(20px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 8px 32px rgba(0,0,0,0.05)' }}>
-                <h4 style={{ marginTop: 0, textAlign: 'center', color: 'var(--text-color)' }}>Spending Distribution</h4>
+                <h4 style={{ marginTop: 0, textAlign: 'center', color: 'var(--text-color)' }}>{t('coach.spending_distribution')}</h4>
                 <div style={{ height: '300px', width: '100%' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -104,6 +114,7 @@ function Coach() {
                         outerRadius={100}
                         paddingAngle={5}
                         dataKey="value"
+                        nameKey="name"
                         stroke="none"
                         cornerRadius={4}
                       >
@@ -112,10 +123,14 @@ function Coach() {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value) => formatCurrency(value)}
+                        formatter={(value, name) => [formatCurrency(value), getCategoryName(name)]}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
                       />
-                      <Legend verticalAlign="bottom" height={36}/>
+                      <Legend 
+                        formatter={(value) => getCategoryName(value)}
+                        verticalAlign="bottom" 
+                        height={36}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -124,7 +139,7 @@ function Coach() {
 
             {/* Insights Section */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <h4 style={{ margin: 0, color: 'var(--text-color)' }}>Personalized Action Plan</h4>
+              <h4 style={{ margin: 0, color: 'var(--text-color)' }}>{t('coach.action_plan')}</h4>
               {insights.map((insight, idx) => {
                 const style = getStyle(insight.type);
                 return (
@@ -141,7 +156,7 @@ function Coach() {
                     
                     {insight.actionable_steps && insight.actionable_steps.length > 0 && (
                       <div style={{ background: 'rgba(255,255,255,0.6)', padding: '1rem', borderRadius: '8px' }}>
-                        <h5 style={{ margin: '0 0 0.8rem 0', color: style.text, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Action Items</h5>
+                        <h5 style={{ margin: '0 0 0.8rem 0', color: style.text, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('coach.action_items')}</h5>
                         <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                           {insight.actionable_steps.map((step, sIdx) => (
                             <li key={sIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.9rem', color: 'var(--text-color)' }}>
@@ -161,20 +176,22 @@ function Coach() {
             {suggestedCaps && suggestedCaps.length > 0 && (
               <div style={{ padding: '1.5rem', background: 'var(--glass-bg)', backdropFilter: 'blur(20px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 8px 32px rgba(0,0,0,0.05)' }}>
                 <h4 style={{ marginTop: 0, color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <i className="fa-solid fa-bullseye" style={{ color: 'var(--primary)' }}></i> Suggested Budget Caps
+                  <i className="fa-solid fa-bullseye" style={{ color: 'var(--primary)' }}></i> {t('coach.suggested_caps')}
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {suggestedCaps.map((cap, idx) => (
                     <div key={idx} style={{ padding: '1rem', background: 'rgba(255,255,255,0.6)', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                       <div style={{ flex: '1 1 300px' }}>
-                        <h5 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-color)', fontSize: '1.1rem' }}>{cap.category}</h5>
+                        <h5 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-color)', fontSize: '1.1rem' }}>{getCategoryName(cap.category)}</h5>
                         <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>{cap.reason}</p>
                         <div style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '1.2rem' }}>{formatCurrency(cap.suggested_cap)}</div>
                       </div>
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        <button className="btn-outline" onClick={() => ignoreCap(cap.category)} disabled={handlingCap === cap.category}>Ignore</button>
+                        <button className="btn-outline" onClick={() => ignoreCap(cap.category)} disabled={handlingCap === cap.category}>
+                          {t('coach.ignore')}
+                        </button>
                         <button className="btn-primary" style={{ marginTop: 0 }} onClick={() => acceptCap(cap)} disabled={handlingCap === cap.category}>
-                          {handlingCap === cap.category ? 'Saving...' : 'Accept'}
+                          {handlingCap === cap.category ? t('coach.saving') : t('coach.accept')}
                         </button>
                       </div>
                     </div>

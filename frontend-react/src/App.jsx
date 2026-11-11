@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { UploadProvider } from './context/UploadContext';
+import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import UploadToast from './components/UploadToast';
 import ReviewModal from './components/ReviewModal';
@@ -36,25 +37,27 @@ function AppLayout() {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <UploadProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/overview" element={<Overview />} />
-              <Route path="/transactions" element={<Transactions />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/coach" element={<Coach />} />
-              <Route path="/limits" element={<Limits />} />
-              <Route path="/" element={<Navigate to="/overview" replace />} />
-            </Route>
-          </Routes>
-        </UploadProvider>
-      </BrowserRouter>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <UploadProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              
+              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route path="/overview" element={<Overview />} />
+                <Route path="/transactions" element={<Transactions />} />
+                <Route path="/chat" element={<Chat />} />
+                <Route path="/coach" element={<Coach />} />
+                <Route path="/limits" element={<Limits />} />
+                <Route path="/" element={<Navigate to="/overview" replace />} />
+              </Route>
+            </Routes>
+          </UploadProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 

@@ -1,10 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUpload } from '../context/UploadContext';
+import { useLanguage } from '../context/LanguageContext';
 import './UploadToast.css';
 
 function UploadToast() {
   const { toasts, removeToast, activeJobCount, setReviewTransactions } = useUpload();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleToastClick = (toast) => {
@@ -27,7 +29,7 @@ function UploadToast() {
       {activeJobCount > 0 && (
         <div className="upload-processing-pill">
           <span className="processing-spinner"></span>
-          <span>Processing {activeJobCount} file{activeJobCount > 1 ? 's' : ''}...</span>
+          <span>{t('toast.processing', { count: activeJobCount })}</span>
         </div>
       )}
 
@@ -50,7 +52,7 @@ function UploadToast() {
               <div className="toast-title">{toast.title}</div>
               <div className="toast-message">{toast.message}</div>
               {toast.type === 'success' && (
-                <div className="toast-action">Click to view transactions →</div>
+                <div className="toast-action">{t('toast.view_txns')}</div>
               )}
             </div>
             <button

@@ -259,3 +259,126 @@ def test_semicolon_delimited_and_utf8_bom():
     assert rows[1]["date"] == "2026-06-15"
     assert rows[1]["amount"] == 30000000.0
 
+
+
+def test_upload_with_low_confidence_and_hitl_batch_review():
+    """
+    Verify end-to-end Human-In-The-Loop review flow (KAN-27):
+    1. Upload statement containing a low-confidence opaque transaction code.
+    2. Low-confidence transaction is segregated into needs_review and NOT auto-inserted into DB.
+    3. User reviews and updates category via POST /transactions/batch.
+    4. Transaction is persisted to DB with verified category and user_confirmed engine.
+    """
+    csv_data = (
+        "Ngày GD,Nội dung,Số tiền\n"
+        "10/06/2026,Highlands Coffee,-55.000\n"
+        "11/06/2026,FT261390492819 Unknown Opaque Wire Transfer,-250.000\n"
+    ).encode("utf-8")
+
+    user_headers = {"X-User-Id": "hitl-test-user"}
+
+    # 1. Upload statement
+    resp = client.post(
+        "/upload",
+        files={"file": ("statement.csv", csv_data, "text/csv")},
+        headers=user_headers,
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["rows_parsed"] == 2
+    assert body["rows_inserted"] == 1
+    assert len(body["needs_review"]) == 1
+
+    suspect_txn = body["needs_review"][0]
+    assert suspect_txn["description"] == "FT261390492819 Unknown Opaque Wire Transfer"
+    assert suspect_txn["confidence"] == "low"
+
+    # 2. Verify only 1 high-confidence transaction is currently in DB
+    txns_resp = client.get("/transactions", headers=user_headers)
+    assert txns_resp.status_code == 200
+    db_txns = txns_resp.json()["transactions"]
+    assert len(db_txns) == 1
+    assert db_txns[0]["description"] == "Highlands Coffee"
+
+    # 3. Simulate Human-In-The-Loop review: user selects 'Shopping' category
+    batch_payload = {
+        "transactions": [
+            {
+                "date": suspect_txn["date"],
+                "description": suspect_txn["description"],
+                "amount": -abs(suspect_txn["amount"]),
+                "category": "Shopping",
+                "confidence": "high",
+                "engine": "user_confirmed",
+            }
+        ]
+    }
+    batch_resp = client.post("/transactions/batch", json=batch_payload, headers=user_headers)
+    assert batch_resp.status_code == 200
+    assert batch_resp.json()["count"] == 1
+
+    # 4. Verify DB now contains both transactions
+    final_txns_resp = client.get("/transactions", headers=user_headers)
+    final_txns = final_txns_resp.json()["transactions"]
+    assert len(final_txns) == 2
+
+    reviewed = next(t for t in final_txns if t["description"] == suspect_txn["description"])
+    assert reviewed["category"] == "Shopping"
+    assert reviewed["confidence"] == "high"
+    assert reviewed["amount"] == -250000.0
+
+
+def test_upload_staging_review_with_auto_commit_false():
+    """
+    Verify full staging review flow (auto_commit=false):
+    1. Upload statement with auto_commit=false.
+    2. Zero rows are auto-inserted into DB, all transactions returned in all_transactions.
+    3. User reviews and confirms entire statement via POST /transactions/batch.
+    4. All transactions now exist in DB.
+    """
+    csv_data = (
+        "Ngày GD,Nội dung,Số tiền\n"
+        "01/05/2026,Highlands Coffee,-65.000\n"
+        "02/05/2026,Salary deposit payroll,28.000.000\n"
+        "03/05/2026,Unknown Opaque Core Banking Wire,-150.000\n"
+    ).encode("utf-8")
+
+    user_headers = {"X-User-Id": "staging-review-user"}
+
+    # 1. Upload statement with auto_commit=false
+    resp = client.post(
+        "/upload?auto_commit=false",
+        files={"file": ("staging_statement.csv", csv_data, "text/csv")},
+        headers=user_headers,
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["rows_parsed"] == 3
+    assert body["rows_inserted"] == 0
+    assert len(body["all_transactions"]) == 3
+
+    # 2. Verify database is currently empty
+    txns_resp = client.get("/transactions", headers=user_headers)
+    assert txns_resp.status_code == 200
+    assert len(txns_resp.json()["transactions"]) == 0
+
+    # 3. Simulate user review: update category of the unknown transaction and confirm all
+    staged_txns = body["all_transactions"]
+    for t in staged_txns:
+        if "Unknown" in t["description"]:
+            t["category"] = "Shopping"
+            t["confidence"] = "high"
+            t["engine"] = "user_confirmed"
+
+    batch_resp = client.post(
+        "/transactions/batch",
+        json={"transactions": staged_txns},
+        headers=user_headers,
+    )
+    assert batch_resp.status_code == 200
+    assert batch_resp.json()["count"] == 3
+
+    # 4. Verify all transactions now persisted in DB
+    final_txns_resp = client.get("/transactions", headers=user_headers)
+    assert final_txns_resp.status_code == 200
+    assert len(final_txns_resp.json()["transactions"]) == 3

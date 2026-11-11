@@ -65,7 +65,7 @@ def handler(event, context):
             data = obj["Body"].read()
 
             # Process the file
-            inserted, samples, needs_review, parsed_count = _process_file(
+            inserted, samples, needs_review, parsed_count, all_txns = _process_file(
                 user_id, filename, data, table, region, model_id
             )
 
@@ -76,6 +76,7 @@ def handler(event, context):
                 rows_inserted=inserted,
                 needs_review=needs_review,
                 sample_categorized=samples,
+                all_transactions=all_txns,
             )
             logger.info(
                 "Processing complete for %s: %d parsed, %d inserted, %d needs review",
@@ -138,7 +139,7 @@ def _update_job_status(table, user_id, job_id, status, error=None):
     )
 
 
-def _update_job_completed(table, user_id, job_id, rows_parsed, rows_inserted, needs_review, sample_categorized):
+def _update_job_completed(table, user_id, job_id, rows_parsed, rows_inserted, needs_review, sample_categorized, all_transactions=None):
     """Mark a JOB as COMPLETED with result data."""
     from datetime import datetime, timezone
     from decimal import Decimal
@@ -157,7 +158,7 @@ def _update_job_completed(table, user_id, job_id, rows_parsed, rows_inserted, ne
         Key={"PK": user_id, "SK": job_id},
         UpdateExpression=(
             "SET #st = :s, completed_at = :t, rows_parsed = :rp, "
-            "rows_inserted = :ri, needs_review = :nr, sample_categorized = :sc"
+            "rows_inserted = :ri, needs_review = :nr, sample_categorized = :sc, all_transactions = :at"
         ),
         ExpressionAttributeNames={"#st": "status"},
         ExpressionAttributeValues={
@@ -167,6 +168,7 @@ def _update_job_completed(table, user_id, job_id, rows_parsed, rows_inserted, ne
             ":ri": rows_inserted,
             ":nr": to_decimal(needs_review),
             ":sc": to_decimal(sample_categorized),
+            ":at": to_decimal(all_transactions or []),
         },
     )
 
@@ -181,6 +183,7 @@ def _process_file(user_id, filename, data, table, region, model_id):
     inserted = 0
     samples = []
     needs_review = []
+    all_transactions = []
     parsed_count = 0
 
     # Initialize AI client
@@ -197,6 +200,7 @@ def _process_file(user_id, filename, data, table, region, model_id):
                 txn["amount"] = abs(txn["amount"])
             else:
                 txn["amount"] = -abs(txn["amount"])
+            all_transactions.append(txn)
 
             if txn.get("confidence") == "high":
                 _store_transaction(table, user_id, txn)
@@ -232,6 +236,7 @@ def _process_file(user_id, filename, data, table, region, model_id):
                     txn["amount"] = -abs(txn["amount"])
                 else:
                     txn["amount"] = abs(txn["amount"])
+            all_transactions.append(txn)
 
             if txn.get("confidence") == "high":
                 _store_transaction(table, user_id, txn)
@@ -241,7 +246,7 @@ def _process_file(user_id, filename, data, table, region, model_id):
             else:
                 needs_review.append(txn)
 
-    return inserted, samples, needs_review, parsed_count
+    return inserted, samples, needs_review, parsed_count, all_transactions
 
 
 def _extract_text(data, filename, region):

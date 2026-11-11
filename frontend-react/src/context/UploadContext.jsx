@@ -51,15 +51,16 @@ export function UploadProvider({ children }) {
           clearInterval(pollRefs.current[jobId]);
           delete pollRefs.current[jobId];
 
-          const reviewCount = data.needs_review ? data.needs_review.length : 0;
-          let msg = `${data.filename}: ${data.rows_inserted} transactions processed.`;
-          let title = 'Upload Complete!';
-          
+          const txnsToReview = data.all_transactions && data.all_transactions.length > 0
+            ? data.all_transactions
+            : (data.needs_review || []);
+
+          const reviewCount = txnsToReview.length;
+          let msg = `${data.filename}: ${data.rows_parsed || reviewCount} transactions parsed. Please review and confirm.`;
+          let title = 'Review Statement Transactions';
+
           if (reviewCount > 0) {
-            msg += ` ${reviewCount} transaction(s) need manual review.`;
-            title = 'Action Required';
-            // Auto-trigger the review modal immediately!
-            const txnsWithJobId = data.needs_review.map(t => ({ ...t, jobId }));
+            const txnsWithJobId = txnsToReview.map(t => ({ ...t, jobId }));
             setReviewTransactions(prev => {
               const filtered = prev.filter(t => t.jobId !== jobId);
               return [...filtered, ...txnsWithJobId];
@@ -71,7 +72,7 @@ export function UploadProvider({ children }) {
             title: title,
             message: msg,
             jobId,
-            needsReview: data.needs_review || [],
+            needsReview: txnsToReview,
           });
         } else if (data.status === 'FAILED') {
           clearInterval(pollRefs.current[jobId]);
@@ -96,7 +97,8 @@ export function UploadProvider({ children }) {
     const fd = new FormData();
     fd.append('file', file);
 
-    const res = await apiClient.post('/upload', fd, {
+    // Call upload with auto_commit=false so user can review all parsed transactions before saving
+    const res = await apiClient.post('/upload?auto_commit=false', fd, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
@@ -108,11 +110,41 @@ export function UploadProvider({ children }) {
       [job_id]: { status, filename, job_id },
     }));
 
+    // If already completed synchronously (local dev mode or immediate processing)
+    if (status === 'COMPLETED') {
+      const data = res.data;
+      const txnsToReview = data.all_transactions && data.all_transactions.length > 0
+        ? data.all_transactions
+        : (data.needs_review || []);
+
+      const reviewCount = txnsToReview.length;
+      let msg = `${data.filename}: ${data.rows_parsed || reviewCount} transactions parsed. Please review and confirm.`;
+      let title = 'Review Statement Transactions';
+
+      if (reviewCount > 0) {
+        const txnsWithJobId = txnsToReview.map(t => ({ ...t, jobId: job_id }));
+        setReviewTransactions(prev => {
+          const filtered = prev.filter(t => t.jobId !== job_id);
+          return [...filtered, ...txnsWithJobId];
+        });
+      }
+
+      addToast({
+        type: 'success',
+        title: title,
+        message: msg,
+        jobId: job_id,
+        needsReview: txnsToReview,
+      });
+
+      return { success: true, ...res.data };
+    }
+
     // Start polling for this job
     startPolling(job_id);
 
-    return res.data;
-  }, [startPolling]);
+    return { success: true, ...res.data };
+  }, [addToast, startPolling]);
 
   // Count active (processing) jobs
   const activeJobCount = Object.values(jobs).filter(
