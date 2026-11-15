@@ -169,6 +169,7 @@ def summary(
 @app.get("/transactions")
 def list_transactions(
     month: Optional[str] = None,
+    date: Optional[str] = None,
     category: Optional[str] = None,
     page: Optional[int] = None,
     page_size: Optional[int] = None,
@@ -176,10 +177,11 @@ def list_transactions(
     offset: Optional[int] = None,
     user_id: str = Depends(get_current_user),
 ) -> dict:
-    """Retrieve transactions with optional filtering (month, category) and pagination."""
+    """Retrieve transactions with optional filtering (date, month, category) and pagination."""
+    filter_date = date or month
     return handlers.handle_list_transactions(
         user_id=user_id,
-        month=month,
+        month=filter_date,
         category=category,
         page=page,
         page_size=page_size,
