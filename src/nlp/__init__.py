@@ -9,6 +9,13 @@ from src.nlp.preprocessor import (
     tokenize_vietnamese,
     clean_bank_description,
 )
+from src.nlp.vectorizer import (
+    build_vectorizer,
+    fit_vectorizer_on_dataset,
+    load_vectorizer,
+    transform_texts,
+    DEFAULT_MODEL_PATH,
+)
 
 __all__ = [
     "VietnamesePreprocessor",
@@ -16,5 +23,10 @@ __all__ = [
     "normalize_unicode",
     "tokenize_vietnamese",
     "clean_bank_description",
+    "build_vectorizer",
+    "fit_vectorizer_on_dataset",
+    "load_vectorizer",
+    "transform_texts",
+    "DEFAULT_MODEL_PATH",
 ]
 
