@@ -16,6 +16,15 @@ from src.nlp.vectorizer import (
     transform_texts,
     DEFAULT_MODEL_PATH,
 )
+from src.nlp.classifier import (
+    train_and_compare_models,
+    load_classifier,
+    DEFAULT_CLASSIFIER_PATH,
+)
+from src.nlp.predictor import (
+    predict_transaction,
+    get_models,
+)
 
 __all__ = [
     "VietnamesePreprocessor",
@@ -28,5 +37,10 @@ __all__ = [
     "load_vectorizer",
     "transform_texts",
     "DEFAULT_MODEL_PATH",
+    "train_and_compare_models",
+    "load_classifier",
+    "DEFAULT_CLASSIFIER_PATH",
+    "predict_transaction",
+    "get_models",
 ]
 

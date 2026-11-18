@@ -21,7 +21,7 @@ Tiếp nối các nghiên cứu tổng quan thị trường, phân tích chiến
 2. **Thiết kế Cơ sở dữ liệu (Database Design):** Chi tiết lược đồ quan hệ PostgreSQL (ERD, các bảng, chỉ mục, ràng buộc) và cấu trúc Vector Store ChromaDB cho kỹ thuật Aggregated Chunking.
 3. **Thiết kế Chức năng và Sơ đồ Hoạt động (Functional Design & Activity Diagrams):** Hoàn thiện phân rã 16 use case chi tiết và xây dựng các biểu đồ hoạt động (Activity Diagrams) cho các luồng nghiệp vụ phức tạp.
 4. **Thiết kế Giao diện UI/UX (UI/UX Design):** Kiến trúc điều hướng (Sitemap), bố cục và tương tác người dùng trên các màn hình Dashboard, Transactions, Budget Limits, HITL Review Modal và Chatbot Assistant.
-5. **Mô tả chi tiết ngăn xếp công nghệ sử dụng (Technology Stack Description):** Cơ sở khoa học và kỹ thuật lựa chọn từng thành phần từ Frontend, Backend, AI Engine, Database đến Cloud DevOps.
+5. **Mô tả chi tiết ngăn xếp công nghệ sử dụng (Technology Stack Description):** Cơ sở khoa học và kỹ thuật lựa chọn từng thành phần từ Frontend, Backend, AI Engine, Database đến Container hóa CSDL.
 6. **Xây dựng phiên bản thử nghiệm MVP (Minimum Viable Product):** Bộ chức năng cốt lõi, môi trường thử nghiệm và các giá trị nổi bật độc bản của BUDGETBOT trên thị trường FinTech.
 
 ---
@@ -40,16 +40,16 @@ Kiến trúc bao gồm 5 phân tầng chính:
 2. **Tầng Điều phối & Cổng API (API Gateway & Backend Core Layer):**
    * Được phát triển bằng **Python FastAPI** chạy trên nền ASGI Server (Uvicorn), hỗ trợ xử lý bất đồng bộ (Asynchronous I/O) cho hiệu năng cao và thông lượng lớn.
    * Chịu trách nhiệm xác thực người dùng, giải mã JWT, phân quyền truy cập, xác thực dữ liệu đầu vào (Data Validation qua Pydantic schemas), điều phối CRUD giao dịch, tính toán số liệu thống kê và quản lý hạn mức ngân sách (*Budget Capping*).
-   * Tích hợp bộ chuyển đổi **Mangum** cho phép triển khai linh hoạt cả trên môi trường Serverless (AWS Lambda + API Gateway) lẫn Container độc lập (Docker / AWS ECS / App Runner).
+   * Cung cấp các API RESTful bất đồng bộ chuẩn mực, kết nối an toàn đến CSDL PostgreSQL và xử lý điều phối dịch vụ với độ trễ tối thiểu.
 3. **Tầng Trí tuệ Nhân tạo & Dịch vụ Thông minh (AI & Intelligence Services Layer):**
    * **Sub-module NLP Transaction Classification:** Nhận mô tả giao dịch tiếng Việt ngắn, thực hiện tiền xử lý (chuẩn hóa ký tự, tách từ qua `underthesea`), trích xuất vector TF-IDF và phân loại thông qua mô hình **Linear SVC** (hoặc Multinomial Naive Bayes) với độ trễ siêu nhỏ (<10ms). Hỗ trợ cơ chế Fallback Rules và lưu trữ phản hồi Human-in-the-Loop (HITL).
-   * **Sub-module Structured RAG Engine:** Tiếp nhận câu hỏi tài chính tự nhiên từ người dùng, nhúng câu hỏi thành vector embedding (`text-embedding-3-small`), truy xuất các chunk dữ liệu tổng hợp liên quan từ ChromaDB, kết hợp dữ liệu thống kê kiểm chứng từ PostgreSQL và gọi Large Language Model (**GPT-4o-mini** hoặc **AWS Bedrock Claude 3.5 Haiku**) để sinh câu trả lời tự nhiên kèm bảng dẫn chứng giao dịch (*Evidence Table*).
+   * **Sub-module Structured RAG Engine:** Tiếp nhận câu hỏi tài chính tự nhiên từ người dùng, nhúng câu hỏi thành vector embedding (`text-embedding-3-small`), truy xuất các chunk dữ liệu tổng hợp liên quan từ ChromaDB, kết hợp dữ liệu thống kê kiểm chứng từ PostgreSQL và gọi Large Language Model (**GPT-4o-mini**) để sinh câu trả lời tự nhiên kèm bảng dẫn chứng giao dịch (*Evidence Table*).
 4. **Tầng Lưu trữ Dữ liệu (Persistence & Data Storage Layer):**
    * **Cơ sở dữ liệu Quan hệ (PostgreSQL 15+):** Đảm bảo tính toàn vẹn dữ liệu tài chính theo chuẩn ACID, lưu trữ thông tin tài khoản, mật khẩu băm bcrypt, lịch sử giao dịch chi tiết, danh mục chi tiêu, hạn mức ngân sách và lịch sử phản hồi HITL.
    * **Cơ sở dữ liệu Vector (ChromaDB):** Lưu trữ các vector embedding 1536 chiều của các bản tóm tắt chi tiêu định kỳ đã tổng hợp (*Aggregated Chunks*), hỗ trợ tìm kiếm khoảng cách Cosine hiệu năng cao.
-5. **Tầng Hạ tầng & Đám mây (Infrastructure & Cloud Storage):**
-   * **AWS S3 / Local Storage:** Lưu trữ tạm thời các tệp sao kê ngân hàng gốc (CSV/Excel) tải lên trước khi đưa vào hàng đợi xử lý trích xuất.
-   * **AWS Cloud / Docker Container:** Đóng gói toàn bộ các dịch vụ bằng Docker và cấu hình tự động thông qua Terraform / docker-compose.
+5. **Tầng Hạ tầng Cục bộ (Local Infrastructure & Containerized DB):**
+   * Cơ sở dữ liệu PostgreSQL được container hóa thông qua **Docker Compose** nhằm bảo đảm tính độc lập, dễ dàng khởi tạo và đồng bộ migration. Backend FastAPI và Frontend React được chạy trực tiếp trên môi trường máy trạm để tối ưu hiệu năng tính toán cục bộ của mô hình NLP và ChromaDB.
+   * **Local File Storage:** Lưu trữ tạm thời các tệp sao kê ngân hàng gốc (CSV) trên hệ thống tệp cục bộ trước khi đưa vào luồng trích xuất dữ liệu.
 
 ```mermaid
 flowchart TD
@@ -72,19 +72,19 @@ flowchart TD
         Rules["Rule-based Fallback Engine"]
         FeedbackLoop["HITL Feedback Collector"]
         RAGEngine["Structured Data RAG Pipeline"]
-        LLM["LLM (GPT-4o-mini / Bedrock Claude 3.5 Haiku)"]
+        LLM["LLM (GPT-4o-mini)"]
     end
 
     subgraph DataLayer ["4. Persistence & Vector Storage"]
-        Postgres[(PostgreSQL 15+ ACID DB)]
+        Postgres[(PostgreSQL 15+ Containerized DB)]
         Chroma[(ChromaDB Vector Store)]
-        S3Bucket[(AWS S3 / File Storage)]
+        LocalStorage[(Local File Storage)]
     end
 
     %% Giao tiếp giữa các tầng
     UI -->|HTTPS / REST API + JWT| APILayer
     ChatUI -->|POST /chat| APILayer
-    ParserService -->|Lưu file gốc| S3Bucket
+    ParserService -->|Lưu file gốc| LocalStorage
     ParserService -->|Đọc & trích xuất dòng giao dịch| APILayer
 
     APILayer -->|Xác thực & Truy vấn số liệu| Postgres
@@ -489,7 +489,7 @@ flowchart LR
 | **FR-15** | Tổng hợp dữ liệu cấu trúc theo tháng/danh mục | UC-13 | SQL PostgreSQL Grouping & Aggregation Engine |
 | **FR-16** | Tạo và lưu trữ Vector Embedding | UC-13 | ChromaDB, `text-embedding-3-small` (1536d) |
 | **FR-17** | Semantic Search Cosine Top-K (K=3-5) | UC-13 | ChromaDB Query API, Cosine Distance Metric |
-| **FR-18** | Sinh câu trả lời qua LLM | UC-14 | OpenAI GPT-4o-mini / Bedrock Claude 3.5 Haiku |
+| **FR-18** | Sinh câu trả lời qua LLM | UC-14 | OpenAI GPT-4o-mini |
 | **FR-19** | Giao diện Chatbot hiển thị bảng dẫn chứng | UC-12, UC-15 | Frontend Chat.jsx, Markdown + Evidence Table |
 | **FR-20** | Guardrails từ chối câu hỏi ngoài phạm vi | UC-16 | System Prompt Constraints & Boundary Detector |
 | **FR-21** | Tự động đồng bộ lại Chunk khi CRUD giao dịch | UC-13 | Background Task / Database Triggers sync to Chroma |
@@ -606,7 +606,7 @@ stateDiagram-v2
     TruyVanPostgresKiemChung --> TrichXuatGiaoDichNguon: Query bảng transactions lấy dòng dữ liệu thực tế
     
     TrichXuatGiaoDichNguon --> DongGoiPrompt: Ghép Prompt: [System Instructions + Retrieved Chunks + Exact SQL Evidence + User Question]
-    DongGoiPrompt --> GoiLLM: Gửi request tới LLM (GPT-4o-mini / Bedrock Claude 3.5 Haiku)
+    DongGoiPrompt --> GoiLLM: Gửi request tới LLM (GPT-4o-mini)
     
     GoiLLM --> NhanCauTraLoi: LLM tổng hợp phân tích tự nhiên
     NhanCauTraLoi --> HienThiChatUI: Trình bày câu trả lời kèm Bảng Dẫn Chứng Giao Dịch (Evidence Table)
@@ -772,11 +772,9 @@ Bảng tổng hợp toàn bộ ngăn xếp công nghệ được áp dụng tron
 | **Học máy Cổ điển** | Scikit-learn | 1.4+ | Trích xuất đặc trưng văn bản TF-IDF n-grams (1, 2) và thuật toán phân loại Linear SVC, Multinomial Naive Bayes |
 | **Deep Learning** | PyTorch & Transformers | 2.2+ / 4.38+ | Thử nghiệm fine-tuning mô hình ngôn ngữ PhoBERT-base tiếng Việt phục vụ so sánh học thuật đối chứng |
 | **Embedding Model** | OpenAI text-embedding-3-small | API | Chuyển đổi văn bản tóm tắt thành vector 1536 chiều với độ trễ thấp và chi phí vận hành siêu rẻ ($0.02 / 1M tokens) |
-| **LLM Inference** | OpenAI GPT-4o-mini / Bedrock Claude 3.5 Haiku | API | Mô hình ngôn ngữ lớn tốc độ cao, nhận thức ngữ cảnh xuất sắc, sinh câu trả lời tự nhiên theo đúng định dạng JSON/Text |
+| **LLM Inference** | OpenAI GPT-4o-mini | API | Mô hình ngôn ngữ lớn tốc độ cao, nhận thức ngữ cảnh xuất sắc, sinh câu trả lời tự nhiên theo đúng định dạng JSON/Text |
 | **Đánh giá RAG** | RAGAS Framework | 0.1+ | Bộ công cụ đánh giá tự động các tiêu chí Faithfulness, Context Precision, Context Recall cho pipeline RAG |
-| **Đóng gói & Triển khai** | Docker & Docker Compose | 24+ | Đóng gói môi trường đồng nhất giữa Local và Cloud, thiết lập mạng nội bộ giữa API, PostgreSQL và ChromaDB |
-| **Điện toán Đám mây** | Amazon Web Services (AWS) | Cloud | Hạ tầng đám mây: AWS S3 (Lưu trữ file sao kê), AWS RDS (PostgreSQL), AWS Bedrock (Claude 3.5 Haiku), AWS Lambda/ECS |
-| **Hạ tầng dưới dạng mã**| Terraform | 1.6+ | Tự động hóa khởi tạo tài nguyên đám mây AWS (Infrastructure as Code - IaC) |
+| **Container CSDL** | Docker & Docker Compose | 24+ | Đóng gói và cô lập dịch vụ CSDL PostgreSQL 15, tự động hóa chạy migration khởi tạo bảng dữ liệu. |
 
 ---
 
@@ -810,26 +808,18 @@ Bộ chức năng cốt lõi bắt buộc của MVP gồm 5 module:
 
 ### 3.6.2. Thiết lập Phiên bản Thử nghiệm (MVP Prototype & Testing Setup)
 
-Phiên bản thử nghiệm thực tế được triển khai và cấu hình đồng bộ theo 2 kịch bản:
+Phiên bản thử nghiệm thực tế của BUDGETBOT được triển khai tối ưu trên môi trường máy trạm cục bộ với cơ sở dữ liệu được container hóa chuẩn mực:
 
-#### 1. Môi trường Thử nghiệm Cục bộ (Local Containerized Environment)
-* **Mục tiêu:** Phục vụ nghiên cứu thực nghiệm, bảo vệ quyền riêng tư tuyệt đối cho dữ liệu cá nhân của người dùng và tối ưu chi phí vận hành (0 đồng chi phí đám mây).
-* **Cấu hình phần cứng tối thiểu:** CPU 4 Cores, RAM 8GB, SSD 20GB.
-* **Các service chạy qua `docker-compose.yml`:**
-  * `budgetbot-db`: PostgreSQL 15 Official Image, mở cổng nội bộ 5432.
-  * `budgetbot-api`: FastAPI Python 3.11 Server, chạy Uvicorn workers, mở cổng 8000.
-  * `budgetbot-web`: React 18 SPA build qua Nginx/Vite dev server, mở cổng 3000.
-  * Vector Store: ChromaDB chạy in-process cục bộ gắn liền với tiến trình Python, lưu trữ dữ liệu tại thư mục persistent `database/chroma_data/`.
+#### 1. Môi trường Thử nghiệm Cục bộ (Local Environment with Containerized Database)
+* **Mục tiêu:** Phục vụ nghiên cứu thực nghiệm, bảo vệ quyền riêng tư tuyệt đối cho dữ liệu cá nhân của người dùng và tối ưu chi phí vận hành (0 đồng chi phí đám mây), tận dụng năng lực xử lý cục bộ của phần cứng.
+* **Cấu hình phần cứng máy trạm:** CPU 4–8 Cores, RAM 16GB, SSD 20GB.
+* **Mô hình triển khai các thành phần hệ thống:**
+  * **CSDL (Database):** PostgreSQL 15 chạy qua Docker Container (`budgetbot-postgres`, image `postgres:15-alpine`, ánh xạ cổng `5432:5432`), tự động hóa khởi tạo schema và chạy các tập tin migration (`database/migrations/001_init_schema.sql`) thông qua `docker-compose.yml`. Dữ liệu được lưu trữ persistent qua Docker Volume.
+  * **Backend Core:** FastAPI (Python 3.11) chạy trực tiếp trên môi trường máy trạm qua ASGI Uvicorn Server (cổng 8000), kết nối tới CSDL PostgreSQL containerized tại `localhost:5432`.
+  * **Frontend Client:** React 18 Single-Page Application (SPA) chạy trực tiếp qua Vite dev server (cổng 5173 / 3000), giao tiếp với Backend qua RESTful API.
+  * **AI & Storage:** ChromaDB và Model NLP lưu trữ persistent trực tiếp trên ổ đĩa cục bộ (`./_data/` và `database/chroma_data/`).
 
-#### 2. Môi trường Thử nghiệm Đám mây (AWS Production Cloud)
-* **Mục tiêu:** Đánh giá khả năng mở rộng (Scalability), tính sẵn sàng cao (High Availability) và đo lường độ trễ trên mạng diện rộng.
-* **Tài nguyên khởi tạo qua Terraform:**
-  * **AWS S3:** Bucket `budgetbot-statements-storage` lưu trữ tạm thời các file sao kê ngân hàng được người dùng tải lên.
-  * **AWS RDS PostgreSQL (db.t3.micro):** Lưu trữ CSDL quan hệ chính thức, cấu hình tự động sao lưu định kỳ.
-  * **AWS Bedrock / API Gateway:** Tích hợp mô hình `anthropic.claude-3-5-haiku` cho tầng LLM đàm thoại và phân tích ngữ cảnh nâng cao.
-  * **FastAPI Serverless Backend:** Đóng gói bằng adapter `Mangum` chạy trên AWS Lambda kết nối RDS qua RDS Proxy.
-
-#### 3. Tập Dữ liệu Thử nghiệm Chuẩn (Golden Benchmark Dataset)
+#### 2. Tập Dữ liệu Thử nghiệm Chuẩn (Golden Benchmark Dataset)
 Nhóm nghiên cứu đã thu thập và gán nhãn thủ công tập dữ liệu độc lập gồm **1.500+ mô tả giao dịch tiếng Việt thực tế**:
 * Nguồn dữ liệu: Sao kê thực tế từ sinh viên và nhân viên văn phòng qua các ứng dụng ngân hàng (Vietcombank, MB, Techcombank) và ví điện tử (MoMo, ZaloPay).
 * Dữ liệu chứa đầy đủ các trường hợp thách thức: viết tắt (`"ck"`, `"cf"`, `"đt"`), không dấu (`"tien nha thang 5"`, `"do xang"`), tiếng lóng (`"nhau voi cty"`, `"tra tien netflix"`).
@@ -864,7 +854,7 @@ flowchart LR
 
 #### 4. Hiệu năng Vượt bậc với Chi phí Hạ tầng Siêu thấp
 * Thay vì lạm dụng việc gọi các mô hình LLM đắt đỏ và chậm chạp cho từng dòng giao dịch nhỏ lẻ, BUDGETBOT sử dụng mô hình học máy nhẹ **Linear SVC kết hợp TF-IDF** được tối ưu hóa riêng cho văn bản tiếng Việt ngắn. Tốc độ suy luận chỉ mất **dưới 10ms**, thời gian phản hồi toàn trình API `< 300ms`, cho phép người dùng gõ đến đâu danh mục gợi ý nhảy ra đến đó theo thời gian thực mà không tốn chi phí API.
-* Chiến lược **Aggregated Chunking** trên ChromaDB giúp giảm thiểu đến **85% dung lượng lưu trữ vector và số lượng token** truyền vào LLM so với phương pháp chunk thô truyền thống, giúp hệ thống hoàn toàn có thể vận hành ổn định trên các máy chủ cấu hình thấp (như VPS giá rẻ hoặc gói miễn phí của AWS) mà vẫn đáp ứng hàng ngàn người dùng đồng thời.
+* Chiến lược **Aggregated Chunking** trên ChromaDB giúp giảm thiểu đến **85% dung lượng lưu trữ vector và số lượng token** truyền vào LLM so với phương pháp chunk thô truyền thống, giúp hệ thống hoàn toàn có thể vận hành ổn định trên các máy trạm cục bộ hoặc máy chủ cấu hình phổ thông mà vẫn đáp ứng hàng ngàn giao dịch mà không phát sinh chi phí điện toán đám mây đắt đỏ.
 
 ---
 

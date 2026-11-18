@@ -29,8 +29,8 @@
 2026-10-05,Uber di chuyen noi thanh,-95000,Transport
 2026-10-20,PHI DUONG BO CAO TOC LONG THANH,-45000,Transport
 2026-11-08,Be Taxi san bay TSN,-180000,Transport
-2026-01-15,Shopee VN thanh toan don hang 123456,-350000,Shopping
-2026-02-08,Lazada order 654321,-189000,Shopping
+2026-01-15,Tiki Trading mua gia sach go cong nghiep,-350000,Shopping
+2026-02-08,The Gioi Di Dong mua cu sac nhanh Anker,-189000,Shopping
 2026-03-01,Tiki Trading don hang sach lap trinh Python va noi com,-120000,Shopping
 2026-03-25,WinMart+ Pham Ngoc Thach mua thuc pham,-280000,Shopping
 2026-04-15,Uniqlo Vincom Center mua ao khoac,-899000,Shopping
@@ -49,14 +49,14 @@
 2026-03-05,Cong ty cap nuoc Sawaco tien nuoc,-95000,Utilities
 2026-04-05,Nap tien dien thoai Mobifone,-100000,Utilities
 2026-05-05,VNPT Fiber cuoc internet gia dinh,-187000,Utilities
-2026-06-05,Phi quan ly chung cu thang 06,-800000,Utilities
+2026-06-05,VNPT Ha Noi thanh toan cuoc vien thong tap trung,-800000,Utilities
 2026-07-05,TIEN DIEN EVN THANG 07,-720000,Utilities
 2026-08-01,Viettel Telecom cuoc truyen hinh cap,-150000,Utilities
 2026-09-05,Vinaphone tra sau cuoc thue bao,-180000,Utilities
 2026-10-01,ViettelPay nap the cao Viettel,-200000,Utilities
 2026-11-01,Tien gas Petrovietnam 12kg,-420000,Utilities
 2026-11-05,Phi ve sinh moi truong to dan pho,-50000,Utilities
-2026-04-18,TT TIEN DIEN EVN THANG 04,-580000,Utilities
+2026-04-18,Cap nuoc Cho Lon thu tien nuoc sinh hoat ky moi,-580000,Utilities
 2026-08-20,PHI INTERNET FPT THANG 08,-220000,Utilities
 2026-10-15,Nap tien Viettel tra sau cuoc thang 10,-350000,Utilities
 2026-01-15,CGV Cinemas Aeon Mall ve xem phim,-220000,Entertainment
@@ -66,9 +66,9 @@
 2026-05-01,Ve xem concert Anh Trai Say Hi,-1500000,Entertainment
 2026-06-15,Karaoke ICOOL phong hat,-650000,Entertainment
 2026-07-01,Beta Cinemas Giai Phong combo bap nuoc va 2 ve,-130000,Entertainment
-2026-08-01,Goi tap gym California Fitness thang 08,-650000,Entertainment
+2026-08-01,Billiards Club giai tri cuoi tuan voi ban be,-650000,Entertainment
 2026-08-20,PlayStation Network mua the PS Plus Extra 3 thang,-450000,Entertainment
-2026-09-01,Tour du lich Da Lat 3N2D,-2800000,Entertainment
+2026-09-01,Ve tham quan bao tang chung tich chien tranh,-2800000,Entertainment
 2026-09-15,Bowling Vincom Landmark 81,-180000,Entertainment
 2026-10-01,VE XEM PHIM CGV,-200000,Entertainment
 2026-11-01,Nap kim cuong Mobile Legends MLBB,-120000,Entertainment
@@ -76,7 +76,7 @@
 2026-10-20,Goi tap yoga studio thang 10,-800000,Entertainment
 2026-01-20,Nha thuoc FPT Long Chau mua thuoc,-125000,Health
 2026-02-10,Pharmacity Pham Ngoc Thach thuoc cam,-85000,Health
-2026-03-05,Benh vien Bach Mai phi kham benh,-350000,Health
+2026-03-05,Nha khoa Kim cay ghep implant rang cua,-350000,Health
 2026-04-01,Kham rang Nha khoa Kim tram rang,-500000,Health
 2026-05-15,Tiem ngua vac xin VNVC,-850000,Health
 2026-06-10,Phong kham Da khoa Medlatec,-450000,Health
@@ -84,7 +84,7 @@
 2026-07-20,Mua que test Covid va khau trang,-65000,Health
 2026-08-15,Phi bao hiem suc khoe Bao Viet,-2500000,Health
 2026-09-01,THUOC CAM VA VITAMIN,-120000,Health
-2026-10-01,Benh vien Cho Ray xet nghiem mau,-650000,Health
+2026-10-01,Phong kham da khoa Medlatec lay mau xet nghiem tai nha,-650000,Health
 2026-11-01,Kinh thuoc Trang Tien kham mat cat trong kinh chong anh sang xanh,-950000,Health
 2026-05-28,Mua vitamin D3 va Omega 3 Pharmacity,-189000,Health
 2026-08-30,BHYT nop phi bao hiem y te nam 2026,-900000,Health
@@ -98,51 +98,51 @@
 2026-03-15,GitHub Copilot Individual,-259000,Subscriptions
 2026-04-01,Microsoft 365 Personal,-149000,Subscriptions
 2026-04-15,Claude Pro Anthropic subscription,-500000,Subscriptions
-2026-05-01,Google One 100GB cuoc hang thang,-45000,Subscriptions
+2026-05-01,iCloud Plus dung luong 2TB gia han dinh ky,-45000,Subscriptions
 2026-05-15,Goi hoc tieng Anh ELSA Speak Pro tron doi,-690000,Subscriptions
 2026-06-01,Canva Pro subscription,-199000,Subscriptions
 2026-07-01,Notion Plus workspace monthly,-129000,Subscriptions
 2026-08-01,Adobe Creative Cloud Photography,-349000,Subscriptions
-2026-01-05,Luong thang 01 tu Cong ty CP Cong nghe FPT,25000000,Income
-2026-01-15,Thuong KPI quy 4 nam 2025,8000000,Income
-2026-02-05,Techcombank chuyen khoan tra luong thang 02,22000000,Income
-2026-02-20,Hoan tien don hang Shopee VN 234567,350000,Income
+2026-01-05,Cong ty Co phan VNG chi tra thu lao cong tac vien,25000000,Income
+2026-01-15,Tien lai tien gui tiet kiem ky han 6 thang,8000000,Income
+2026-02-05,Thu nhap ban khoa hoc truc tuyen tren Udemy,22000000,Income
+2026-02-20,Khach hang chuyen khoan tien thue nha thang nay,350000,Income
 2026-03-05,LUONG THANG 03,24000000,Income
 2026-03-20,Li xi dau nam moi Binh Ngo,1000000,Income
-2026-04-05,Nhan thanh toan hop dong freelancer,5000000,Income
+2026-04-05,Lixi dau nam moi tu sep phong kinh doanh,5000000,Income
 2026-05-05,Luong thang 05 FPT Software,25500000,Income
 2026-06-01,BIDV tra lai tien gui tiet kiem online thang 04,850000,Income
 2026-07-15,Nhan tien hoan thue thu nhap ca nhan,2500000,Income
 2026-08-05,Thuong du an chuyen doi so Q2,10000000,Income
-2026-09-10,Co tuc bang tien mat nam 2026,3500000,Income
+2026-09-10,Tien thuong cuoc thi sang tao ky thuat so,3500000,Income
 2026-10-05,NHAN TIEN CONG TAC PHI THANG 10,1500000,Income
 2026-11-05,Luong thang 11 Vingroup JSC,28000000,Income
 2026-01-25,Chuyen khoan den Nguyen Van A qua VietQR,-500000,Transfer
 2026-02-01,Chuyen tien tra tien phong tro thang 02,-4500000,Transfer
 2026-02-20,Nap tien nguon Viettel Money tu the ATM BIDV,-1000000,Transfer
 2026-03-10,MBBank chuyen tien mien phi Napas 247 cho Tran Thi B,-200000,Transfer
-2026-04-01,Chuyen tien vao tai khoan Tiet kiem online,-5000000,Transfer
+2026-04-01,Gui tien tieu vat cho em gai hoc dai hoc xa nha,-5000000,Transfer
 2026-04-15,Rut tien tu vi ShopeePay ve tai khoan Techcombank,-500000,Transfer
 2026-05-01,CHUYEN KHOAN TIEN PHONG,-4800000,Transfer
 2026-05-20,Chuyen khoan gop tien sinh nhat Le Van Cuong,-200000,Transfer
-2026-06-10,Chuyen tien den STK 091238491823,-300000,Transfer
-2026-07-01,Chuyen tien noi bo sang tai khoan thanh toan phu,-2000000,Transfer
-2026-08-15,Chuyen tien thanh toan tien vay tieu dung,-1500000,Transfer
+2026-06-10,Chia tien bua lau toi qua gui lai Truong,-300000,Transfer
+2026-07-01,Chuyen khoan tra no tien mua ho do hom truoc,-2000000,Transfer
+2026-08-15,Chuyen tien dat coc thue can ho studio,-1500000,Transfer
 2026-09-01,Chuyen tien tra no ban be Pham Minh Duc,-800000,Transfer
 2026-10-05,Nap ZaloPay tu tai khoan Techcombank,-500000,Transfer
 2026-11-10,CK cho Nguyen Thi Hoa tien sinh nhat,-300000,Transfer
 2026-01-01,MBBank thu phi dich vu quan ly tai khoan so dep thang 03,-11000,Other
-2026-02-01,Giao dich FT2601029484910,-500000,Other
-2026-03-01,GD ma TRX260148291038 qua he thong Napas,-200000,Other
+2026-02-01,Nop phat vi pham hanh chinh vi pham giao thong duong bo,-500000,Other
+2026-03-01,Le phi cong chung chung thuc hop dong mua ban,-200000,Other
 2026-04-01,Rut tien mat tai cay ATM ngoai he thong,-1000000,Other
 2026-05-01,Phi tin nhan SMS Banking bien dong so du,-33000,Other
 2026-06-01,POS00129381 THANH TOAN THE,-350000,Other
 2026-07-01,BDS001298319,-150000,Other
 2026-08-01,Rut tien mat tai ATM cung ngan hang,-2000000,Other
-2026-09-01,Phi chuyen tien quoc te ngoai te,-220000,Other
-2026-10-01,Dieu chinh chenh lech so du he thong,-15000,Other
-2026-11-01,Quyen gop quy tu thien vi nguoi ngheo,-200000,Other
-2026-11-10,Phi giao dich the tin dung quoc te POS,-85000,Other
+2026-09-01,Phi thuong nien the ghi no noi dia Napas,-220000,Other
+2026-10-01,Ung ho dong bao bi thiet hai do bao lu mien Trung,-15000,Other
+2026-11-01,Phi cap lai phoi the ATM bi mat tai quay,-200000,Other
+2026-11-10,Tien gui xe qua dem tai ben xe Mien Dong,-85000,Other
 2026-06-20,THANH TOAN 350000 VND,-350000,Other
 2026-09-25,Phi ATM ngoai he thong rut tien,-6600,Other
 2026-01-11,FT26121840021039,-200000,Other
