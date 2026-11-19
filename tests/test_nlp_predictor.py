@@ -49,3 +49,53 @@ class TestPredictTransactionInterface:
         assert res["category"] == "Income"
         assert res["confidence"] >= 0.85
 
+
+class TestFastAPIPredictIntegration:
+    @pytest.fixture
+    def test_client(self):
+        from fastapi.testclient import TestClient
+        from src.app import app
+        return TestClient(app)
+
+    def test_fastapi_predict_endpoint(self, test_client):
+        """Verify POST /predict returns correct schema and predictions."""
+        response = test_client.post(
+            "/predict",
+            json={"description": "Highlands Coffee Landmark 81", "amount": -65000},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "category" in data
+        assert "confidence" in data
+        assert "confidence_level" in data
+        assert data["category"] == "Food"
+        assert data["confidence_level"] in ("high", "medium", "low")
+
+    def test_fastapi_predict_batch_endpoint(self, test_client):
+        """Verify POST /predict/batch handles multiple transaction descriptions."""
+        payload = {
+            "items": [
+                {"description": "Tien dien EVN thang 5", "amount": -450000},
+                {"description": "Nhan luong thang 5", "amount": 20000000},
+                {"description": "GrabBike ve nha", "amount": -32000},
+            ]
+        }
+        response = test_client.post("/predict/batch", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert "predictions" in data
+        assert len(data["predictions"]) == 3
+        cats = [p["category"] for p in data["predictions"]]
+        assert cats == ["Utilities", "Income", "Transport"]
+
+    def test_nlp_ai_adapter(self):
+        """Verify NLPAI adapter satisfies the AI interface."""
+        from src.adapters.ai import NLPAI
+        adapter = NLPAI()
+        result = adapter.categorize("Cơm tấm sườn bì chả", amount=-45000)
+        assert result["category"] == "Food"
+        assert result["confidence"] in ("high", "medium", "low")
+        assert "confidence_score" in result
+        assert result["engine"] in ("logistic_regression", "linear_svc", "nlp_ml", "fallback_keyword")
+
+

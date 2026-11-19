@@ -106,14 +106,17 @@ def handle_upload(
                 cat_result = ai_client.categorize(
                     description=row["description"], amount=row["amount"], date=row["date"]
                 )
+                conf = cat_result.get("confidence_level", cat_result.get("confidence", "high"))
                 txn = {
                     "date": row["date"],
                     "description": row["description"],
                     "amount": row["amount"],
                     "category": cat_result["category"],
-                    "confidence": cat_result["confidence"],
-                    "engine": cat_result.get("engine", "unknown")
+                    "confidence": conf,
+                    "engine": cat_result.get("engine", "unknown"),
                 }
+                if "confidence_score" in cat_result:
+                    txn["confidence_score"] = cat_result["confidence_score"]
                 cat_lower = txn["category"].lower()
                 if cat_lower == "income":
                     txn["amount"] = abs(txn["amount"])
@@ -495,8 +498,10 @@ def handle_chat_transaction(user_id: str, message: str, ai_client, userstore) ->
         date=txn["date"],
     )
     txn["category"] = cat_result.get("category", "uncategorized")
-    txn["confidence"] = cat_result.get("confidence", 0.0)
+    txn["confidence"] = cat_result.get("confidence_level", cat_result.get("confidence", "high"))
     txn["engine"] = cat_result.get("engine", "unknown")
+    if "confidence_score" in cat_result:
+        txn["confidence_score"] = cat_result["confidence_score"]
 
     # Convert spending amount to negative (outflow), except for Income
     if txn["category"].lower() == "income":
