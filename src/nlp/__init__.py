@@ -6,6 +6,7 @@ from src.nlp.preprocessor import (
     VietnamesePreprocessor,
     preprocess,
     normalize_unicode,
+    remove_vietnamese_accents,
     tokenize_vietnamese,
     clean_bank_description,
 )
@@ -30,6 +31,7 @@ __all__ = [
     "VietnamesePreprocessor",
     "preprocess",
     "normalize_unicode",
+    "remove_vietnamese_accents",
     "tokenize_vietnamese",
     "clean_bank_description",
     "build_vectorizer",

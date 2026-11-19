@@ -96,6 +96,42 @@ class TestFastAPIPredictIntegration:
         assert result["category"] == "Food"
         assert result["confidence"] in ("high", "medium", "low")
         assert "confidence_score" in result
-        assert result["engine"] in ("logistic_regression", "linear_svc", "nlp_ml", "fallback_keyword")
+        assert result["engine"] in ("logistic_regression", "linear_svc", "nlp_ml", "fallback_keyword", "food_intent_heuristic")
+
+    def test_accent_insensitive_and_street_food_predictions(self):
+        """Verify accented Vietnamese inputs and street food slang are correctly categorized."""
+        samples = [
+            ("ăn trưa", -50000, "Food"),
+            ("an trua", 50000, "Food"),
+            ("mua xoi het 20k", 20000, "Food"),
+            ("ck 5k tien xoi", 5000, "Food"),
+            ("ck tien tra sua", -35000, "Food"),
+            ("mua banh mi 15k", None, "Food"),
+            ("tiền điện EVN", -450000, "Utilities"),
+        ]
+        for desc, amt, exp_cat in samples:
+            res = predict_transaction(desc, amount=amt)
+            assert res["category"] == exp_cat
+            assert res["confidence_level"] in ("high", "medium")
+
+    def test_chat_transaction_slang_parsing(self, test_client):
+        """Verify _parse_chat_txn via POST /chat/transaction handles Vietnamese slang amounts and categories."""
+        from src.auth import create_access_token
+        token = create_access_token({"sub": "test-user-001"})
+        headers = {"Authorization": f"Bearer {token}"}
+
+        cases = [
+            ("ăn trưa 50k", -50000.0, "Food"),
+            ("mua áo Zara 5 củ", -5000000.0, "Shopping"),
+            ("tiền điện 1.2 triệu", -1200000.0, "Utilities"),
+        ]
+        for msg, exp_amt, exp_cat in cases:
+            resp = test_client.post("/chat/transaction", json={"message": msg}, headers=headers)
+            assert resp.status_code == 200
+            data = resp.json()
+            assert data["status"] == "saved"
+            txn = data["transaction"]
+            assert txn["amount"] == exp_amt
+            assert txn["category"] == exp_cat
 
 

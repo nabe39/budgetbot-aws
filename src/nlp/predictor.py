@@ -5,12 +5,13 @@ Implements the contract specified in docs/local/01_checklist_thong_nhat_nlp_rag.
     Returns: {"category": str, "confidence": float, "confidence_level": str}
 """
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
 
-from src.nlp.preprocessor import preprocess
+from src.nlp.preprocessor import preprocess, remove_vietnamese_accents
 from src.nlp.vectorizer import load_vectorizer, DEFAULT_MODEL_PATH
 from src.nlp.classifier import load_classifier, DEFAULT_CLASSIFIER_PATH
 
@@ -22,6 +23,12 @@ _CACHED_CLASSIFIER = None
 
 CONFIDENCE_HIGH_THRESHOLD = 0.70
 CONFIDENCE_MEDIUM_THRESHOLD = 0.45
+
+# Food intent pattern to disambiguate street food / snacks (e.g. mua xôi, ck 5k tiền xôi)
+FOOD_INTENT_PATTERN = re.compile(
+    r"\b(xôi|xoi|bánh mì|banh mi|bún chả|bun cha|cơm tấm|com tam|phở|pho\s+bo|pho\s+ga|quan\s+pho|an\s+pho|hủ tiếu|hu tieu|bánh cuốn|banh cuon|trà sữa|tra sua|trà đá|tra da|ăn sáng|an sang|ăn trưa|an trua|ăn tối|an toi|tiền ăn|tien an|bún bò|bun bo|cơm trưa|com trua)\b",
+    re.I,
+)
 
 
 # Fallback keywords for out-of-vocabulary terms
@@ -131,6 +138,7 @@ def predict_transaction(
 
     # Preprocess text
     cleaned_desc = preprocess(raw_desc)
+    cleaned_unaccented = remove_vietnamese_accents(cleaned_desc)
 
     # If text is empty after removing noise/codes (e.g. pure "FT2601029484910"), fallback to Other with low confidence
     if not cleaned_desc or not cleaned_desc.strip():
@@ -147,11 +155,27 @@ def predict_transaction(
         vectorizer = vectorizer or v
         classifier = classifier or c
 
-    # Vectorize
+    # Vectorize with accent-insensitivity fallback
     X_vec = vectorizer.transform([cleaned_desc])
+    X_vec_unacc = vectorizer.transform([cleaned_unaccented])
+    if X_vec_unacc.nnz > X_vec.nnz:
+        X_vec = X_vec_unacc
+
+    is_income_keyword = any(kw in lower_desc for kw in FALLBACK_KEYWORDS["Income"])
 
     # Check if vocabulary match exists
     if X_vec.nnz == 0:
+        # Check food intent pattern first (e.g. "ăn trưa", "bún chả", "mua xôi")
+        if not is_income_keyword and (
+            FOOD_INTENT_PATTERN.search(raw_desc) or FOOD_INTENT_PATTERN.search(cleaned_unaccented)
+        ):
+            return {
+                "category": "Food",
+                "confidence": 0.90,
+                "confidence_level": "high",
+                "engine": "food_intent_heuristic",
+            }
+
         # Check rule heuristics / fallback keywords before returning generic Other
         if amount_num is not None and amount_num > 0:
             for kw in FALLBACK_KEYWORDS["Income"]:
@@ -191,12 +215,27 @@ def predict_transaction(
         predicted_category = str(classifier.predict(X_vec)[0])
         confidence_val = 0.80
 
+    engine_name = (
+        "logistic_regression"
+        if "Logistic" in type(classifier).__name__
+        else ("linear_svc" if "SVC" in type(classifier).__name__ or "Calibrated" in type(classifier).__name__ else "nlp_classifier")
+    )
+
+    # Disambiguation: Food intent takes precedence over Shopping / Transfer for street food & meals
+    if not is_income_keyword and (
+        FOOD_INTENT_PATTERN.search(raw_desc) or FOOD_INTENT_PATTERN.search(cleaned_unaccented)
+    ):
+        predicted_category = "Food"
+        confidence_val = max(confidence_val, 0.90)
+        engine_name = "food_intent_heuristic"
+
     # Business heuristic: Amount sign check
     # If amount is strictly positive and description mentions income keywords
     if amount_num is not None and amount_num > 0:
         if any(kw in lower_desc for kw in FALLBACK_KEYWORDS["Income"]):
             predicted_category = "Income"
             confidence_val = max(confidence_val, 0.95)
+            engine_name = "income_heuristic"
 
     # Determine confidence level string
     if confidence_val >= CONFIDENCE_HIGH_THRESHOLD:
@@ -205,12 +244,6 @@ def predict_transaction(
         confidence_level = "medium"
     else:
         confidence_level = "low"
-
-    engine_name = (
-        "logistic_regression"
-        if "Logistic" in type(classifier).__name__
-        else ("linear_svc" if "SVC" in type(classifier).__name__ or "Calibrated" in type(classifier).__name__ else "nlp_classifier")
-    )
 
     return {
         "category": predicted_category,

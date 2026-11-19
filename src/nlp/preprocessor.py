@@ -118,6 +118,15 @@ def remove_special_characters(text: str, keep_compound_underscore: bool = False)
     return text
 
 
+def remove_vietnamese_accents(text: str) -> str:
+    """Remove Vietnamese diacritics / tone marks, converting e.g. 'ăn trưa' -> 'an trua'."""
+    if not text:
+        return ""
+    text = str(text).replace("đ", "d").replace("Đ", "D")
+    nfd = unicodedata.normalize("NFD", text)
+    return "".join(c for c in nfd if unicodedata.category(c) != "Mn")
+
+
 def remove_standalone_numbers(text: str) -> str:
     """Remove isolated digits/numbers that carry no semantic category value."""
     if not text:

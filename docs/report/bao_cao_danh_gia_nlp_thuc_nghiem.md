@@ -3,7 +3,7 @@
 > **Đề tài:** Xây dựng hệ thống hỗ trợ quản lý chi tiêu cá nhân dựa trên phân loại giao dịch bằng NLP và hỏi đáp bằng RAG  
 > **Tập dữ liệu kiểm thử độc lập:** `E:\Work\Developer\University's Studies\DATN\budgetbot-aws\sample_data\eval_nlp.csv` (174 mẫu viết tay)  
 > **Yêu cầu chức năng:** FR-10, FR-11, FR-22 (Chương 3 & 4 ĐATN)  
-> **Thời gian đo lường:** Độ trễ trung bình **0.6901 ms / mẫu** (Tổng: 120.08 ms)  
+> **Thời gian đo lường:** Độ trễ trung bình **1.0196 ms / mẫu** (Tổng: 177.41 ms)  
 
 ---
 
@@ -16,7 +16,7 @@
 | **Macro Recall (Độ bao phủ vĩ mô)** | **87.59%** | Khả năng thu thập và nhận diện đầy đủ các giao dịch thuộc từng nhóm danh mục. |
 | **Macro F1-Score (F1 trung bình vĩ mô)** | **87.42%** | **Chỉ số khoa học cốt lõi (FR-22)** cân bằng giữa Precision và Recall. |
 | **Weighted F1-Score** | **87.10%** | F1-Score có tính trọng số theo phân phối mẫu thực tế của các danh mục. |
-| **Tốc độ suy luận (Latency)** | **0.6901 ms/mẫu** | Đảm bảo phản hồi thời gian thực tức thì trên Backend FastAPI Local. |
+| **Tốc độ suy luận (Latency)** | **1.0196 ms/mẫu** | Đảm bảo phản hồi thời gian thực tức thì trên Backend FastAPI Local. |
 
 ---
 
@@ -62,13 +62,13 @@ Hệ thống phân cấp độ tin cậy để tự động hóa tối đa quy t
 
 | Cấp độ tin cậy (`confidence_level`) | Số mẫu kiểm thử | Tỷ lệ (%) | Độ chính xác thực nghiệm | Hành vi Backend tương ứng |
 | :--- | :---: | :---: | :---: | :--- |
-| **`high`** | 93 | 53.4% | **96.77%** | Tự động commit vào PostgreSQL không cần hỏi lại. |
-| **`medium`** | 47 | 27.0% | **93.62%** | Hiển thị Badge vàng trên danh sách giao dịch để người dùng chú ý. |
+| **`high`** | 98 | 56.3% | **96.94%** | Tự động commit vào PostgreSQL không cần hỏi lại. |
+| **`medium`** | 42 | 24.1% | **92.86%** | Hiển thị Badge vàng trên danh sách giao dịch để người dùng chú ý. |
 | **`low`** | 34 | 19.5% | **52.94%** | Tự động kích hoạt Review Modal để người dùng xác nhận hoặc gán lại nhãn. |
 
 > [!IMPORTANT]
 > **Ý nghĩa thực tiễn đối với hệ thống:**
-> - Các giao dịch đạt mức **`high`** chiếm đa số (53.4%) đạt độ chính xác ấn tượng **96.77%**, đảm bảo an toàn dữ liệu tự động.
+> - Các giao dịch đạt mức **`high`** chiếm đa số (56.3%) đạt độ chính xác ấn tượng **96.94%**, đảm bảo an toàn dữ liệu tự động.
 > - Các giao dịch mức **`low`** (19.5%) tập trung phần lớn các trường hợp nhầm lẫn hoặc mã ngân hàng viết tắt (Accuracy chỉ 52.94%), chứng minh cơ chế **Review Modal (Human-in-the-Loop)** là hoàn toàn cần thiết và loại bỏ 100% rủi ro đưa dữ liệu sai vào hệ thống.
 
 ---
