@@ -106,14 +106,17 @@ def handle_upload(
                 cat_result = ai_client.categorize(
                     description=row["description"], amount=row["amount"], date=row["date"]
                 )
+                conf = cat_result.get("confidence_level", cat_result.get("confidence", "high"))
                 txn = {
                     "date": row["date"],
                     "description": row["description"],
                     "amount": row["amount"],
                     "category": cat_result["category"],
-                    "confidence": cat_result["confidence"],
-                    "engine": cat_result.get("engine", "unknown")
+                    "confidence": conf,
+                    "engine": cat_result.get("engine", "unknown"),
                 }
+                if "confidence_score" in cat_result:
+                    txn["confidence_score"] = cat_result["confidence_score"]
                 cat_lower = txn["category"].lower()
                 if cat_lower == "income":
                     txn["amount"] = abs(txn["amount"])
@@ -441,39 +444,97 @@ def handle_chat(user_id: str, message: str, ai_client, userstore, history: list[
     }
 
 def _parse_chat_txn(message: str) -> dict:
-    """
-    Very lightweight natural‑language parser for a transaction sentence.
-    Returns a dict with keys: date (YYYY‑MM‑DD), description, amount (float).
-    If parsing fails, returns an empty dict.
+    """Natural‑language parser for Vietnamese & English transaction sentences.
+
+    Extracts:
+      - date (YYYY-MM-DD): supports explicit dates ('2026-05-26', '26/05/2026') and relative ('hôm nay', 'hôm qua').
+      - amount (float): supports Vietnamese currency slang ('50k', '5 củ', '1.5 triệu', '200k', '2 lít', '50.000đ').
+      - description (str): clean transaction note.
     """
     import re
     import datetime
     from dateutil import parser as date_parser
 
-    # Extract amount – supports $ / USD / plain number
-    amount_match = re.search(r"(?i)(?:\$|usd)?\s*([\d,]+(?:\.\d{1,2})?)", message)
-    amount = float(amount_match.group(1).replace(",", "")) if amount_match else None
-
-    # Extract a date – try to find a date string, otherwise use today
-    try:
-        date_match = re.search(r"\b(on\s+)?(\d{4}[-/]\d{2}[-/]\d{2}|\w+\s+\d{1,2}(?:st|nd|rd|th)?,?\s*\d{4})\b", message, re.I)
-        if date_match:
-            date_str = date_match.group(2)
-            date_obj = date_parser.parse(date_str, fuzzy=True)
-            date_iso = date_obj.date().isoformat()
-        else:
-            date_iso = datetime.date.today().isoformat()
-    except Exception:
-        date_iso = datetime.date.today().isoformat()
-
-    # Description – remove amount and date substrings
-    cleaned = re.sub(r"(?i)(?:\$|usd)?\s*[\d,]+(?:\.\d{1,2})?", "", message)
-    cleaned = re.sub(r"\b(on\s+)?(\d{4}[-/]\d{2}[-/]\d{2}|\w+\s+\d{1,2}(?:st|nd|rd|th)?,?\s*\d{4})\b", "", cleaned, flags=re.I)
-    description = cleaned.strip().strip(".")
-
-    if amount is None or date_iso is None or not description:
+    msg = message.strip()
+    if not msg:
         return {}
-    return {"date": date_iso, "description": description, "amount": amount}
+
+    today = datetime.date.today()
+    date_iso = today.isoformat()
+
+    # 1. Date extraction
+    if re.search(r"\b(hôm qua|hom qua)\b", msg, re.I):
+        date_iso = (today - datetime.timedelta(days=1)).isoformat()
+        msg = re.sub(r"\b(hôm qua|hom qua)\b", "", msg, flags=re.I)
+    elif re.search(r"\b(hôm nay|hom nay)\b", msg, re.I):
+        date_iso = today.isoformat()
+        msg = re.sub(r"\b(hôm nay|hom nay)\b", "", msg, flags=re.I)
+    else:
+        date_match = re.search(
+            r"\b(?:on\s+|ngày\s+|ngay\s+)?(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}(?:[-/]\d{2,4})?)\b",
+            msg,
+            re.I,
+        )
+        if date_match:
+            try:
+                d_str = date_match.group(1)
+                parsed_d = date_parser.parse(d_str, dayfirst=True)
+                date_iso = parsed_d.date().isoformat()
+                msg = msg[:date_match.start()] + " " + msg[date_match.end():]
+            except Exception:
+                pass
+
+    # 2. Amount extraction with Vietnamese slang & currency multipliers
+    unit_multipliers = {
+        "k": 1000, "nghìn": 1000, "nghin": 1000, "ngàn": 1000, "ngan": 1000,
+        "lit": 100000, "lít": 100000, "loet": 100000, "loét": 100000,
+        "củ": 1000000, "cu": 1000000, "triệu": 1000000, "trieu": 1000000,
+        "tr": 1000000, "chai": 1000000, "m": 1000000,
+    }
+
+    amount = None
+    amount_span = None
+
+    # Match number with unit (e.g. '50k', '5 củ', '1.5 triệu', '2 lít', '500k vnd')
+    pattern_unit = re.search(
+        r"(?i)(?:\$|usd)?\s*(\d+(?:[.,]\d+)?)\s*(k|nghìn|nghin|ngàn|ngan|lít|lit|loét|loet|củ|cu|triệu|trieu|tr|chai)\b",
+        msg,
+    )
+    if pattern_unit:
+        raw_num = pattern_unit.group(1).replace(",", ".")
+        unit_str = pattern_unit.group(2).lower()
+        try:
+            val = float(raw_num)
+            mult = unit_multipliers.get(unit_str, 1)
+            amount = val * mult
+            amount_span = pattern_unit.span()
+        except ValueError:
+            pass
+    else:
+        # Match plain numbers (e.g. '50000', '50.000', '50,000', '50000đ', '$50')
+        pattern_plain = re.search(
+            r"(?i)(?:\$|usd)?\s*(\d{1,3}(?:[.,]\d{3})+|\d+)\s*(?:đ|vnd|đồng)?\b",
+            msg,
+        )
+        if pattern_plain:
+            raw_s = pattern_plain.group(1).replace(".", "").replace(",", "")
+            try:
+                amount = float(raw_s)
+                amount_span = pattern_plain.span()
+            except ValueError:
+                pass
+
+    if amount is not None and amount_span is not None:
+        msg = msg[:amount_span[0]] + " " + msg[amount_span[1]:]
+
+    # 3. Clean description
+    cleaned_desc = re.sub(r"(?i)\b(on|ngày|ngay|hôm nay|hom nay|hôm qua|hom qua|tầm|khoảng|khoang)\b", "", msg)
+    cleaned_desc = re.sub(r"\s+", " ", cleaned_desc).strip(" .,-\"")
+
+    if not cleaned_desc or amount is None:
+        return {}
+
+    return {"date": date_iso, "description": cleaned_desc, "amount": amount}
 
 def handle_chat_transaction(user_id: str, message: str, ai_client, userstore) -> dict:
     """
@@ -495,8 +556,10 @@ def handle_chat_transaction(user_id: str, message: str, ai_client, userstore) ->
         date=txn["date"],
     )
     txn["category"] = cat_result.get("category", "uncategorized")
-    txn["confidence"] = cat_result.get("confidence", 0.0)
+    txn["confidence"] = cat_result.get("confidence_level", cat_result.get("confidence", "high"))
     txn["engine"] = cat_result.get("engine", "unknown")
+    if "confidence_score" in cat_result:
+        txn["confidence_score"] = cat_result["confidence_score"]
 
     # Convert spending amount to negative (outflow), except for Income
     if txn["category"].lower() == "income":

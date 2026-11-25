@@ -361,12 +361,33 @@ class LocalAI:
             for kw in keywords:
                 if kw in desc_lower:
                     # Đã có trong từ khoá thì chắc chắn đúng, confidence = high
-                    return {"category": category, "confidence": "high", "engine": "local"}
-        return {
-            "category": "Other",
-            "confidence": "low",
-            "engine": "local"
-        }
+                    return {
+                        "category": category,
+                        "confidence": "high",
+                        "confidence_level": "high",
+                        "confidence_score": 0.95,
+                        "engine": "local"
+                    }
+        # Fallback to trained NLP Machine Learning predictor
+        try:
+            from src.nlp.predictor import predict_transaction
+            pred = predict_transaction(description, amount=amount)
+            return {
+                "category": pred["category"],
+                "confidence": pred["confidence_level"],
+                "confidence_score": pred["confidence"],
+                "confidence_level": pred["confidence_level"],
+                "engine": pred.get("engine", "nlp_ml"),
+            }
+        except Exception as e:
+            logger.warning(f"Fallback to Other because NLP predictor failed: {e}")
+            return {
+                "category": "Other",
+                "confidence": "low",
+                "confidence_level": "low",
+                "confidence_score": 0.20,
+                "engine": "local"
+            }
 
     def extract_transactions_from_text(self, text: str) -> list:
         # Fallback LocalAI cannot extract transactions from raw text reliably
@@ -501,3 +522,33 @@ class LocalAI:
             
         else:
             return f"**LocalAI** chỉ hỗ trợ một số câu lệnh cơ bản. Bạn vừa hỏi: '{message}'. Để trò chuyện phức tạp hơn, tài khoản AWS của bạn cần được mở giới hạn (Quota) trên Bedrock."
+
+
+class NLPAI:
+    """Production NLP Machine Learning AI adapter for BudgetBot.
+
+    Utilizes the trained TF-IDF vectorizer and classifier model (Logistic Regression / Linear SVC)
+    via `src.nlp.predictor.predict_transaction` for offline, low-latency transaction categorization.
+    """
+
+    def __init__(self):
+        from src.nlp.predictor import predict_transaction
+        self._predict_fn = predict_transaction
+        self._chat_fallback = LocalAI()
+
+    def categorize(self, description: str, amount: float = 0.0, date: str = "") -> dict:
+        pred = self._predict_fn(description, amount=amount)
+        return {
+            "category": pred["category"],
+            "confidence": pred["confidence_level"],  # "high" | "medium" | "low"
+            "confidence_score": pred["confidence"],  # float [0.0, 1.0]
+            "confidence_level": pred["confidence_level"],
+            "engine": pred.get("engine", "nlp_ml"),
+        }
+
+    def extract_transactions_from_text(self, text: str) -> list:
+        return []
+
+    def chat(self, user_id: str, message: str, userstore, history: list[dict] = None) -> str:
+        return self._chat_fallback.chat(user_id, message, userstore, history=history)
+

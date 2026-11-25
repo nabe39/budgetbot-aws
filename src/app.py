@@ -16,6 +16,7 @@ from src.auth import (
     get_user_profile,
 )
 from src.adapters import factory, caps as caps_store
+from src.nlp.predictor import predict_transaction
 from src import handlers
 
 
@@ -80,6 +81,15 @@ class CapRequest(BaseModel):
     amount: float
 
 
+class PredictRequest(BaseModel):
+    description: str
+    amount: Optional[float] = None
+
+
+class PredictBatchRequest(BaseModel):
+    items: list[PredictRequest]
+
+
 # =====================================================================
 # Auth routes (public — no JWT required)
 # =====================================================================
@@ -122,6 +132,22 @@ def health() -> dict:
             "userstore": config.userstore_backend,
         },
     }
+
+
+@app.post("/predict")
+def predict_endpoint(req: PredictRequest) -> dict:
+    """Predict transaction category, confidence score, and confidence_level using the trained NLP module."""
+    return predict_transaction(description=req.description, amount=req.amount)
+
+
+@app.post("/predict/batch")
+def predict_batch_endpoint(req: PredictBatchRequest) -> dict:
+    """Predict categories for a batch of transactions in a single request."""
+    predictions = [
+        predict_transaction(description=item.description, amount=item.amount)
+        for item in req.items
+    ]
+    return {"predictions": predictions, "count": len(predictions)}
 
 
 # =====================================================================
@@ -221,8 +247,8 @@ def create_transaction(
     else:
         cat_result = ai_client.categorize(req.description, req.amount, req.date)
         category = cat_result["category"]
-        confidence = cat_result["confidence"]
-        engine = cat_result.get("engine", "nlp_linear_svc")
+        confidence = cat_result.get("confidence_level", cat_result.get("confidence", "high"))
+        engine = cat_result.get("engine", "nlp_ml")
 
     txn = {
         "date": req.date,

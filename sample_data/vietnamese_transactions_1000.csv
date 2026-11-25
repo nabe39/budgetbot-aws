@@ -1,0 +1,1001 @@
+﻿date,description,amount,category,source_bank,confidence_benchmark
+2026-01-01,TT TIEN GAS PETROVIETNAM THANG 10,-400000,Utilities,VPBank,high
+2026-01-01,Netflix monthly subscription Premium,-268000,Subscriptions,VPBank,high
+2026-01-02,Techcombank chuyen khoan tra luong thang 09,25807000,Income,Techcombank,high
+2026-01-02,Khach san Da Nang resort 970412071,-2845000,Entertainment,MBBank,high
+2026-01-02,Nap tien dien thoai Mobifone thang 09,-129000,Utilities,ACB,high
+2026-01-02,VCB IB 810800701 CK DEN Pham Thi Ly,-3423000,Transfer,MBBank,high
+2026-01-02,Chuyen tien tra tien an trua cho Nguyen Minh Tuan,-154000,Transfer,MBBank,high
+2026-01-03,Chuyen tien thu ho ban do cu tu Ly Thi Kim Ngan,913000,Income,MBBank,high
+2026-01-03,VTB CK 221286332 DEN Bui Van Quang,-1809000,Transfer,Techcombank,high
+2026-01-03,GRAB CAR Landmark 81,-75000,Transport,ACB,high
+2026-01-03,TT TIEN NUOC SAWACO THANG 09,-101000,Utilities,MoMo,high
+2026-01-03,Cho thue xe dap dien Thu Duc,-133000,Entertainment,Vietcombank,high
+2026-01-03,Ve xem concert Den Vau Show,-1681000,Entertainment,VietinBank,high
+2026-01-03,Dieu chinh chenh lech so du he thong 776819188,-83000,Other,ZaloPay,high
+2026-01-04,HBO Max subscription thang 08,-210000,Subscriptions,MBBank,high
+2026-01-04,VCB IB 165910816 CK DEN Pham Minh Duc,-4249000,Transfer,Vietcombank,high
+2026-01-04,TT TIEN DIEN EVN THANG 06,-2261000,Utilities,ZaloPay,high
+2026-01-04,TT TIEN NUOC SAWACO THANG 10,-188000,Utilities,MBBank,high
+2026-01-05,Microsoft 365 Personal thang 02,-1005000,Subscriptions,VPBank,high
+2026-01-05,Tiem sua xe Honda thay nhot va sam xe Nam Tu Liem HN,-352000,Transport,VPBank,high
+2026-01-05,Decathlon mua do the thao Tay Ho HN,-918000,Shopping,Vietcombank,high
+2026-01-05,TT CUOC VINAPHONE THANG 09,-269000,Utilities,Vietcombank,high
+2026-01-05,Benh vien Cho Ray xet nghiem mau 859041096,-1253000,Health,Techcombank,high
+2026-01-05,Kham rang Nha khoa Kim tram rang Quan 7 HCM,-1082000,Health,VietinBank,high
+2026-01-06,Windscribe VPN subscription thang 04,-176000,Subscriptions,VietinBank,high
+2026-01-06,Mua thuoc Panadol va siro ho Le Van Sy,-61000,Health,Vietcombank,high
+2026-01-06,Nhan tien thuong du an chuyen doi so Q1,10837000,Income,ACB,high
+2026-01-06,Nha thuoc An Khang thuc pham chuc nang Thanh Xuan HN,-500000,Health,VietinBank,high
+2026-01-07,Phi phat cham tra no the tin dung 303278704,-253000,Other,Vietcombank,high
+2026-01-07,CellphoneS mua tai nghe bluetooth Phan Xich Long,-1319000,Shopping,MoMo,high
+2026-01-08,Kichi Kichi lau bang chuyen Cau Giay,-803000,Food,Techcombank,high
+2026-01-08,Chuyen tien thu ho ban do cu tu Duong Van Nam,772000,Income,VietinBank,high
+2026-01-08,Co tuc bang tien mat nam 2026 761934280,6091000,Income,ZaloPay,high
+2026-01-08,AWS Lightsail instance thang 12,-440000,Subscriptions,Vietcombank,high
+2026-01-08,Ve tau hoa SE1 SG-VungTau,-950000,Transport,ACB,high
+2026-01-09,LONG CHAU Phu Nhuan HCM THUOC BO,-595000,Health,VietinBank,high
+2026-01-09,Benh vien Cho Ray xet nghiem mau 731463603,-632000,Health,Vietcombank,high
+2026-01-09,Kham mat ban khoa Thanh Xuan HN,-391000,Health,VietinBank,high
+2026-01-09,Chuyen tien thu ho ban do cu tu Luu Thi Thu Ha,693000,Income,ACB,high
+2026-01-10,Viettel Telecom cuoc truyen hinh cap thang 06,-315000,Utilities,VietinBank,high
+2026-01-11,Bamboo Airways SGN-PQC,-2554000,Transport,MBBank,high
+2026-01-11,HOAN TIEN LAZADA 630604347,180000,Income,Techcombank,high
+2026-01-11,Giao dich FT573356422,-973000,Other,ACB,low
+2026-01-11,Cho thue xe dap dien Nam Tu Liem HN,-91000,Entertainment,ACB,high
+2026-01-12,Phi phat cham tra no the tin dung 627634432,-312000,Other,Techcombank,high
+2026-01-14,Kham mat ban khoa Nguyen Hue,-353000,Health,Vietcombank,high
+2026-01-15,GRAB CAR Quan 7 HCM,-201000,Transport,Vietcombank,high
+2026-01-15,Nha sach Phuong Nam mua dung cu hoc tap,-195000,Shopping,VPBank,high
+2026-01-15,AWS Lightsail instance thang 08,-455000,Subscriptions,VietinBank,high
+2026-01-16,KFC Go Vap HCM thanh toan don hang,-252000,Food,ZaloPay,high
+2026-01-16,Escape Room Ba Trieu tro choi giai tri,-412000,Entertainment,Techcombank,high
+2026-01-16,Aqua Park Hai Ba Trung ve vao cua,-383000,Entertainment,Vietcombank,high
+2026-01-17,Cho thue xe dap dien Thanh Xuan HN,-145000,Entertainment,Vietcombank,high
+2026-01-17,Nap the thu phi tu dong ePass,-1309000,Transport,Vietcombank,high
+2026-01-18,Quyen gop quy tu thien vi nguoi ngheo 765516984,-343000,Other,VietinBank,high
+2026-01-18,Chuyen tien tra tien phong tro thang 02 cho Cao Van Duc,-6130000,Transfer,VietinBank,high
+2026-01-18,Tiem sua xe Honda thay nhot va sam xe Dong Da HN,-461000,Transport,ACB,high
+2026-01-18,Nhan tien hoan tra vay Cao Van Duc 556875355,1689000,Income,MBBank,high
+2026-01-20,Karaoke ICOOL phong hat va do uong Thu Duc,-1904000,Entertainment,ACB,high
+2026-01-20,Phi gui xe va nuoc sinh hoat thang 12,-497000,Utilities,ACB,high
+2026-01-20,Nop tien le phi 966844183,-50000,Other,MBBank,high
+2026-01-21,Nap tien tai khoan thu phi VETC,-399000,Transport,MBBank,high
+2026-01-21,Highlands Coffee Tran Duy Hung,-150000,Food,ACB,high
+2026-01-21,ViettelPay nap the cao Viettel thang 07,-195000,Utilities,MoMo,high
+2026-01-21,Phi phat sinh giao dich vuot han muc 251080813,-48000,Other,Techcombank,medium
+2026-01-21,Chuyen tien tra tien an trua cho Pham Thi Ly,-206000,Transfer,Vietcombank,high
+2026-01-21,THANH TOAN VETC 596295934,-993000,Transport,ZaloPay,high
+2026-01-22,MoMo chuyen tien Vu Thi Mai 105541555,-1718000,Transfer,Vietcombank,high
+2026-01-22,Bun cha Huong Lien Le Duan,-132000,Food,ACB,high
+2026-01-22,Nap game Genshin Impact 203391788,-1053000,Entertainment,ACB,high
+2026-01-22,VCB IB 103667040 CK DEN Cao Van Duc,-456000,Transfer,VietinBank,high
+2026-01-23,Nap tien dien thoai Mobifone thang 04,-83000,Utilities,ZaloPay,high
+2026-01-23,Nuoc sach Song Da thang 09,-143000,Utilities,MoMo,high
+2026-01-23,Thanh toan phi bao hiem xe may bat buoc 730468678,-74000,Other,ZaloPay,high
+2026-01-23,Thanh toan Phuc Long Tea & Coffee Ba Trieu,-96000,Food,VPBank,high
+2026-01-23,Phi thuong nien the VISA PLATINUM 451089095,-428000,Other,ACB,high
+2026-01-24,FPT Shop mua cap sac nhanh Dong Da HN,-478000,Shopping,MoMo,high
+2026-01-24,THUONG DU AN QUY 2 312770432,4014000,Income,VPBank,high
+2026-01-24,Mua ve Anh Trai Show Cau Giay,-1219000,Entertainment,ZaloPay,high
+2026-01-25,Tour du lich Da Lat 3N2D 715008413,-1968000,Entertainment,Vietcombank,high
+2026-01-25,TT CAFE HIGHLANDS Cau Giay,-145000,Food,ACB,high
+2026-01-25,Phi phat cham tra no the tin dung 472640099,-123000,Other,ACB,high
+2026-01-25,Rut tien mat tai cay ATM ngoai he thong Hoang Mai HN,-683000,Other,VPBank,high
+2026-01-26,Phi giao dich the tin dung quoc te POS 785213520,-103000,Other,ACB,medium
+2026-01-26,Tour du lich Da Lat 3N2D 485389950,-4313000,Entertainment,VietinBank,high
+2026-01-26,TT TIEN DIEN EVN THANG 07,-2028000,Utilities,MoMo,high
+2026-01-26,Phi quan ly chung cu thang 09,-512000,Utilities,MBBank,high
+2026-01-26,Thu nhap from Upwork 765554771,18741000,Income,MoMo,high
+2026-01-26,Tien lai tiet kiem ky han thang 11,3090000,Income,Techcombank,high
+2026-01-26,Disney+ subscription thang 06,-228000,Subscriptions,MBBank,high
+2026-01-27,THE GIOI DI DONG Phan Xich Long,-518000,Shopping,Vietcombank,high
+2026-01-27,PHARMACITY Tan Binh HCM MUA THUOC,-107000,Health,VPBank,high
+2026-01-27,Co.opmart Phu Nhuan HCM sieu thi cuoi tuan,-327000,Shopping,ACB,high
+2026-01-28,Chuyen tien thu ho ban do cu tu Pham Van Long,1518000,Income,MoMo,high
+2026-01-28,Vien Phi tai Mytour Clinic 471338837,-922000,Health,MBBank,high
+2026-01-28,MoMo chuyen tien Dang Thi Yen 468753902,-2933000,Transfer,VietinBank,high
+2026-01-28,Guardian mua do cham soc ca nhan Quan 1 HCM,-305000,Shopping,Techcombank,high
+2026-01-28,Giao dich test he thong 416757794,-6000,Other,ZaloPay,medium
+2026-01-28,Nop tien le phi 640192259,-55000,Other,VietinBank,high
+2026-01-28,Big C / Tops Market rau cu qua,-210000,Shopping,VietinBank,high
+2026-01-29,Nha thuoc An Khang thuc pham chuc nang Phu Nhuan HCM,-343000,Health,Techcombank,high
+2026-01-29,Luong thang 03 tu Cong ty CP Cong nghe FPT,22890000,Income,MoMo,high
+2026-01-29,Phi bao hiem suc khoe Bao Viet thang 12,-2810000,Health,MoMo,high
+2026-01-29,Pho Bat Dan an sang,-86000,Food,VPBank,high
+2026-01-29,Microsoft 365 Personal thang 01,-257000,Subscriptions,VietinBank,high
+2026-01-31,Do xang Shell Petrol Nguyen Hue,-50000,Transport,MBBank,high
+2026-01-31,The Gioi Di Dong phu kien dien thoai Hoan Kiem HN,-528000,Shopping,MBBank,high
+2026-01-31,TT CUOC VINAPHONE THANG 11,-151000,Utilities,VietinBank,high
+2026-01-31,Xanh SM Taxi Dong Da HN,-75000,Transport,ZaloPay,high
+2026-01-31,GrabCar den Ba Trieu,-63000,Transport,VPBank,high
+2026-01-31,ACB CK 590869795 DEN Trinh Van Khanh,-2780000,Transfer,ACB,high
+2026-01-31,Bamboo Airways HAN-DAD,-1129000,Transport,MBBank,high
+2026-01-31,beCar di gap khach hang,-271000,Transport,Techcombank,high
+2026-02-01,Nintendo eShop mua game digital,-354000,Entertainment,MBBank,high
+2026-02-01,Nap the Garena Lien Quan Mobile,-421000,Entertainment,MoMo,high
+2026-02-02,Rua xe oto bot tuyet Nguyen Trai,-95000,Transport,ACB,high
+2026-02-02,Bamboo Airways SG-CanTho,-2068000,Transport,ACB,high
+2026-02-02,Phi phat cham tra no the tin dung 617419413,-443000,Other,MBBank,high
+2026-02-03,Phi thuong nien the VISA PLATINUM 740899631,-282000,Other,ACB,high
+2026-02-04,ViettelPay nap the cao Viettel thang 11,-363000,Utilities,Vietcombank,high
+2026-02-04,Lazada order 455623214,-259000,Shopping,Vietcombank,high
+2026-02-04,McDonald's Ba Trieu,-231000,Food,VietinBank,high
+2026-02-04,Co tuc bang tien mat nam 2026 185292826,2080000,Income,VPBank,high
+2026-02-04,Mat kinh Sai Gon do mat va cat kinh,-794000,Health,ZaloPay,high
+2026-02-05,Sumo BBQ nuong lau Phan Xich Long,-1045000,Food,Vietcombank,high
+2026-02-05,HASAKI Hoang Mai HN MY PHAM,-794000,Shopping,Vietcombank,high
+2026-02-05,Giao dich FT535227482,-1276000,Other,ZaloPay,low
+2026-02-05,Bun cha Huong Lien Landmark 81,-84000,Food,Vietcombank,high
+2026-02-06,Nhan thanh toan hop dong freelancer 469681559,16744000,Income,MoMo,high
+2026-02-06,Shopee VN thanh toan don hang 164242604,-699000,Shopping,MBBank,high
+2026-02-06,Apple iCloud 200GB storage thang 02,-181000,Subscriptions,Vietcombank,high
+2026-02-06,Adobe Creative Cloud Photography thang 09,-249000,Subscriptions,Techcombank,high
+2026-02-06,Vietnam Airlines HAN-SGN khuu hoi,-3605000,Transport,MoMo,high
+2026-02-06,Haidilao Hotpot Le Duan,-1046000,Food,MBBank,high
+2026-02-07,Nuoc sach Song Da thang 10,-151000,Utilities,ACB,high
+2026-02-07,Nhan thanh toan hop dong freelancer 777190407,14214000,Income,ACB,high
+2026-02-07,Rut tien mat tai cay ATM ngoai he thong Hai Ba Trung,-981000,Other,VietinBank,high
+2026-02-08,Cursor Pro AI assistant thang 09,-495000,Subscriptions,VietinBank,high
+2026-02-08,WinMart+ Hai Ba Trung mua thuc pham,-286000,Shopping,ACB,high
+2026-02-09,Phi phat sinh giao dich vuot han muc 264866641,-28000,Other,ZaloPay,medium
+2026-02-09,HASAKI Hoan Kiem HN MY PHAM,-266000,Shopping,ZaloPay,high
+2026-02-10,Escape Room Nguyen Trai tro choi giai tri,-450000,Entertainment,Techcombank,high
+2026-02-10,Rut tien mat tai ATM cung ngan hang Go Vap HCM,-3211000,Other,ZaloPay,high
+2026-02-10,Tra sua Gong Cha Thao Dien,-99000,Food,MoMo,high
+2026-02-11,COOPMART Nguyen Trai,-1051000,Shopping,ACB,high
+2026-02-11,VPB 02 172585264 CHUYEN Nguyen Minh Tuan,-1410000,Transfer,Vietcombank,high
+2026-02-11,Co tuc bang tien mat nam 2026 955959776,4871000,Income,Techcombank,high
+2026-02-11,VE XE KHACH HOANG LONG HAN-DLT,-216000,Transport,MoMo,high
+2026-02-12,Hoan tien don hang Shopee VN 334416067,906000,Income,Techcombank,high
+2026-02-12,HOAN TIEN LAZADA 351051692,668000,Income,MBBank,high
+2026-02-13,Co.opmart Landmark 81 sieu thi cuoi tuan,-1279000,Shopping,ACB,high
+2026-02-13,TT CUOC VIETTEL THANG 12,-214000,Utilities,VietinBank,high
+2026-02-13,Vietjet Air ve may bay SG-DL,-2272000,Transport,ACB,high
+2026-02-13,WinMart+ Hoang Mai HN mua thuc pham,-572000,Shopping,VPBank,high
+2026-02-14,Khach san Da Nang resort 764030073,-843000,Entertainment,MBBank,high
+2026-02-14,Notion Plus workspace thang 04,-188000,Subscriptions,Techcombank,high
+2026-02-14,Kham rang Nha khoa Kim tram rang Cau Giay,-1311000,Health,MBBank,high
+2026-02-14,Thu nhap from Upwork 261671134,23840000,Income,VietinBank,high
+2026-02-14,Thu nhap from Upwork 736712601,11148000,Income,MoMo,high
+2026-02-15,VE XE KHACH HOANG LONG DAD-SGN,-207000,Transport,ACB,high
+2026-02-15,FPT Shop mua cap sac nhanh Thanh Xuan HN,-281000,Shopping,Techcombank,high
+2026-02-15,Zalopay chuyen tien Nguyen Van An 855626784,-2511000,Transfer,ACB,high
+2026-02-15,Karaoke ICOOL phong hat va do uong Long Bien HN,-687000,Entertainment,VietinBank,high
+2026-02-16,Giao dich FT387209913,-617000,Other,Techcombank,low
+2026-02-16,Xanh SM Taxi Quan 7 HCM,-190000,Transport,VietinBank,high
+2026-02-17,Lazada order 460755907,-281000,Shopping,Vietcombank,high
+2026-02-17,Chuyen tien tra tien phong tro thang 03 cho Dinh Thi Ngoc Anh,-4120000,Transfer,MoMo,high
+2026-02-17,Chuyen tien den STK 705911648,-1595000,Transfer,MBBank,medium
+2026-02-17,Vietjet Air ve may bay SGN-PQC,-3106000,Transport,Techcombank,high
+2026-02-18,TCB HN03 TRANSFER 586736723 TO Dang Huu Tai,-1538000,Transfer,MoMo,high
+2026-02-19,HBO Max subscription thang 09,-295000,Subscriptions,VPBank,high
+2026-02-19,Phi phat cham tra no the tin dung 296348431,-333000,Other,ZaloPay,high
+2026-02-19,Li xi dau nam moi Binh Ngo tu Vo Thi Hoa,919000,Income,VPBank,high
+2026-02-19,Xanh SM Taxi Hoan Kiem HN,-160000,Transport,ZaloPay,high
+2026-02-20,Decathlon mua do the thao Quan 1 HCM,-381000,Shopping,VietinBank,high
+2026-02-21,COLUMBIA ASIA Nguyen Trai PHI KHAM,-1516000,Health,MBBank,high
+2026-02-21,YouTube Premium Family thang 09,-126000,Subscriptions,ACB,high
+2026-02-21,Claude Pro Anthropic subscription thang 10,-496000,Subscriptions,MBBank,high
+2026-02-21,TT CUOC VNPT THANG 03,-283000,Utilities,ZaloPay,high
+2026-02-21,Aqua Park Quan 7 HCM ve vao cua,-456000,Entertainment,VietinBank,high
+2026-02-21,COOPMART Nam Tu Liem HN,-945000,Shopping,MBBank,high
+2026-02-22,TT CAFE HIGHLANDS Tan Binh HCM,-154000,Food,Techcombank,high
+2026-02-22,Khach san Da Nang resort 867064400,-2238000,Entertainment,MoMo,high
+2026-02-22,EVN HCMC thanh toan tien dien 08,-1352000,Utilities,Vietcombank,high
+2026-02-22,Google One 100GB cuoc hang thang 12,-77000,Subscriptions,VietinBank,high
+2026-02-22,VINMEC Phu Nhuan HCM PHI KHAM 296918713,-871000,Health,Vietcombank,high
+2026-02-23,BHD Star Cineplex ve xem phim Hoang Mai HN,-140000,Entertainment,VietinBank,high
+2026-02-23,Quyen gop quy tu thien vi nguoi ngheo 120991641,-349000,Other,Techcombank,high
+2026-02-23,Nap tien vao vi MoMo tu VCB,-635000,Transfer,MBBank,high
+2026-02-23,TT PHI GUI XE Saigon Times Square,-6000,Transport,ZaloPay,high
+2026-02-23,Nhan thanh toan hop dong freelancer 528356010,16055000,Income,VPBank,high
+2026-02-23,Chuyen tien thanh toan tien vay tieu dung 858995144,-2285000,Transfer,MBBank,high
+2026-02-23,Thu nhap Fiverr USD 646862480,10941000,Income,Techcombank,high
+2026-02-24,Quan com van phong Quan 7 HCM,-62000,Food,VietinBank,high
+2026-02-24,Cursor Pro AI assistant thang 11,-500000,Subscriptions,ZaloPay,high
+2026-02-24,NAP EPASS SGN02 328457134,-484000,Transport,Vietcombank,high
+2026-02-25,GUARDIAN Phan Xich Long,-235000,Shopping,ACB,high
+2026-02-25,TT CUOC INTERNET FPT THANG 08,-272000,Utilities,VPBank,high
+2026-02-25,YouTube Premium Family thang 03,-92000,Subscriptions,MoMo,high
+2026-02-26,Namecheap domain renewal 356944088,-300000,Subscriptions,MBBank,high
+2026-02-26,YouTube Premium Family thang 10,-121000,Subscriptions,Techcombank,high
+2026-02-26,Khach san Da Nang resort 361914023,-904000,Entertainment,ZaloPay,high
+2026-02-26,Nap game Genshin Impact 798225664,-280000,Entertainment,MoMo,high
+2026-02-26,Notion Plus workspace thang 09,-113000,Subscriptions,VPBank,high
+2026-02-26,Nha thuoc FPT Long Chau mua thuoc Hai Ba Trung,-246000,Health,MoMo,high
+2026-02-27,Microsoft 365 Personal thang 07,-578000,Subscriptions,VietinBank,high
+2026-02-27,Chuyen tien tra tien phong tro thang 06 cho Ngo Van Phuc,-5111000,Transfer,VPBank,high
+2026-02-27,Canva Pro subscription thang 04,-241000,Subscriptions,VPBank,high
+2026-02-27,WINMART Thao Dien,-556000,Shopping,MBBank,high
+2026-02-28,Phi phat sinh giao dich vuot han muc 344370670,-47000,Other,MBBank,medium
+2026-02-28,Tra da via he va banh ngot Ba Trieu,-45000,Food,Vietcombank,high
+2026-02-28,Claude Pro Anthropic subscription thang 02,-498000,Subscriptions,MBBank,high
+2026-02-28,TAXI VINASUN Nam Tu Liem HN,-144000,Transport,MoMo,high
+2026-03-01,Nuoc sach Song Da thang 04,-144000,Utilities,MoMo,high
+2026-03-01,Rut tien mat tai cay ATM ngoai he thong Phan Xich Long,-1388000,Other,ZaloPay,high
+2026-03-02,Decathlon mua do the thao Thao Dien,-503000,Shopping,MBBank,high
+2026-03-03,Chuyen tien ung truoc tien mua do ho cho Bui Van Quang,-435000,Transfer,VPBank,high
+2026-03-04,Bowling Vincom Landmark 81 Hoang Mai HN,-138000,Entertainment,Vietcombank,high
+2026-03-04,SHOPEEFOOD ga ran gion DON HANG 285388355,-102000,Food,VietinBank,high
+2026-03-04,Chuyen khoan gop tien sinh nhat Vo Thi Hoa,-300000,Transfer,Techcombank,high
+2026-03-04,Chuyen tien noi bo sang tai khoan thanh toan phu 350227356,-3027000,Transfer,ACB,high
+2026-03-04,Internet FPT Telecom cuoc thang 06,-321000,Utilities,VPBank,high
+2026-03-04,Cloudflare Pro plan thang 05,-379000,Subscriptions,Techcombank,high
+2026-03-05,GUARDIAN Binh Thanh,-310000,Shopping,VietinBank,high
+2026-03-05,Chuyen tien vao tai khoan Tiet kiem online 766414234,-7191000,Transfer,Techcombank,high
+2026-03-05,Phi duy tri tai khoan VCB Digibank thang 10,-17000,Other,MoMo,high
+2026-03-05,OpenAI ChatGPT Plus monthly thang 01,-507000,Subscriptions,Vietcombank,high
+2026-03-06,Nhan tien thuong du an chuyen doi so Q2,5227000,Income,VPBank,high
+2026-03-06,Co tuc bang tien mat nam 2026 775149177,6337000,Income,VPBank,high
+2026-03-06,Thu nhap Fiverr USD 916535093,12150000,Income,VietinBank,high
+2026-03-07,Zara Vincom mua quan tay,-1133000,Shopping,Vietcombank,high
+2026-03-07,Co.opmart Thu Duc sieu thi cuoi tuan,-901000,Shopping,ACB,high
+2026-03-07,Gui xe may toa nha Bitexco,-6000,Transport,VPBank,high
+2026-03-08,Decathlon mua do the thao Thanh Xuan HN,-253000,Shopping,VPBank,high
+2026-03-08,Mua thuoc Panadol va siro ho Tan Binh HCM,-113000,Health,MoMo,high
+2026-03-08,OpenAI ChatGPT Plus monthly thang 03,-492000,Subscriptions,MBBank,high
+2026-03-08,Goi tap gym California Fitness thang 03,-912000,Entertainment,MBBank,high
+2026-03-08,Lau de 404 Phan Xich Long,-681000,Food,Techcombank,high
+2026-03-09,TT TIEN AN TRUA Tay Ho HN,-90000,Food,VPBank,high
+2026-03-09,Phi ve sinh moi truong to dan pho thang 02,-34000,Utilities,ACB,high
+2026-03-09,VNPT Fiber cuoc internet gia dinh thang 01,-287000,Utilities,Vietcombank,high
+2026-03-10,Internet FPT Telecom cuoc thang 02,-438000,Utilities,MBBank,high
+2026-03-10,Lazada order 824714251,-723000,Shopping,VPBank,high
+2026-03-10,CK tien thue nha thang 02 cho Do Thi Hien,-2751000,Transfer,VPBank,high
+2026-03-10,AWS Lightsail instance thang 02,-177000,Subscriptions,VietinBank,high
+2026-03-11,Nop thue tncn quy 3 nam 2026,-1685000,Other,ACB,high
+2026-03-11,Phi chuyen doi ngoai te USD 431754999,-331000,Other,ZaloPay,high
+2026-03-11,FPT Shop mua cap sac nhanh Quan 7 HCM,-598000,Shopping,Vietcombank,high
+2026-03-11,Adobe Creative Cloud Photography thang 02,-455000,Subscriptions,VPBank,high
+2026-03-11,Lotteria Vincom Dong Da HN,-96000,Food,Techcombank,high
+2026-03-11,Hai san Bien Dong tiec toi Go Vap HCM,-823000,Food,Techcombank,high
+2026-03-11,ViettelPay nap the cao Viettel thang 09,-178000,Utilities,VPBank,high
+2026-03-12,Mua ve Anh Trai Show Tran Duy Hung,-2289000,Entertainment,ACB,high
+2026-03-12,Thuong KPI quy 4 nam 2026,2826000,Income,MoMo,high
+2026-03-12,Kichi Kichi lau bang chuyen Pham Ngoc Thach,-332000,Food,MBBank,high
+2026-03-12,TT CUOC VNPT THANG 09,-196000,Utilities,Techcombank,high
+2026-03-13,Nhan tien hoan tra vay Dinh Thi Ngoc Anh 754927139,4009000,Income,MoMo,high
+2026-03-13,Zalopay chuyen tien Trinh Van Khanh 449977302,-4885000,Transfer,Techcombank,high
+2026-03-14,Microsoft 365 Personal thang 04,-1001000,Subscriptions,ZaloPay,high
+2026-03-14,Phong kham Da khoa Medlatec Long Bien HN,-751000,Health,VPBank,high
+2026-03-14,Hasaki Beauty & Clinic my pham Ba Trieu,-773000,Shopping,VietinBank,high
+2026-03-14,Tiem sua xe Honda thay nhot va sam xe Thu Duc,-196000,Transport,ZaloPay,high
+2026-03-15,Khach san Da Nang resort 288298826,-3528000,Entertainment,Techcombank,high
+2026-03-15,Hoan tien don hang Shopee VN 153059958,1155000,Income,MoMo,high
+2026-03-15,Decathlon mua do the thao Cau Giay,-447000,Shopping,Techcombank,high
+2026-03-15,Hai san Bien Dong tiec toi Quan 7 HCM,-1644000,Food,VietinBank,high
+2026-03-16,LONG CHAU Tay Ho HN THUOC BO,-96000,Health,ACB,high
+2026-03-17,Ve tau hoa SE1 HAN-HPH,-517000,Transport,Techcombank,high
+2026-03-17,TIEM SUA XE Pham Ngoc Thach,-141000,Transport,MBBank,high
+2026-03-18,Bowling Vincom Landmark 81 Ba Trieu,-272000,Entertainment,ZaloPay,high
+2026-03-18,Chuyen tien mua sam nhom cho Ngo Thi Kim 445349825,-633000,Transfer,MoMo,high
+2026-03-18,Vietjet Air ve may bay SGN-NHA,-2628000,Transport,MBBank,high
+2026-03-19,Nap tien dien thoai Mobifone thang 08,-249000,Utilities,Techcombank,high
+2026-03-19,TT CUOC VNPT THANG 10,-317000,Utilities,Vietcombank,high
+2026-03-19,Windscribe VPN subscription thang 11,-255000,Subscriptions,MBBank,high
+2026-03-19,ACB CK 140772963 DEN Pham Thi Ly,-2000000,Transfer,MBBank,high
+2026-03-20,TT CUOC TRUYEN HINH CAP THANG 02,-254000,Utilities,Vietcombank,high
+2026-03-20,Cay xang Petrolimex Thanh Xuan HN,-600000,Transport,ZaloPay,high
+2026-03-20,Phi thuong nien the VISA PLATINUM 242921163,-371000,Other,Vietcombank,high
+2026-03-21,THUONG DU AN QUY 4 566744709,4699000,Income,ZaloPay,high
+2026-03-21,YouTube Premium Family thang 12,-82000,Subscriptions,MoMo,high
+2026-03-21,VTB CK 134214478 DEN Luu Thi Thu Ha,-1761000,Transfer,Vietcombank,high
+2026-03-21,ViettelPay nap the cao Viettel thang 02,-499000,Utilities,Techcombank,high
+2026-03-22,TT CAFE HIGHLANDS Tran Duy Hung,-71000,Food,ZaloPay,high
+2026-03-22,Rut tien vi ZaloPay ve ngan hang 931707202,-1407000,Transfer,Vietcombank,high
+2026-03-22,Phi thuong nien the VISA PLATINUM 411550711,-467000,Other,MBBank,high
+2026-03-22,TT TIEN DIEN EVN THANG 12,-2477000,Utilities,MoMo,high
+2026-03-22,PHARMACITY Nguyen Hue MUA THUOC,-152000,Health,VPBank,high
+2026-03-22,Co.opmart Nguyen Trai sieu thi cuoi tuan,-1116000,Shopping,MBBank,high
+2026-03-23,HBO Max subscription thang 02,-254000,Subscriptions,VietinBank,high
+2026-03-23,Disney+ subscription thang 11,-206000,Subscriptions,MoMo,high
+2026-03-24,TT TIEN NUOC SAWACO THANG 05,-190000,Utilities,ZaloPay,high
+2026-03-24,PHARMACITY Hoan Kiem HN MUA THUOC,-199000,Health,VPBank,high
+2026-03-24,GRAB BIKE SGN-PQC,-30000,Transport,ACB,high
+2026-03-25,Thanh toan Phuc Long Tea & Coffee Nguyen Trai,-69000,Food,VPBank,high
+2026-03-25,Vercel Pro hosting thang 10,-571000,Subscriptions,VietinBank,high
+2026-03-25,Hoan tien giao dich mua sam Tiki 860200442,255000,Income,VPBank,high
+2026-03-25,Benh vien Cho Ray xet nghiem mau 452062035,-1074000,Health,ZaloPay,high
+2026-03-25,TIKTOK SHOP 686618451,-560000,Shopping,VPBank,high
+2026-03-26,Rua xe oto bot tuyet Hoang Mai HN,-138000,Transport,MoMo,high
+2026-03-26,Bamboo Airways HAN-DLT,-3022000,Transport,VietinBank,high
+2026-03-26,Phi giao dich the tin dung quoc te POS 467886670,-31000,Other,Vietcombank,medium
+2026-03-26,Haidilao Hotpot Nguyen Hue,-870000,Food,ZaloPay,high
+2026-03-26,Chuyen tien mua sam nhom cho Ngo Van Phuc 411636230,-1186000,Transfer,VPBank,high
+2026-03-27,Bowling Vincom Landmark 81 Thu Duc,-314000,Entertainment,VPBank,high
+2026-03-27,Phi duy tri tai khoan VCB Digibank thang 12,-15000,Other,MoMo,high
+2026-03-27,Netflix monthly subscription Standard,-259000,Subscriptions,ZaloPay,high
+2026-03-29,VINMEC Pham Ngoc Thach PHI KHAM 283408513,-490000,Health,Vietcombank,high
+2026-03-29,Kham mat ban khoa Quan 1 HCM,-140000,Health,ZaloPay,high
+2026-03-29,Benh vien Bach Mai phi kham benh 914639342,-574000,Health,MBBank,high
+2026-03-29,VE XE KHACH HOANG LONG HAN-SGN,-190000,Transport,VPBank,high
+2026-03-31,Haidilao Hotpot Cau Giay,-1350000,Food,VietinBank,high
+2026-03-31,Galaxy Cinema Le Duan bap nuoc,-128000,Entertainment,MoMo,high
+2026-03-31,Benh vien Bach Mai phi kham benh 535581604,-328000,Health,VietinBank,high
+2026-04-01,HBO Max subscription thang 10,-254000,Subscriptions,ACB,high
+2026-04-01,BHD Star Cineplex ve xem phim Quan 7 HCM,-123000,Entertainment,VietinBank,high
+2026-04-01,Bach Hoa Xanh mua thit ca Phu Nhuan HCM,-139000,Shopping,VPBank,high
+2026-04-01,Rut tien vi ZaloPay ve ngan hang 938660320,-1718000,Transfer,VPBank,high
+2026-04-02,Uniqlo Estella Place mua ao khoac,-924000,Shopping,ZaloPay,high
+2026-04-02,Nhan tien hoan tra vay Le Van Cuong 650445768,771000,Income,VPBank,high
+2026-04-03,Chuyen khoan gop tien sinh nhat Duong Van Nam,-172000,Transfer,MoMo,high
+2026-04-03,Xanh SM Bike Quan 1 HCM,-25000,Transport,Techcombank,high
+2026-04-04,Xanh SM Taxi Cau Giay,-193000,Transport,VPBank,high
+2026-04-04,MoMo chuyen tien Dang Thi Yen 883384449,-727000,Transfer,ACB,high
+2026-04-04,Co tuc bang tien mat nam 2026 120128398,1567000,Income,Techcombank,high
+2026-04-04,VIU Premium goi phim chau A thang 07,-98000,Subscriptions,Vietcombank,high
+2026-04-04,TT TIEN AN TRUA Le Van Sy,-99000,Food,Vietcombank,high
+2026-04-05,Techcombank chuyen khoan tra luong thang 03,28615000,Income,ACB,high
+2026-04-05,Phi nop ho so thu tuc hanh chinh 858151034,-108000,Other,MoMo,high
+2026-04-06,Chuyen tien den STK 322108063,-156000,Transfer,ZaloPay,medium
+2026-04-06,Banh mi Huynh Hoa Thu Duc,-64000,Food,Techcombank,high
+2026-04-06,Phi phat sinh giao dich vuot han muc 295415254,-27000,Other,MBBank,medium
+2026-04-06,Khach san Da Nang resort 344993206,-3631000,Entertainment,Techcombank,high
+2026-04-06,BHD Star Cineplex ve xem phim Thanh Xuan HN,-204000,Entertainment,VietinBank,high
+2026-04-06,THE GIOI DI DONG Binh Thanh,-383000,Shopping,Techcombank,high
+2026-04-07,TT PHI GUI XE Landmark 72,-14000,Transport,VietinBank,high
+2026-04-07,SHOPEE VN 411560434,-1193000,Shopping,MoMo,high
+2026-04-07,Chuyen tien mua sam nhom cho Pham Thi Ly 189002470,-1594000,Transfer,Techcombank,high
+2026-04-07,Chuyen khoan gop tien sinh nhat Nguyen Van An,-178000,Transfer,Techcombank,high
+2026-04-08,VE MAY BAY VIETJET SG-VungTau,-781000,Transport,MBBank,high
+2026-04-08,Adobe Creative Cloud Photography thang 12,-472000,Subscriptions,VietinBank,high
+2026-04-09,An sang banh cuon nong Tran Duy Hung,-34000,Food,MoMo,high
+2026-04-09,Karaoke ICOOL phong hat va do uong Dong Da HN,-1929000,Entertainment,ACB,high
+2026-04-09,TIEM SUA XE Nam Tu Liem HN,-570000,Transport,MBBank,high
+2026-04-09,Tra sua Gong Cha Hoang Mai HN,-129000,Food,MoMo,high
+2026-04-09,Chuyen tien mua sam nhom cho Tran Van Hung 914544805,-347000,Transfer,ZaloPay,high
+2026-04-10,Li xi dau nam moi Binh Ngo tu Vu Van Thanh,2684000,Income,ZaloPay,high
+2026-04-10,VCB IB 155923180 CK DEN Tran Van Hung,-57000,Transfer,ZaloPay,high
+2026-04-10,Aqua Park Binh Thanh ve vao cua,-569000,Entertainment,VietinBank,high
+2026-04-10,TT TIEN GAS PETROVIETNAM THANG 11,-382000,Utilities,Vietcombank,high
+2026-04-10,Pharmacity Le Duan thuoc cam va vitamin,-119000,Health,Vietcombank,high
+2026-04-10,Thanh toan phi bao hiem xe may bat buoc 288661956,-70000,Other,ZaloPay,high
+2026-04-11,Mua ve Anh Trai Show Phan Xich Long,-734000,Entertainment,VietinBank,high
+2026-04-12,Ve tau hoa SE1 HAN-DAD,-834000,Transport,ZaloPay,high
+2026-04-12,Rut tien mat tai cay ATM ngoai he thong Le Duan,-1802000,Other,ZaloPay,high
+2026-04-12,Hoan tien giao dich mua sam Tiki 677945296,468000,Income,MoMo,high
+2026-04-13,Gui oto qua dem Hoang Mai HN,-127000,Transport,Techcombank,high
+2026-04-13,Chuyen khoan gop tien sinh nhat Cao Van Duc,-204000,Transfer,ACB,high
+2026-04-14,Adobe Creative Cloud Photography thang 08,-496000,Subscriptions,ZaloPay,high
+2026-04-14,Thu nhap from Upwork 993629667,19531000,Income,Vietcombank,high
+2026-04-14,Thuong KPI quy 2 nam 2026,6039000,Income,Vietcombank,high
+2026-04-14,Tien gas Petrovietnam 12kg thang 07,-453000,Utilities,Techcombank,high
+2026-04-15,NAPAS 505367025 GD THE,-171000,Other,Vietcombank,medium
+2026-04-15,Shopee VN thanh toan don hang 869291709,-1082000,Shopping,ZaloPay,high
+2026-04-15,TT PHI QUAN LY CHUNG CU THANG 02,-898000,Utilities,MBBank,high
+2026-04-15,THANH TOAN VETC 303552235,-738000,Transport,VPBank,high
+2026-04-16,Chuyen tien thanh toan tien vay tieu dung 897331725,-3089000,Transfer,ACB,high
+2026-04-16,Mua thuoc Panadol va siro ho Long Bien HN,-108000,Health,Techcombank,high
+2026-04-16,Mua vi sinh Yakult va vitamin Tay Ho HN,-158000,Health,VPBank,high
+2026-04-17,Tiem sua xe Honda thay nhot va sam xe Phu Nhuan HCM,-555000,Transport,VietinBank,high
+2026-04-17,Cay xang Petrolimex Long Bien HN,-72000,Transport,VietinBank,high
+2026-04-18,Rut tien vi ZaloPay ve ngan hang 330196843,-490000,Transfer,Techcombank,high
+2026-04-18,Dieu chinh chenh lech so du he thong 815077893,-13000,Other,ZaloPay,high
+2026-04-18,LAZADA ORDER 503993679,-863000,Shopping,ACB,high
+2026-04-18,Tour du lich Da Lat 3N2D 640456519,-2490000,Entertainment,ZaloPay,high
+2026-04-19,MoMo chuyen tien Vo Thi Hoa 294874738,-898000,Transfer,Vietcombank,high
+2026-04-19,TIEN LAI TIET KIEM THANG 07 389636327,2763000,Income,ACB,high
+2026-04-19,LAZYFOOD Banh cuon Tay Ho ORDER,-66000,Food,ACB,high
+2026-04-19,Nha thuoc FPT Long Chau mua thuoc Phu Nhuan HCM,-169000,Health,VietinBank,high
+2026-04-19,WinMart+ Thao Dien mua thuc pham,-240000,Shopping,ACB,high
+2026-04-19,Hai san Bien Dong tiec toi Landmark 81,-1067000,Food,MBBank,high
+2026-04-20,Microsoft 365 Personal thang 08,-1130000,Subscriptions,VietinBank,high
+2026-04-20,Mua thuoc Panadol va siro ho Phu Nhuan HCM,-61000,Health,ZaloPay,high
+2026-04-20,Tra da via he va banh ngot Go Vap HCM,-29000,Food,ZaloPay,high
+2026-04-21,Li xi dau nam moi Binh Ngo tu Vu Thi Mai,503000,Income,Vietcombank,high
+2026-04-21,McDonald's Hoang Mai HN,-118000,Food,ACB,high
+2026-04-21,Adobe Creative Cloud Photography thang 10,-480000,Subscriptions,VietinBank,high
+2026-04-21,Phi chuyen doi ngoai te USD 497043193,-342000,Other,VietinBank,high
+2026-04-21,Benh vien Bach Mai phi kham benh 377402363,-583000,Health,VPBank,high
+2026-04-22,Bamboo Airways SGN-NHA,-1947000,Transport,ACB,high
+2026-04-22,Escape Room Long Bien HN tro choi giai tri,-324000,Entertainment,VietinBank,high
+2026-04-23,Phi ve sinh moi truong to dan pho thang 12,-66000,Utilities,MoMo,high
+2026-04-23,Vietjet Air ve may bay SG-VungTau,-2016000,Transport,Vietcombank,high
+2026-04-24,ACB CK 231146271 DEN Trinh Van Khanh,-2490000,Transfer,Techcombank,high
+2026-04-24,Notion Plus workspace thang 01,-130000,Subscriptions,ZaloPay,high
+2026-04-25,Phi phat sinh giao dich vuot han muc 126355011,-49000,Other,MBBank,medium
+2026-04-25,GUARDIAN Le Duan,-130000,Shopping,MBBank,high
+2026-04-26,Nap tien vi ZaloPay thang 07,-1539000,Transfer,VPBank,high
+2026-04-27,GRAB CAR Tran Duy Hung,-176000,Transport,ZaloPay,high
+2026-04-28,Chuyen tien thu ho ban do cu tu Vo Thi Hoa,1091000,Income,VietinBank,high
+2026-04-28,McDonald's Landmark 81,-152000,Food,ACB,high
+2026-04-28,GitHub Copilot Individual thang 10,-246000,Subscriptions,MBBank,high
+2026-04-28,SHOPEEFOOD mi Quang suon bi DON HANG 233523720,-68000,Food,Vietcombank,high
+2026-04-29,Vietjet Air ve may bay HAN-SGN,-1553000,Transport,Techcombank,high
+2026-04-29,Phi duy tri tai khoan VCB Digibank thang 01,-15000,Other,VPBank,high
+2026-04-29,ACB CK 419708026 DEN Vu Van Thanh,-2560000,Transfer,VietinBank,high
+2026-04-29,Rut tien mat tai ATM cung ngan hang Hoan Kiem HN,-2594000,Other,VietinBank,high
+2026-04-30,ViettelPay nap the cao Viettel thang 12,-236000,Utilities,MoMo,high
+2026-04-30,GrabCar den Phan Xich Long,-79000,Transport,ZaloPay,high
+2026-05-01,ToCoToCo Bubble Tea Tan Binh HCM,-79000,Food,MoMo,high
+2026-05-02,Ve xem concert Son Tung MTP World Tour,-2913000,Entertainment,ACB,high
+2026-05-02,The Gioi Di Dong phu kien dien thoai Nguyen Hue,-879000,Shopping,MoMo,high
+2026-05-02,Phi quan ly chung cu thang 04,-580000,Utilities,Techcombank,high
+2026-05-02,Bowling Vincom Landmark 81 Nguyen Hue,-255000,Entertainment,ACB,high
+2026-05-03,BURGER KING Nguyen Trai,-127000,Food,MoMo,high
+2026-05-03,ACB CK 765000959 DEN Hoang Thi Nga,-3352000,Transfer,MBBank,high
+2026-05-04,JOLLIBEE Thao Dien FAST FOOD,-217000,Food,ZaloPay,high
+2026-05-04,OpenAI ChatGPT Plus monthly thang 08,-490000,Subscriptions,ACB,high
+2026-05-04,Ve concert Anh Trai Say Hi qua Ticket Box,-1367000,Entertainment,Vietcombank,high
+2026-05-04,Ve tau hoa SE1 DAD-SGN,-742000,Transport,VPBank,high
+2026-05-04,Phi phat sinh giao dich vuot han muc 602630860,-22000,Other,MBBank,medium
+2026-05-04,WinMart+ Tran Duy Hung mua thuc pham,-530000,Shopping,VPBank,high
+2026-05-05,Thuong KPI quy 1 nam 2026,3208000,Income,ACB,high
+2026-05-06,Nhan tien hoan thue thu nhap ca nhan nam 2025,1899000,Income,VietinBank,high
+2026-05-07,TT CUOC TRUYEN HINH CAP THANG 08,-205000,Utilities,MBBank,high
+2026-05-07,Phi giao dich the tin dung quoc te POS 605588508,-120000,Other,MoMo,medium
+2026-05-07,Quan com van phong Phan Xich Long,-49000,Food,MBBank,high
+2026-05-09,Lotte Cinema Hoang Mai HN,-160000,Entertainment,VPBank,high
+2026-05-09,Zalopay chuyen tien Dang Huu Tai 673024249,-2030000,Transfer,Vietcombank,high
+2026-05-09,OpenAI ChatGPT Plus monthly thang 10,-495000,Subscriptions,MoMo,high
+2026-05-10,DO XANG PETROLIMEX Phu Nhuan HCM,-214000,Transport,VietinBank,high
+2026-05-10,Nhan thanh toan hop dong freelancer 349467552,11407000,Income,ZaloPay,high
+2026-05-11,Karaoke ICOOL phong hat va do uong Tran Duy Hung,-561000,Entertainment,MoMo,high
+2026-05-11,VNPT Fiber cuoc internet gia dinh thang 08,-318000,Utilities,ACB,high
+2026-05-11,TCB HN03 TRANSFER 858552644 TO Nguyen Thi Phuong,-1789000,Transfer,VPBank,high
+2026-05-11,Nuoc sach Song Da thang 08,-93000,Utilities,ZaloPay,high
+2026-05-12,ViettelPay nap the cao Viettel thang 05,-156000,Utilities,ZaloPay,high
+2026-05-12,Figma Professional thang 08,-561000,Subscriptions,ZaloPay,high
+2026-05-12,LAZADA ORDER 445011969,-619000,Shopping,Techcombank,high
+2026-05-14,VNPT Fiber cuoc internet gia dinh thang 09,-307000,Utilities,Techcombank,high
+2026-05-15,Lotte Cinema Thanh Xuan HN,-108000,Entertainment,Vietcombank,high
+2026-05-15,NAPAS 589049458 GD THE,-1028000,Other,VPBank,medium
+2026-05-15,Lotte Cinema Hai Ba Trung,-253000,Entertainment,ACB,high
+2026-05-15,VE XE KHACH HOANG LONG SG-VungTau,-284000,Transport,Techcombank,high
+2026-05-15,Galaxy Cinema Tay Ho HN bap nuoc,-190000,Entertainment,VPBank,high
+2026-05-16,NAP DIEN THOAI MOBIFONE 07,-88000,Utilities,ZaloPay,high
+2026-05-16,HASAKI Quan 7 HCM MY PHAM,-636000,Shopping,MoMo,high
+2026-05-16,beBike di lam,-26000,Transport,MBBank,high
+2026-05-17,VE XE KHACH HOANG LONG SG-DL,-163000,Transport,VietinBank,high
+2026-05-17,TT PHI GUI XE Lotte Center HN,-27000,Transport,VietinBank,high
+2026-05-17,TIKI 453730616,-507000,Shopping,MBBank,high
+2026-05-17,Techcombank chuyen khoan tra luong thang 07,23050000,Income,ACB,high
+2026-05-18,THANH TOAN VETC 665471577,-652000,Transport,Techcombank,high
+2026-05-19,Lotte Cinema Go Vap HCM,-264000,Entertainment,ZaloPay,high
+2026-05-19,HBO Max subscription thang 04,-288000,Subscriptions,MoMo,high
+2026-05-19,Rut tien tu vi MoMo ve tai khoan ngan hang,-2029000,Transfer,VietinBank,high
+2026-05-19,Kham rang Nha khoa Kim tram rang Ba Trieu,-804000,Health,MBBank,high
+2026-05-20,GrabFood don hang Bun rieu Co Linh,-96000,Food,VPBank,high
+2026-05-21,Chuyen tien mua sam nhom cho Tran Van Hung 837703786,-1702000,Transfer,ZaloPay,high
+2026-05-21,ACB CK 970656503 DEN Bui Thi Thu,-2115000,Transfer,VPBank,high
+2026-05-21,CellphoneS mua tai nghe bluetooth Go Vap HCM,-1754000,Shopping,Techcombank,high
+2026-05-21,Chuyen tien vao tai khoan Tiet kiem online 800967969,-15759000,Transfer,VPBank,high
+2026-05-22,Aqua Park Nguyen Hue ve vao cua,-390000,Entertainment,MBBank,high
+2026-05-22,Lazada order 744469936,-944000,Shopping,MoMo,high
+2026-05-22,Dien May Xanh noi com dien Quan 7 HCM,-2082000,Shopping,Techcombank,high
+2026-05-22,Galaxy Cinema Hai Ba Trung bap nuoc,-246000,Entertainment,MoMo,high
+2026-05-23,Ve tham quan Thao Cam Vien,-130000,Entertainment,Techcombank,high
+2026-05-24,Co.opmart Le Van Sy sieu thi cuoi tuan,-549000,Shopping,ZaloPay,high
+2026-05-24,Phi quan ly the ATM thuong nien 869017430,-62000,Other,ACB,high
+2026-05-24,Do xang Shell Petrol Nguyen Trai,-227000,Transport,MoMo,high
+2026-05-24,Khach san Da Nang resort 551290690,-850000,Entertainment,ZaloPay,high
+2026-05-24,Nop thue tncn quy 2 nam 2026,-1013000,Other,VPBank,high
+2026-05-25,Rut tien vi ZaloPay ve ngan hang 844698876,-1106000,Transfer,ACB,high
+2026-05-25,TT PHI QUAN LY CHUNG CU THANG 04,-484000,Utilities,MoMo,high
+2026-05-25,Bach Hoa Xanh mua thit ca Thao Dien,-205000,Shopping,Vietcombank,high
+2026-05-25,OpenAI ChatGPT Plus monthly thang 09,-496000,Subscriptions,Vietcombank,high
+2026-05-26,Disney+ subscription thang 10,-239000,Subscriptions,MoMo,high
+2026-05-26,TT CUOC VIETTEL THANG 02,-373000,Utilities,Techcombank,high
+2026-05-26,MB GD751953620 CHUYEN TIEN DEN Vu Thi Mai,-211000,Transfer,Vietcombank,high
+2026-05-26,Nap tien dien thoai Mobifone thang 06,-159000,Utilities,MoMo,high
+2026-05-27,HOAN TIEN LAZADA 939123366,273000,Income,VietinBank,high
+2026-05-27,Nap tien dien thoai Mobifone thang 01,-107000,Utilities,Vietcombank,high
+2026-05-27,AWS Lightsail instance thang 04,-372000,Subscriptions,MBBank,high
+2026-05-28,Goi tap gym California Fitness thang 09,-1121000,Entertainment,VPBank,high
+2026-05-28,Dien May Xanh noi com dien Pham Ngoc Thach,-1643000,Shopping,ACB,high
+2026-05-28,MBBank chuyen tien mien phi Napas 247 cho Nguyen Van An,-2254000,Transfer,Vietcombank,medium
+2026-05-28,Phi tin nhan SMS Banking bien dong so du thang 03,-14000,Other,ZaloPay,high
+2026-05-28,Dieu chinh chenh lech so du he thong 881351363,-10000,Other,Vietcombank,high
+2026-05-29,Chuyen tien tra tien phong tro thang 10 cho Luu Thi Thu Ha,-6232000,Transfer,Vietcombank,high
+2026-05-29,GD ma TRX699317972 qua he thong Napas,-1430000,Other,Techcombank,low
+2026-05-30,Techcombank chuyen khoan tra luong thang 04,17832000,Income,Vietcombank,high
+2026-05-30,LUONG THANG 01 CONG TY 826586257,27171000,Income,VietinBank,high
+2026-05-30,PHIDN 717383846 TRICH PHI THE,-28000,Other,MoMo,high
+2026-06-01,Gui xe may toa nha Deutsches Haus,-17000,Transport,ZaloPay,high
+2026-06-01,NAPAS 638588435 GD THE,-1740000,Other,MoMo,medium
+2026-06-02,Nhan luong part-time thang 02 tu Trinh Van Khanh,3061000,Income,VietinBank,high
+2026-06-02,Phi quan ly chung cu thang 02,-1020000,Utilities,ACB,high
+2026-06-02,Aqua Park Hoan Kiem HN ve vao cua,-446000,Entertainment,VietinBank,high
+2026-06-03,Khu vui choi Happy Land Nguyen Hue,-180000,Entertainment,Vietcombank,high
+2026-06-03,DO XANG PETROLIMEX Cau Giay,-292000,Transport,VPBank,high
+2026-06-03,FPT Shop mua cap sac nhanh Long Bien HN,-235000,Shopping,ZaloPay,high
+2026-06-04,Techcombank chuyen khoan tra luong thang 01,19050000,Income,ZaloPay,high
+2026-06-04,Google One 100GB cuoc hang thang 11,-64000,Subscriptions,VPBank,high
+2026-06-05,Claude Pro Anthropic subscription thang 01,-510000,Subscriptions,ZaloPay,high
+2026-06-06,Phi giao dich the tin dung quoc te POS 201574966,-56000,Other,VietinBank,medium
+2026-06-06,Tien lai tiet kiem ky han thang 05,592000,Income,ZaloPay,high
+2026-06-06,Benh vien Cho Ray xet nghiem mau 267464167,-424000,Health,MBBank,high
+2026-06-06,Nha thuoc FPT Long Chau mua thuoc Le Duan,-416000,Health,VietinBank,high
+2026-06-06,EVN Ha Noi tien dien thang 10,-1861000,Utilities,ZaloPay,high
+2026-06-07,Haidilao Hotpot Phu Nhuan HCM,-2123000,Food,VPBank,high
+2026-06-07,Phi gui xe va nuoc sinh hoat thang 05,-367000,Utilities,VietinBank,high
+2026-06-07,Chuyen tien tra tien phong tro thang 04 cho Doan Quoc Bao,-5003000,Transfer,VPBank,high
+2026-06-08,TCB DN01 TRANSFER 378618924 TO Dinh Thi Ngoc Anh,-2457000,Transfer,Techcombank,high
+2026-06-08,TCB SGN01 TRANSFER 131354025 TO Pham Minh Duc,-1173000,Transfer,ZaloPay,high
+2026-06-08,Tour du lich Da Lat 3N2D 677833280,-4421000,Entertainment,Techcombank,high
+2026-06-09,Lau de 404 Nguyen Trai,-658000,Food,ACB,high
+2026-06-09,Phi chuyen doi ngoai te USD 805321806,-401000,Other,ZaloPay,high
+2026-06-09,Co.opmart Hoang Mai HN sieu thi cuoi tuan,-1463000,Shopping,ZaloPay,high
+2026-06-10,Nha thuoc FPT Long Chau mua thuoc Phan Xich Long,-62000,Health,Techcombank,high
+2026-06-10,Billiards Club danh bida voi ban Go Vap HCM,-188000,Entertainment,ZaloPay,high
+2026-06-10,VINMEC Nguyen Trai PHI KHAM 160389696,-347000,Health,VietinBank,high
+2026-06-10,WinMart+ Nguyen Hue mua thuc pham,-314000,Shopping,MBBank,high
+2026-06-11,Luong thang 04 tu Cong ty CP Cong nghe FPT,42930000,Income,VietinBank,high
+2026-06-11,Lotte Mart Thanh Xuan HN,-966000,Shopping,MoMo,high
+2026-06-12,GrabCar den Nam Tu Liem HN,-57000,Transport,Techcombank,high
+2026-06-12,Tour du lich Da Lat 3N2D 339714644,-4485000,Entertainment,Vietcombank,high
+2026-06-12,NAP DIEN THOAI MOBIFONE 04,-70000,Utilities,Vietcombank,high
+2026-06-12,Benh vien Bach Mai phi kham benh 965576977,-822000,Health,VietinBank,high
+2026-06-12,Phong kham Da khoa Medlatec Phan Xich Long,-489000,Health,Vietcombank,high
+2026-06-12,Phi phat sinh giao dich vuot han muc 114610794,-48000,Other,MoMo,medium
+2026-06-12,LONG CHAU Nguyen Hue THUOC BO,-426000,Health,MBBank,high
+2026-06-13,Guardian mua do cham soc ca nhan Nam Tu Liem HN,-146000,Shopping,ACB,high
+2026-06-15,EVN Ha Noi tien dien thang 01,-2257000,Utilities,ZaloPay,high
+2026-06-15,Mua vi sinh Yakult va vitamin Thao Dien,-92000,Health,ACB,high
+2026-06-15,VE MAY BAY VIETJET SGN-NHA,-2227000,Transport,Techcombank,high
+2026-06-15,Phi phat sinh giao dich vuot han muc 485470031,-52000,Other,VPBank,medium
+2026-06-15,LUONG THANG 10 CONG TY 335270254,21626000,Income,MBBank,high
+2026-06-15,Escape Room Hai Ba Trung tro choi giai tri,-486000,Entertainment,MoMo,high
+2026-06-15,Xanh SM Bike Tay Ho HN,-47000,Transport,VietinBank,high
+2026-06-16,ACB CK 640384648 DEN Nguyen Thi Phuong,-3068000,Transfer,MBBank,high
+2026-06-16,Xanh SM Taxi Nam Tu Liem HN,-139000,Transport,MoMo,high
+2026-06-17,Benh vien Bach Mai phi kham benh 903057463,-596000,Health,ACB,high
+2026-06-18,Lotte Cinema Binh Thanh,-110000,Entertainment,VietinBank,high
+2026-06-18,Chuyen tien tra tien phong tro thang 07 cho Ly Thi Kim Ngan,-6166000,Transfer,ZaloPay,high
+2026-06-18,GrabCar den Nguyen Trai,-252000,Transport,ZaloPay,high
+2026-06-18,EVN HCMC thanh toan tien dien 04,-2305000,Utilities,ACB,high
+2026-06-18,HOAN TIEN LAZADA 686367479,360000,Income,ZaloPay,high
+2026-06-19,JOLLIBEE Phu Nhuan HCM FAST FOOD,-215000,Food,ACB,high
+2026-06-19,Tien gas Petrovietnam 12kg thang 09,-380000,Utilities,MoMo,high
+2026-06-19,Pharmacity Go Vap HCM thuoc cam va vitamin,-371000,Health,Vietcombank,high
+2026-06-20,Namecheap domain renewal 238382356,-371000,Subscriptions,VietinBank,high
+2026-06-20,Apple iCloud 200GB storage thang 07,-69000,Subscriptions,ACB,high
+2026-06-21,Thanh toan phi bao hiem xe may bat buoc 646491338,-74000,Other,Techcombank,high
+2026-06-21,Hasaki Beauty & Clinic my pham Long Bien HN,-218000,Shopping,VPBank,high
+2026-06-21,EVN Ha Noi tien dien thang 06,-1473000,Utilities,MBBank,high
+2026-06-21,Phi tin nhan SMS Banking bien dong so du thang 12,-28000,Other,VietinBank,high
+2026-06-21,VPB SGN03 477687306 CHUYEN Dinh Thi Ngoc Anh,-3427000,Transfer,MBBank,high
+2026-06-21,Thu nhap from Upwork 332124158,9362000,Income,Vietcombank,high
+2026-06-21,Dien May Xanh noi com dien Thanh Xuan HN,-1338000,Shopping,ACB,high
+2026-06-23,Netflix monthly subscription Basic,-120000,Subscriptions,Techcombank,high
+2026-06-23,THE GIOI DI DONG Hoang Mai HN,-645000,Shopping,MoMo,high
+2026-06-23,Kichi Kichi lau bang chuyen Thu Duc,-662000,Food,Techcombank,high
+2026-06-24,VIU Premium goi phim chau A thang 02,-65000,Subscriptions,Techcombank,high
+2026-06-24,Chuyen tien thanh toan tien vay tieu dung 638699275,-2130000,Transfer,ZaloPay,high
+2026-06-24,LAZYFOOD Pho Quynh ORDER,-102000,Food,MBBank,high
+2026-06-24,Tien an trua com tam Cali,-89000,Food,Techcombank,high
+2026-06-25,Nha thuoc An Khang thuc pham chuc nang Dong Da HN,-607000,Health,MBBank,high
+2026-06-25,LAZYFOOD Phuc Long ORDER,-103000,Food,VietinBank,high
+2026-06-25,HOAN TIEN LAZADA 886760343,724000,Income,Techcombank,high
+2026-06-25,TT CAFE HIGHLANDS Phu Nhuan HCM,-150000,Food,Techcombank,high
+2026-06-26,Hoan tien giao dich mua sam Tiki 963501844,351000,Income,Techcombank,high
+2026-06-26,GitHub Copilot Individual thang 01,-249000,Subscriptions,VietinBank,high
+2026-06-26,Thu nhap Fiverr USD 947545709,9728000,Income,MBBank,high
+2026-06-26,Chuyen tien tra tien phong tro thang 02 cho Pham Minh Duc,-4249000,Transfer,VietinBank,high
+2026-06-26,VPB SGN01 944231819 CHUYEN Nguyen Van An,-415000,Transfer,VietinBank,high
+2026-06-27,TIKTOK SHOP 166033634,-633000,Shopping,VPBank,high
+2026-06-28,TT TIEN GAS PETROVIETNAM THANG 08,-387000,Utilities,ACB,high
+2026-06-28,Nha thuoc FPT Long Chau mua thuoc Dong Da HN,-583000,Health,ACB,high
+2026-06-28,Chuyen tien thu ho ban do cu tu Ngo Thi Kim,1428000,Income,Techcombank,high
+2026-06-28,Chuyen tien thu ho ban do cu tu Pham Minh Duc,1795000,Income,MoMo,high
+2026-06-29,NAP DIEN THOAI MOBIFONE 02,-105000,Utilities,Vietcombank,high
+2026-06-29,Nha thuoc An Khang thuc pham chuc nang Binh Thanh,-315000,Health,MBBank,high
+2026-06-29,GRAB FOOD ORDER Banh cuon Tay Ho,-139000,Food,MBBank,high
+2026-06-29,TikTok Shop mua quan ao thoi trang,-355000,Shopping,VPBank,high
+2026-06-29,Hasaki Beauty & Clinic my pham Phu Nhuan HCM,-400000,Shopping,MBBank,high
+2026-06-30,Canva Pro subscription thang 12,-234000,Subscriptions,VietinBank,high
+2026-06-30,Lotteria Vincom Le Duan,-75000,Food,MoMo,high
+2026-06-30,CK tien thue nha thang 10 cho Doan Quoc Bao,-5504000,Transfer,Vietcombank,high
+2026-06-30,Disney+ subscription thang 08,-216000,Subscriptions,ZaloPay,high
+2026-06-30,Rua xe oto bot tuyet Hai Ba Trung,-179000,Transport,ZaloPay,high
+2026-06-30,TT CUOC INTERNET FPT THANG 06,-229000,Utilities,Techcombank,high
+2026-07-01,Dien May Xanh noi com dien Dong Da HN,-1965000,Shopping,VietinBank,high
+2026-07-01,Phi quan ly the ATM thuong nien 289935478,-91000,Other,ZaloPay,high
+2026-07-02,Kham rang Nha khoa Kim tram rang Dong Da HN,-1396000,Health,Vietcombank,high
+2026-07-02,Notion Plus workspace thang 05,-186000,Subscriptions,VietinBank,high
+2026-07-02,BEAMIN ORDER chao long beo nhieu tieu,-49000,Food,Techcombank,high
+2026-07-04,Phi nop ho so thu tuc hanh chinh 568763428,-143000,Other,VPBank,high
+2026-07-04,Vien Phi tai Mytour Clinic 244876802,-686000,Health,Techcombank,high
+2026-07-04,Zalopay chuyen tien Dang Thi Yen 836425182,-1681000,Transfer,VietinBank,high
+2026-07-04,EVN Ha Noi tien dien thang 09,-1202000,Utilities,VPBank,high
+2026-07-05,Phi tin nhan SMS Banking bien dong so du thang 01,-21000,Other,ZaloPay,high
+2026-07-06,Khach san Da Nang resort 482996950,-3694000,Entertainment,Vietcombank,high
+2026-07-06,Billiards Club danh bida voi ban Nguyen Hue,-286000,Entertainment,ZaloPay,high
+2026-07-06,Tiki mua sach va do gia dung,-414000,Shopping,Vietcombank,high
+2026-07-06,Tien lai tiet kiem ky han thang 06,1002000,Income,Techcombank,high
+2026-07-06,TIEN LAI TIET KIEM THANG 08 144978937,3190000,Income,VPBank,high
+2026-07-07,Tra sua Gong Cha Ba Trieu,-127000,Food,ACB,high
+2026-07-07,Cong ty cap nuoc Sawaco tien nuoc thang 01,-200000,Utilities,MBBank,high
+2026-07-08,Mua que test Covid va khau trang y te,-105000,Health,VietinBank,high
+2026-07-08,TT TIEN DIEN EVN THANG 03,-1173000,Utilities,Techcombank,high
+2026-07-08,TT PHI QUAN LY CHUNG CU THANG 05,-1061000,Utilities,ACB,high
+2026-07-08,Billiards Club danh bida voi ban Hoan Kiem HN,-282000,Entertainment,MBBank,high
+2026-07-08,Adobe Creative Cloud Photography thang 07,-357000,Subscriptions,VietinBank,high
+2026-07-09,Do xang Shell Petrol Thu Duc,-378000,Transport,ZaloPay,high
+2026-07-09,Chuyen khoan den Phan Thanh Dat qua VietQR,-792000,Transfer,Techcombank,high
+2026-07-10,CK tien an trua cho Vu Thi Mai,-129000,Food,MBBank,high
+2026-07-10,TIEN LAI TIET KIEM THANG 06 736222913,1057000,Income,MBBank,high
+2026-07-10,Chuyen tien vao tai khoan Tiet kiem online 370969911,-8787000,Transfer,MBBank,high
+2026-07-11,PHIDN 891487917 TRICH PHI THE,-44000,Other,Techcombank,high
+2026-07-12,Phong kham Da khoa Medlatec Landmark 81,-353000,Health,Vietcombank,high
+2026-07-12,TAXI VINASUN Go Vap HCM,-100000,Transport,VietinBank,high
+2026-07-12,Shopee VN thanh toan don hang 565985545,-295000,Shopping,VPBank,high
+2026-07-12,DO XANG PETROLIMEX Le Duan,-220000,Transport,MBBank,high
+2026-07-12,TT CUOC INTERNET FPT THANG 12,-229000,Utilities,ACB,high
+2026-07-13,TT CUOC VIETTEL THANG 10,-440000,Utilities,VPBank,high
+2026-07-13,Bamboo Airways HAN-HPH,-3573000,Transport,ZaloPay,high
+2026-07-14,TT CUOC VNPT THANG 06,-356000,Utilities,MoMo,high
+2026-07-14,Lau de 404 Landmark 81,-924000,Food,MBBank,high
+2026-07-14,LUONG THANG 03 CONG TY 151964407,25045000,Income,VPBank,high
+2026-07-14,Do xang Shell Petrol Cau Giay,-579000,Transport,VietinBank,high
+2026-07-14,Ve concert Son Tung MTP World Tour qua Ticket Box,-1629000,Entertainment,ACB,high
+2026-07-15,YouTube Premium Family thang 11,-101000,Subscriptions,ZaloPay,high
+2026-07-15,TIEM SUA XE Thanh Xuan HN,-198000,Transport,VPBank,high
+2026-07-16,Viettel Telecom cuoc truyen hinh cap thang 04,-165000,Utilities,ZaloPay,high
+2026-07-16,Decathlon mua do the thao Long Bien HN,-931000,Shopping,ACB,high
+2026-07-17,Hoan tien don hang Shopee VN 686177724,767000,Income,Techcombank,high
+2026-07-18,TT CUOC TRUYEN HINH CAP THANG 03,-322000,Utilities,ZaloPay,high
+2026-07-18,Figma Professional thang 04,-567000,Subscriptions,ZaloPay,high
+2026-07-19,Co tuc bang tien mat nam 2026 620684705,3551000,Income,VPBank,high
+2026-07-19,Tra da via he va banh ngot Nguyen Trai,-15000,Food,ACB,high
+2026-07-19,BHD Star Cineplex ve xem phim Ba Trieu,-131000,Entertainment,Vietcombank,high
+2026-07-20,Nhan tien hoan tra vay Dang Thi Yen 333485708,3621000,Income,Techcombank,high
+2026-07-20,Pharmacity Le Van Sy thuoc cam va vitamin,-383000,Health,MBBank,high
+2026-07-20,Nap game Genshin Impact 232234278,-897000,Entertainment,VietinBank,high
+2026-07-20,Nhan luong part-time thang 11 tu Dinh Thi Ngoc Anh,7878000,Income,MBBank,high
+2026-07-20,PHIDN 434182585 TRICH PHI THE,-23000,Other,MoMo,high
+2026-07-20,COOPMART Go Vap HCM,-1030000,Shopping,Techcombank,high
+2026-07-20,Rut tien mat tai ATM cung ngan hang Cau Giay,-2982000,Other,MoMo,high
+2026-07-20,Google One 100GB cuoc hang thang 06,-78000,Subscriptions,Techcombank,high
+2026-07-21,Kham rang Nha khoa Kim tram rang Pham Ngoc Thach,-663000,Health,ZaloPay,high
+2026-07-22,Phong kham MEDIPLUS Phu Nhuan HCM,-596000,Health,Techcombank,high
+2026-07-22,FPT Shop mua cap sac nhanh Phan Xich Long,-594000,Shopping,VPBank,high
+2026-07-22,GitHub Copilot Individual thang 07,-256000,Subscriptions,MBBank,high
+2026-07-22,Chuyen khoan gop tien sinh nhat Nguyen Thi Phuong,-286000,Transfer,VPBank,high
+2026-07-22,ATM RUTIEN Hai Ba Trung 772128014,-4084000,Other,MoMo,high
+2026-07-22,Canva Pro subscription thang 07,-276000,Subscriptions,ZaloPay,high
+2026-07-23,NAPAS 358594108 GD THE,-863000,Other,Vietcombank,medium
+2026-07-23,ShopeeFood chao long beo nhieu tieu,-102000,Food,ACB,high
+2026-07-24,Canva Pro subscription thang 01,-292000,Subscriptions,VietinBank,high
+2026-07-24,GrabBike chuyen di SGN-NHA,-28000,Transport,Vietcombank,high
+2026-07-24,Nha thuoc An Khang thuc pham chuc nang Go Vap HCM,-237000,Health,MoMo,high
+2026-07-25,Chuyen tien tra tien an trua cho Cao Van Duc,-73000,Transfer,ZaloPay,high
+2026-07-25,Cursor Pro AI assistant thang 07,-491000,Subscriptions,MoMo,high
+2026-07-26,Rua xe oto bot tuyet Tay Ho HN,-99000,Transport,ACB,high
+2026-07-26,Ban hang Shopee thu nhap thang 04,7429000,Income,MBBank,high
+2026-07-26,Quan com van phong Landmark 81,-38000,Food,Vietcombank,high
+2026-07-27,Canva Pro subscription thang 09,-223000,Subscriptions,VietinBank,high
+2026-07-27,Benh vien Bach Mai phi kham benh 302970980,-531000,Health,Techcombank,high
+2026-07-27,Phi giao dich the tin dung quoc te POS 561115098,-84000,Other,MoMo,medium
+2026-07-27,Nhan luong part-time thang 09 tu Pham Minh Duc,3063000,Income,Vietcombank,high
+2026-07-27,THE GIOI DI DONG Tan Binh HCM,-612000,Shopping,ACB,high
+2026-07-27,Khach san Da Nang resort 826953936,-1221000,Entertainment,MoMo,high
+2026-07-27,Thuong KPI quy 3 nam 2026,3666000,Income,Techcombank,high
+2026-07-28,Do xang PVOIL Nguyen Huu Canh,-462000,Transport,ACB,high
+2026-07-28,Thu nhap YouTube Creator thang 11,8772000,Income,VPBank,high
+2026-07-28,Namecheap domain renewal 675485581,-616000,Subscriptions,Vietcombank,high
+2026-07-28,Phi chuyen doi ngoai te USD 169290748,-469000,Other,MBBank,high
+2026-07-29,Tra sua Gong Cha Tan Binh HCM,-89000,Food,ACB,high
+2026-07-30,Zalopay chuyen tien Tran Thi Loan 430161497,-4063000,Transfer,ACB,high
+2026-07-30,Pizza 4P's Hai Ba Trung,-1030000,Food,VietinBank,high
+2026-07-30,Phi nop ho so thu tuc hanh chinh 369390326,-48000,Other,MoMo,high
+2026-07-30,Mua vi sinh Yakult va vitamin Hai Ba Trung,-78000,Health,MoMo,high
+2026-07-31,Nop tien le phi 608701913,-38000,Other,ZaloPay,high
+2026-07-31,Cho thue xe dap dien Pham Ngoc Thach,-152000,Entertainment,Techcombank,high
+2026-07-31,PHARMACITY Phan Xich Long MUA THUOC,-253000,Health,Vietcombank,high
+2026-07-31,Giao dich FT174611512,-207000,Other,VietinBank,low
+2026-08-01,COLUMBIA ASIA Binh Thanh PHI KHAM,-1009000,Health,VPBank,high
+2026-08-01,MBBank chuyen tien mien phi Napas 247 cho Phan Thanh Dat,-2806000,Transfer,Techcombank,medium
+2026-08-01,BURGER KING Pham Ngoc Thach,-276000,Food,ACB,high
+2026-08-02,Apple iCloud 200GB storage thang 12,-166000,Subscriptions,VietinBank,high
+2026-08-02,SHOPEE VN 775065076,-657000,Shopping,ACB,high
+2026-08-02,The Gioi Di Dong phu kien dien thoai Landmark 81,-607000,Shopping,MoMo,high
+2026-08-02,TT TIEN GAS PETROVIETNAM THANG 06,-380000,Utilities,ZaloPay,high
+2026-08-02,Uniqlo Van Hanh Mall mua ao khoac,-1731000,Shopping,MBBank,high
+2026-08-03,GrabCar den Tan Binh HCM,-93000,Transport,ACB,high
+2026-08-03,Tien lai tiet kiem ky han thang 10,3122000,Income,MBBank,high
+2026-08-04,Viettel Telecom cuoc truyen hinh cap thang 11,-207000,Utilities,Vietcombank,high
+2026-08-04,Thanh toan phi bao hiem xe may bat buoc 856453166,-85000,Other,VietinBank,high
+2026-08-04,VINMEC Binh Thanh PHI KHAM 246546995,-1614000,Health,VietinBank,high
+2026-08-04,Aeon Mall Tran Duy Hung mua sam,-502000,Shopping,Vietcombank,high
+2026-08-05,TCB DN01 TRANSFER 825382488 TO Trinh Van Khanh,-2454000,Transfer,VPBank,high
+2026-08-05,TCB SGN02 TRANSFER 433651273 TO Vu Van Thanh,-3672000,Transfer,ZaloPay,high
+2026-08-05,Phi chuyen doi ngoai te USD 860743153,-144000,Other,VietinBank,high
+2026-08-05,Lotte Cinema Nguyen Trai,-124000,Entertainment,ACB,high
+2026-08-05,Cho thue xe dap dien Tan Binh HCM,-115000,Entertainment,Techcombank,high
+2026-08-05,Mua thuoc Panadol va siro ho Nam Tu Liem HN,-77000,Health,VPBank,high
+2026-08-05,Nuoc sach Song Da thang 06,-135000,Utilities,ACB,high
+2026-08-06,Phi chuyen doi ngoai te USD 609342518,-393000,Other,MBBank,high
+2026-08-06,Mua vi sinh Yakult va vitamin Tan Binh HCM,-127000,Health,Vietcombank,high
+2026-08-06,Hoan tien don hang Shopee VN 668211793,855000,Income,VietinBank,high
+2026-08-08,Pharmacity Quan 7 HCM thuoc cam va vitamin,-294000,Health,Vietcombank,high
+2026-08-09,TT CUOC VINAPHONE THANG 10,-285000,Utilities,MoMo,high
+2026-08-09,TT TIEN DIEN EVN THANG 10,-1932000,Utilities,VPBank,high
+2026-08-09,Khach san Da Nang resort 703617172,-1710000,Entertainment,VPBank,high
+2026-08-09,GRAB CAR Go Vap HCM,-230000,Transport,VPBank,high
+2026-08-10,Aqua Park Hoang Mai HN ve vao cua,-230000,Entertainment,ACB,high
+2026-08-10,Chuyen tien tra tien phong tro thang 11 cho Vo Thi Hoa,-2506000,Transfer,ZaloPay,high
+2026-08-10,Mua thuoc Panadol va siro ho Tay Ho HN,-63000,Health,Techcombank,high
+2026-08-10,Thu nhap from Upwork 514309289,18551000,Income,VPBank,high
+2026-08-10,TIEM SUA XE Binh Thanh,-379000,Transport,ACB,high
+2026-08-11,Nap game VNG ZingXu,-126000,Entertainment,Techcombank,high
+2026-08-11,Guardian mua do cham soc ca nhan Dong Da HN,-432000,Shopping,Vietcombank,high
+2026-08-11,TT CUOC VIETTEL THANG 08,-113000,Utilities,ZaloPay,high
+2026-08-12,Cho thue xe dap dien Quan 7 HCM,-133000,Entertainment,ZaloPay,high
+2026-08-13,Aeon Mall Phu Nhuan HCM mua sam,-2016000,Shopping,Techcombank,high
+2026-08-14,Do xang Shell Petrol Thao Dien,-338000,Transport,ZaloPay,high
+2026-08-14,Phi chuyen tien quoc te ngoai te 368076132,-282000,Other,Vietcombank,high
+2026-08-14,Tien gas Petrovietnam 12kg thang 10,-393000,Utilities,Vietcombank,high
+2026-08-14,Haidilao Hotpot Quan 7 HCM,-2230000,Food,Techcombank,high
+2026-08-15,THUONG DU AN QUY 1 508011171,6732000,Income,MBBank,high
+2026-08-15,Steam Game Purchase Elden Ring,-999000,Entertainment,Techcombank,high
+2026-08-15,Vercel Pro hosting thang 05,-552000,Subscriptions,VietinBank,high
+2026-08-16,Nhan luong part-time thang 11 tu Phan Thanh Dat,3561000,Income,MBBank,high
+2026-08-17,LUONG THANG 06 CONG TY 465667868,25273000,Income,Vietcombank,high
+2026-08-17,Thanh toan phi bao hiem xe may bat buoc 948492305,-80000,Other,MBBank,high
+2026-08-18,VCB IB 756018778 CK DEN Trinh Van Khanh,-4490000,Transfer,VietinBank,high
+2026-08-18,TT TIEN GAS PETROVIETNAM THANG 03,-434000,Utilities,MoMo,high
+2026-08-18,Escape Room Phan Xich Long tro choi giai tri,-212000,Entertainment,MoMo,high
+2026-08-19,Starbucks Reserve Hai Ba Trung,-211000,Food,VPBank,high
+2026-08-19,Phi gui xe va nuoc sinh hoat thang 01,-285000,Utilities,ZaloPay,high
+2026-08-20,Mua thuoc Panadol va siro ho Quan 1 HCM,-110000,Health,VietinBank,high
+2026-08-20,TT CUOC TRUYEN HINH CAP THANG 01,-316000,Utilities,MBBank,high
+2026-08-20,TT PHI GUI XE Vietcombank Tower,-11000,Transport,VPBank,high
+2026-08-20,COLUMBIA ASIA Hoang Mai HN PHI KHAM,-856000,Health,ZaloPay,high
+2026-08-20,Vien Phi tai Mytour Clinic 923957141,-571000,Health,MoMo,high
+2026-08-20,Tien lai tiet kiem ky han thang 04,558000,Income,MoMo,high
+2026-08-21,Tra da via he va banh ngot Dong Da HN,-41000,Food,MoMo,high
+2026-08-22,TT CAFE HIGHLANDS Binh Thanh,-67000,Food,VPBank,high
+2026-08-23,Galaxy Cinema Nguyen Hue bap nuoc,-223000,Entertainment,Vietcombank,high
+2026-08-23,Sumo BBQ nuong lau Nguyen Hue,-1192000,Food,Techcombank,high
+2026-08-23,Tiem sua xe Honda thay nhot va sam xe Tran Duy Hung,-391000,Transport,VietinBank,high
+2026-08-23,Mua vi sinh Yakult va vitamin Long Bien HN,-87000,Health,VietinBank,high
+2026-08-24,LONG CHAU Thu Duc THUOC BO,-115000,Health,Techcombank,high
+2026-08-25,Adobe Creative Cloud Photography thang 11,-474000,Subscriptions,VPBank,high
+2026-08-26,NAP EPASS 01 138397611,-1379000,Transport,VietinBank,high
+2026-08-26,VCB IB 589218377 CK DEN Le Van Cuong,-532000,Transfer,ZaloPay,high
+2026-08-26,TT CUOC VIETTEL THANG 06,-276000,Utilities,Techcombank,high
+2026-08-28,Phong kham Da khoa Medlatec Thao Dien,-972000,Health,VietinBank,high
+2026-08-28,Viettel Telecom cuoc truyen hinh cap thang 12,-251000,Utilities,MoMo,high
+2026-08-28,MoMo chuyen tien Pham Van Long 869055768,-913000,Transfer,ZaloPay,high
+2026-08-29,Nap tien dien thoai Mobifone thang 12,-188000,Utilities,VPBank,high
+2026-08-29,Kichi Kichi lau bang chuyen Nguyen Hue,-319000,Food,ZaloPay,high
+2026-08-29,Nap Valorant Points 379950497,-441000,Entertainment,MBBank,high
+2026-08-29,NAP DIEN THOAI MOBIFONE 01,-235000,Utilities,ACB,high
+2026-08-30,Phi tin nhan SMS Banking bien dong so du thang 04,-13000,Other,VietinBank,high
+2026-08-30,Phong kham MEDIPLUS Nguyen Trai,-216000,Health,ACB,high
+2026-08-31,Nha thuoc FPT Long Chau mua thuoc Nam Tu Liem HN,-583000,Health,MoMo,high
+2026-09-01,DIEN MAY XANH Thu Duc,-1339000,Shopping,VPBank,high
+2026-09-01,KFC Le Duan thanh toan don hang,-151000,Food,Techcombank,high
+2026-09-01,VPB SGN03 769562152 CHUYEN Pham Van Long,-376000,Transfer,MoMo,high
+2026-09-01,Steam Game Purchase Black Myth Wukong,-1137000,Entertainment,ZaloPay,high
+2026-09-01,Cho thue xe dap dien Tay Ho HN,-118000,Entertainment,Vietcombank,high
+2026-09-02,Benh vien Bach Mai phi kham benh 973468895,-676000,Health,Techcombank,high
+2026-09-02,VIU Premium goi phim chau A thang 01,-77000,Subscriptions,VietinBank,high
+2026-09-02,Nap Valorant Points 387976356,-163000,Entertainment,Techcombank,high
+2026-09-02,Bach Hoa Xanh mua thit ca Hai Ba Trung,-354000,Shopping,Techcombank,high
+2026-09-02,OpenAI ChatGPT Plus monthly thang 04,-516000,Subscriptions,Techcombank,high
+2026-09-02,CK tien thue nha thang 11 cho Luu Thi Thu Ha,-4662000,Transfer,MoMo,high
+2026-09-03,Duolingo Super annual subscription,-696000,Subscriptions,MoMo,high
+2026-09-03,Phi phat sinh giao dich vuot han muc 652136162,-40000,Other,ACB,medium
+2026-09-03,Thanh toan phi bao hiem xe may bat buoc 351135285,-78000,Other,ACB,high
+2026-09-03,HASAKI Thu Duc MY PHAM,-344000,Shopping,Vietcombank,high
+2026-09-03,Phi ve sinh moi truong to dan pho thang 06,-55000,Utilities,VPBank,high
+2026-09-04,Vinaphone tra sau cuoc thue bao thang 10,-380000,Utilities,VPBank,high
+2026-09-04,Aeon Mall Long Bien HN mua sam,-881000,Shopping,MoMo,high
+2026-09-04,Nhan luong part-time thang 06 tu Do Thi Hien,7093000,Income,VPBank,high
+2026-09-05,VE MAY BAY VIETJET SG-CanTho,-1877000,Transport,MoMo,high
+2026-09-05,TT CUOC TRUYEN HINH CAP THANG 06,-171000,Utilities,ZaloPay,high
+2026-09-06,Decathlon mua do the thao Hoan Kiem HN,-426000,Shopping,VietinBank,high
+2026-09-06,COOPMART Hai Ba Trung,-367000,Shopping,Techcombank,high
+2026-09-06,Circle K mua do an nhe Quan 1 HCM,-68000,Food,VietinBank,high
+2026-09-06,Chuyen tien thu ho ban do cu tu Bui Thi Thu,880000,Income,Vietcombank,high
+2026-09-07,Bowling Vincom Landmark 81 Le Duan,-139000,Entertainment,Techcombank,high
+2026-09-07,Kichi Kichi lau bang chuyen Quan 7 HCM,-819000,Food,MBBank,high
+2026-09-07,VINMEC Hoan Kiem HN PHI KHAM 764931844,-632000,Health,ACB,high
+2026-09-07,Kham rang Nha khoa Kim tram rang Nguyen Hue,-1308000,Health,ZaloPay,high
+2026-09-08,Tien gas Petrovietnam 12kg thang 03,-387000,Utilities,VPBank,high
+2026-09-08,NAPAS 758343571 GD THE,-1625000,Other,VPBank,medium
+2026-09-08,Nhan luong part-time thang 06 tu Tran Van Hung,8555000,Income,ZaloPay,high
+2026-09-09,Kham rang Nha khoa Kim tram rang Tan Binh HCM,-915000,Health,MBBank,high
+2026-09-09,Ve concert Blackpink Hanoi qua Ticket Box,-3462000,Entertainment,MoMo,high
+2026-09-09,VCB IB 880442330 CK DEN Hoang Thi Nga,-4674000,Transfer,Techcombank,high
+2026-09-09,Spotify Premium Individual thang 03,-59000,Subscriptions,VietinBank,high
+2026-09-10,Uniqlo Landmark 81 Mall mua ao khoac,-1558000,Shopping,ZaloPay,high
+2026-09-11,Rut tien mat tai cay ATM ngoai he thong Dong Da HN,-1304000,Other,MoMo,high
+2026-09-11,Khach san Da Nang resort 384735235,-2099000,Entertainment,ACB,high
+2026-09-11,COOPMART Long Bien HN,-1028000,Shopping,Vietcombank,high
+2026-09-11,Cong ty cap nuoc Sawaco tien nuoc thang 03,-224000,Utilities,ZaloPay,high
+2026-09-12,ViettelPay nap the cao Viettel thang 06,-172000,Utilities,ACB,high
+2026-09-12,Nop thue tncn quy 1 nam 2026,-3358000,Other,VietinBank,high
+2026-09-12,Bun cha Huong Lien Quan 1 HCM,-99000,Food,Vietcombank,high
+2026-09-13,THUONG DU AN QUY 4 963706527,10021000,Income,VietinBank,high
+2026-09-13,Li xi dau nam moi Binh Ngo tu Pham Thi Ly,2150000,Income,MBBank,high
+2026-09-13,Mua thuoc Panadol va siro ho Binh Thanh,-102000,Health,MoMo,high
+2026-09-13,Kham mat ban khoa Tran Duy Hung,-565000,Health,Vietcombank,high
+2026-09-13,Thanh toan Phuc Long Tea & Coffee Phu Nhuan HCM,-79000,Food,VPBank,high
+2026-09-13,Nap game Genshin Impact 377677179,-1132000,Entertainment,VPBank,high
+2026-09-13,Thanh toan phi bao hiem xe may bat buoc 216364678,-82000,Other,MBBank,high
+2026-09-14,Chuyen tien mua sam nhom cho Tran Thi Loan 673611617,-1088000,Transfer,ZaloPay,high
+2026-09-14,Dieu chinh chenh lech so du he thong 607693437,-60000,Other,VPBank,high
+2026-09-14,GD ma TRX182100044 qua he thong Napas,-887000,Other,VietinBank,low
+2026-09-14,Phi chuyen doi ngoai te USD 203344755,-136000,Other,MoMo,high
+2026-09-15,Chuyen tien thu ho ban do cu tu Dinh Thi Ngoc Anh,996000,Income,ACB,high
+2026-09-16,ATM RUTIEN Tay Ho HN 801914786,-638000,Other,MoMo,high
+2026-09-17,DIEN MAY XANH Nam Tu Liem HN,-733000,Shopping,VPBank,high
+2026-09-17,Starbucks Reserve Hoan Kiem HN,-237000,Food,VietinBank,high
+2026-09-17,TAXI VINASUN Hoan Kiem HN,-274000,Transport,MoMo,high
+2026-09-17,Phi chuyen doi ngoai te USD 597858748,-356000,Other,Vietcombank,high
+2026-09-17,HOAN TIEN LAZADA 344394038,370000,Income,Vietcombank,high
+2026-09-18,Nap tien dien thoai Mobifone thang 10,-296000,Utilities,MBBank,high
+2026-09-18,Pizza 4P's Thu Duc,-633000,Food,ZaloPay,high
+2026-09-18,Hoan tien don hang Shopee VN 612671681,877000,Income,VietinBank,high
+2026-09-19,Goi tap gym California Fitness thang 11,-745000,Entertainment,Vietcombank,high
+2026-09-19,Aqua Park Le Van Sy ve vao cua,-235000,Entertainment,MoMo,high
+2026-09-20,VTB CK 369495814 DEN Do Thi Hien,-2903000,Transfer,Techcombank,high
+2026-09-20,Bamboo Airways SG-DL,-1006000,Transport,MBBank,high
+2026-09-20,Hoan tien don hang Shopee VN 948218060,500000,Income,ACB,high
+2026-09-20,DO XANG PETROLIMEX Hoang Mai HN,-90000,Transport,MoMo,high
+2026-09-21,Apple iCloud 200GB storage thang 08,-65000,Subscriptions,Vietcombank,high
+2026-09-21,Phi quan ly the ATM thuong nien 144013325,-65000,Other,MBBank,high
+2026-09-22,Chuyen tien tra tien an trua cho Nguyen Thi Phuong,-182000,Transfer,MBBank,high
+2026-09-22,Chuyen tien thu ho ban do cu tu Doan Quoc Bao,1361000,Income,VietinBank,high
+2026-09-23,Tien lai tiet kiem ky han thang 08,3623000,Income,Vietcombank,high
+2026-09-23,Giao dich FT891918032,-1279000,Other,MoMo,low
+2026-09-23,CK tien an trua cho Phan Thanh Dat,-50000,Food,MBBank,high
+2026-09-23,Kichi Kichi lau bang chuyen Tay Ho HN,-391000,Food,VietinBank,high
+2026-09-23,Apple iCloud 200GB storage thang 10,-170000,Subscriptions,Vietcombank,high
+2026-09-23,Cong ty cap nuoc Sawaco tien nuoc thang 06,-96000,Utilities,Vietcombank,high
+2026-09-23,TT CAFE HIGHLANDS Tay Ho HN,-157000,Food,ZaloPay,high
+2026-09-24,Benh vien Nhi Trung Uong phi kham 953657044,-271000,Health,ACB,high
+2026-09-24,GRAB BIKE DAD-SGN,-32000,Transport,ZaloPay,high
+2026-09-25,PHIDN 215322474 TRICH PHI THE,-19000,Other,Techcombank,high
+2026-09-25,LAZYFOOD Bun rieu Co Linh ORDER,-95000,Food,VPBank,high
+2026-09-26,Nhan tien hoan tra vay Dang Thi Yen 734121149,2665000,Income,MBBank,high
+2026-09-26,Chuyen tien vao tai khoan Tiet kiem online 485026797,-9495000,Transfer,Vietcombank,high
+2026-09-26,TT CAFE HIGHLANDS Pham Ngoc Thach,-110000,Food,VPBank,high
+2026-09-26,TIKI 470064263,-634000,Shopping,VPBank,high
+2026-09-26,Chuyen tien mua sam nhom cho Nguyen Minh Tuan 306609638,-1845000,Transfer,VPBank,high
+2026-09-27,ShopeeFood ga ran gion,-167000,Food,MoMo,high
+2026-09-28,Zalopay chuyen tien Pham Thi Ly 842903927,-1051000,Transfer,Vietcombank,high
+2026-09-28,TT CUOC TRUYEN HINH CAP THANG 09,-263000,Utilities,MBBank,high
+2026-09-29,Vien Phi tai Mytour Clinic 260457584,-1311000,Health,Techcombank,high
+2026-09-29,Benh vien Bach Mai phi kham benh 965250635,-606000,Health,VPBank,high
+2026-09-29,TIKTOK SHOP 869966496,-569000,Shopping,MBBank,high
+2026-09-29,TIKTOK SHOP 636910745,-212000,Shopping,ZaloPay,high
+2026-09-30,NAP EPASS 04 445107640,-436000,Transport,ZaloPay,high
+2026-09-30,TAXI VINASUN Le Duan,-300000,Transport,Techcombank,high
+2026-09-30,Chuyen tien thanh toan tien vay tieu dung 432556587,-1915000,Transfer,VPBank,high
+2026-10-01,Aeon Mall Le Van Sy mua sam,-693000,Shopping,ACB,high
+2026-10-01,Namecheap domain renewal 711759838,-394000,Subscriptions,MBBank,high
+2026-10-01,LONG CHAU Landmark 81 THUOC BO,-432000,Health,ZaloPay,high
+2026-10-02,Ve xe khach Phuong Trang SG-DL,-359000,Transport,Techcombank,high
+2026-10-02,Phi phat hanh the ghi no quoc te 883151756,-113000,Other,VPBank,high
+2026-10-02,Vietjet Air ve may bay SG-CanTho,-2260000,Transport,MoMo,high
+2026-10-03,Hai san Bien Dong tiec toi Phu Nhuan HCM,-2101000,Food,VietinBank,high
+2026-10-03,Quyen gop quy tu thien vi nguoi ngheo 290195969,-167000,Other,MBBank,high
+2026-10-03,Lotte Mart Nguyen Trai,-619000,Shopping,MoMo,high
+2026-10-03,OpenAI ChatGPT Plus monthly thang 05,-518000,Subscriptions,Techcombank,high
+2026-10-03,Tien gas Petrovietnam 12kg thang 05,-454000,Utilities,MBBank,high
+2026-10-04,Thu nhap YouTube Creator thang 09,7723000,Income,ZaloPay,high
+2026-10-04,Cursor Pro AI assistant thang 01,-488000,Subscriptions,MoMo,high
+2026-10-04,Phong kham MEDIPLUS Le Van Sy,-384000,Health,MBBank,high
+2026-10-04,The Gioi Di Dong phu kien dien thoai Phan Xich Long,-235000,Shopping,ZaloPay,high
+2026-10-04,Decathlon mua do the thao Dong Da HN,-777000,Shopping,ZaloPay,high
+2026-10-05,BEAMIN ORDER mi Quang suon bi,-169000,Food,Vietcombank,high
+2026-10-06,GrabFood don hang Pho Quynh,-144000,Food,ACB,high
+2026-10-06,Co.opmart Binh Thanh sieu thi cuoi tuan,-1330000,Shopping,MBBank,high
+2026-10-06,Benh vien Bach Mai phi kham benh 412612503,-191000,Health,ZaloPay,high
+2026-10-06,GitHub Copilot Individual thang 08,-249000,Subscriptions,ACB,high
+2026-10-07,Nhan tien thuong du an chuyen doi so Q4,14683000,Income,Techcombank,high
+2026-10-08,Giao dich chuyen tien bi an khong ro noi dung 579649462,-262000,Other,MBBank,low
+2026-10-08,Nha thuoc FPT Long Chau mua thuoc Cau Giay,-481000,Health,MoMo,high
+2026-10-08,LONG CHAU Le Van Sy THUOC BO,-621000,Health,ZaloPay,high
+2026-10-09,Nop thue tncn quy 4 nam 2026,-3742000,Other,ACB,high
+2026-10-09,Notion Plus workspace thang 08,-143000,Subscriptions,ACB,high
+2026-10-09,JOLLIBEE Landmark 81 FAST FOOD,-196000,Food,MBBank,high
+2026-10-09,Giao dich test he thong 423710196,-4000,Other,VietinBank,medium
+2026-10-09,MB GD728907267 CHUYEN TIEN DEN Tran Van Hung,-4207000,Transfer,ZaloPay,high
+2026-10-10,Sumo BBQ nuong lau Thu Duc,-832000,Food,MoMo,high
+2026-10-10,CGV Cinemas Saigon Centre ve xem phim,-291000,Entertainment,VPBank,high
+2026-10-10,TT CUOC TRUYEN HINH CAP THANG 07,-190000,Utilities,ZaloPay,high
+2026-10-10,GD ma TRX104925576 qua he thong Napas,-690000,Other,Vietcombank,low
+2026-10-11,Chuyen tien ung truoc tien mua do ho cho Luu Thi Thu Ha,-544000,Transfer,Vietcombank,high
+2026-10-11,Billiards Club danh bida voi ban Tay Ho HN,-116000,Entertainment,VPBank,high
+2026-10-11,Starbucks Reserve Pham Ngoc Thach,-285000,Food,VietinBank,high
+2026-10-11,CK tien thue nha thang 08 cho Doan Quoc Bao,-4472000,Transfer,VietinBank,high
+2026-10-11,Disney+ subscription thang 12,-215000,Subscriptions,ZaloPay,high
+2026-10-12,Dien May Xanh noi com dien Long Bien HN,-1639000,Shopping,ACB,high
+2026-10-12,Tour du lich Da Lat 3N2D 493994711,-4148000,Entertainment,MBBank,high
+2026-10-12,Galaxy Cinema Nguyen Trai bap nuoc,-228000,Entertainment,VPBank,high
+2026-10-12,Nha thuoc FPT Long Chau mua thuoc Hoang Mai HN,-582000,Health,VietinBank,high
+2026-10-12,TIEM SUA XE Quan 7 HCM,-182000,Transport,ACB,high
+2026-10-12,THUONG DU AN QUY 4 411352629,12853000,Income,VietinBank,high
+2026-10-13,Google One 100GB cuoc hang thang 09,-51000,Subscriptions,MBBank,high
+2026-10-13,Cho thue xe dap dien Nguyen Hue,-83000,Entertainment,ZaloPay,high
+2026-10-13,Quan com van phong Thu Duc,-43000,Food,VPBank,high
+2026-10-14,Figma Professional thang 06,-551000,Subscriptions,Vietcombank,high
+2026-10-14,Zalopay chuyen tien Ngo Thi Kim 381851348,-197000,Transfer,ZaloPay,high
+2026-10-14,DIEN MAY XANH Phu Nhuan HCM,-1214000,Shopping,VietinBank,high
+2026-10-14,HONG NGOC HOSPITAL PHI KHAM 574467127,-1358000,Health,MoMo,high
+2026-10-14,Phi bao hiem suc khoe Bao Viet thang 11,-1789000,Health,VPBank,high
+2026-10-15,Canva Pro subscription thang 02,-214000,Subscriptions,ZaloPay,high
+2026-10-15,TIEM SUA XE Phan Xich Long,-405000,Transport,Vietcombank,high
+2026-10-15,Dien May Xanh noi com dien Hoan Kiem HN,-1014000,Shopping,MBBank,high
+2026-10-16,ToCoToCo Bubble Tea Thu Duc,-51000,Food,VPBank,high
+2026-10-16,Mua ve Anh Trai Show Quan 1 HCM,-2616000,Entertainment,VietinBank,high
+2026-10-17,Tour du lich Da Lat 3N2D 944237763,-3478000,Entertainment,Vietcombank,high
+2026-10-17,MB GD516115521 CHUYEN TIEN DEN Le Van Cuong,-275000,Transfer,Techcombank,high
+2026-10-17,Mua vi sinh Yakult va vitamin Landmark 81,-161000,Health,VietinBank,high
+2026-10-18,THANH TOAN VETC 658607032,-832000,Transport,MBBank,high
+2026-10-18,Nop tien le phi 476933603,-86000,Other,Techcombank,high
+2026-10-18,Phong kham MEDIPLUS Tran Duy Hung,-1079000,Health,Vietcombank,high
+2026-10-19,Apple iCloud 200GB storage thang 11,-133000,Subscriptions,ZaloPay,high
+2026-10-19,TT CUOC VINAPHONE THANG 07,-194000,Utilities,MoMo,high
+2026-10-19,Tour du lich Da Lat 3N2D 805146832,-4396000,Entertainment,MoMo,high
+2026-10-20,Haidilao Hotpot Tran Duy Hung,-770000,Food,ZaloPay,high
+2026-10-20,ViettelPay nap the cao Viettel thang 10,-402000,Utilities,VietinBank,high
+2026-10-20,The Coffee House Thao Dien,-160000,Food,ZaloPay,high
+2026-10-20,Benh vien Nhi Trung Uong phi kham 590678616,-474000,Health,VPBank,high
+2026-10-20,Benh vien Nhi Trung Uong phi kham 483454889,-805000,Health,Techcombank,high
+2026-10-21,Chuyen tien ung truoc tien mua do ho cho Hoang Thi Nga,-380000,Transfer,ZaloPay,high
+2026-10-21,PHARMACITY Nam Tu Liem HN MUA THUOC,-227000,Health,ACB,high
+2026-10-21,Mua ve Anh Trai Show Thanh Xuan HN,-1759000,Entertainment,ZaloPay,high
+2026-10-22,Benh vien Nhi Trung Uong phi kham 349810379,-635000,Health,MBBank,high
+2026-10-22,Hoan tien giao dich mua sam Tiki 915715334,417000,Income,MBBank,high
+2026-10-23,Rut tien vi ZaloPay ve ngan hang 777951447,-4065000,Transfer,ACB,high
+2026-10-23,Spotify Premium Individual thang 05,-80000,Subscriptions,MBBank,high
+2026-10-24,Aqua Park Landmark 81 ve vao cua,-173000,Entertainment,Techcombank,high
+2026-10-24,OpenAI ChatGPT Plus monthly thang 07,-516000,Subscriptions,VietinBank,high
+2026-10-24,Bamboo Airways DAD-SGN,-3732000,Transport,Techcombank,high
+2026-10-25,Zalopay chuyen tien Duong Van Nam 177744769,-235000,Transfer,MBBank,high
+2026-10-25,TT CUOC VIETTEL THANG 07,-422000,Utilities,VietinBank,high
+2026-10-26,NAP DIEN THOAI MOBIFONE 05,-67000,Utilities,VietinBank,high
+2026-10-26,HASAKI Le Van Sy MY PHAM,-840000,Shopping,MBBank,high
+2026-10-26,Dieu chinh chenh lech so du he thong 432618491,-32000,Other,ACB,high
+2026-10-26,Aeon Mall Dong Da HN mua sam,-1729000,Shopping,Techcombank,high
+2026-10-27,HOAN TIEN LAZADA 366595033,935000,Income,VPBank,high
+2026-10-27,Windscribe VPN subscription thang 12,-186000,Subscriptions,MBBank,high
+2026-10-27,TT CAFE HIGHLANDS Ba Trieu,-70000,Food,ACB,high
+2026-10-27,The thao Fit24 thang 09,-601000,Entertainment,ACB,high
+2026-10-27,Haidilao Hotpot Hoang Mai HN,-2353000,Food,Vietcombank,high
+2026-10-28,Chuyen tien mua sam nhom cho Ly Thi Kim Ngan 249284057,-1038000,Transfer,VPBank,high
+2026-10-29,Notion Plus workspace thang 07,-144000,Subscriptions,ACB,high
+2026-10-29,Sumo BBQ nuong lau Long Bien HN,-401000,Food,VietinBank,high
+2026-10-30,Phong kham Da khoa Medlatec Tay Ho HN,-929000,Health,VietinBank,high
+2026-10-31,Phi phat cham tra no the tin dung 426327720,-247000,Other,MBBank,high
+2026-10-31,Benh vien Nhi Trung Uong phi kham 584199978,-792000,Health,ZaloPay,high
+2026-10-31,Circle K mua do an nhe Le Van Sy,-46000,Food,MBBank,high
+2026-11-01,THUONG DU AN QUY 4 651604144,12359000,Income,ACB,high
+2026-11-01,Spotify Premium Individual thang 12,-87000,Subscriptions,ACB,high
+2026-11-01,Circle K mua do an nhe Pham Ngoc Thach,-36000,Food,MoMo,high
+2026-11-01,Steam Game Purchase League of Legends RP,-1313000,Entertainment,MoMo,high
+2026-11-01,Canva Pro subscription thang 10,-177000,Subscriptions,Techcombank,high
+2026-11-02,Lau de 404 Tran Duy Hung,-391000,Food,MoMo,high
+2026-11-02,Vietjet Air ve may bay HAN-DLT,-2991000,Transport,Vietcombank,high
+2026-11-03,Chuyen tien tra tien phong tro thang 05 cho Le Thi Thuy,-3808000,Transfer,Techcombank,high
+2026-11-03,Phi bao hiem suc khoe Bao Viet thang 09,-2641000,Health,VPBank,high
+2026-11-03,GitHub Copilot Individual thang 11,-258000,Subscriptions,Vietcombank,high
+2026-11-03,COOPMART Thanh Xuan HN,-1348000,Shopping,ACB,high
+2026-11-03,ToCoToCo Bubble Tea Le Van Sy,-32000,Food,ACB,high
+2026-11-03,Chuyen tien mua sam nhom cho Le Van Cuong 778382748,-1565000,Transfer,ACB,high
+2026-11-03,BURGER KING Le Van Sy,-165000,Food,Vietcombank,high
+2026-11-03,Ve xem concert Blackpink Hanoi,-1051000,Entertainment,MBBank,high
+2026-11-04,Nhan luong part-time thang 09 tu Duong Van Nam,3738000,Income,VPBank,high
+2026-11-04,BHD Star Cineplex ve xem phim Long Bien HN,-173000,Entertainment,VietinBank,high
+2026-11-04,TIEN LAI TIET KIEM THANG 04 997290808,864000,Income,Techcombank,high
+2026-11-05,Rua xe oto bot tuyet Thao Dien,-113000,Transport,ACB,high
+2026-11-05,Chuyen tien noi bo sang tai khoan thanh toan phu 754000728,-3992000,Transfer,ZaloPay,high
+2026-11-05,Banh mi Huynh Hoa Go Vap HCM,-70000,Food,Vietcombank,high
+2026-11-06,Vercel Pro hosting thang 02,-525000,Subscriptions,ZaloPay,high
+2026-11-07,Windscribe VPN subscription thang 01,-269000,Subscriptions,VPBank,high
+2026-11-07,GRAB CAR Binh Thanh,-148000,Transport,ACB,high
+2026-11-08,OpenAI ChatGPT Plus monthly thang 12,-514000,Subscriptions,Techcombank,high
+2026-11-09,TT CUOC VIETTEL THANG 09,-203000,Utilities,VPBank,high
+2026-11-09,Vinaphone tra sau cuoc thue bao thang 01,-146000,Utilities,MBBank,high
+2026-11-09,Nha thuoc FPT Long Chau mua thuoc Pham Ngoc Thach,-484000,Health,ZaloPay,high
+2026-11-09,TT TIEN AN TRUA Ba Trieu,-119000,Food,Techcombank,high
+2026-11-09,GrabCar den Pham Ngoc Thach,-221000,Transport,ACB,high
+2026-11-10,Benh vien Bach Mai phi kham benh 100503018,-166000,Health,ZaloPay,high
+2026-11-10,Ve xem concert Ha Anh Tuan Live,-2327000,Entertainment,VietinBank,high
