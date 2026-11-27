@@ -61,7 +61,7 @@ function Coach() {
   const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#f43f5e'];
 
   return (
-    <div className="card" style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div className="card" style={{ width: '100%' }}>
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h2 style={{ marginTop: 0, marginBottom: '0.5rem' }}>
           <i className="fa-solid fa-wand-magic-sparkles" style={{ color: 'var(--primary)', marginRight: '10px' }}></i> 
@@ -138,8 +138,9 @@ function Coach() {
             )}
 
             {/* Insights Section */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <h4 style={{ margin: 0, color: 'var(--text-color)' }}>{t('coach.action_plan')}</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
               {insights.map((insight, idx) => {
                 const style = getStyle(insight.type);
                 return (
@@ -170,6 +171,7 @@ function Coach() {
                   </div>
                 );
               })}
+              </div>
             </div>
 
             {/* Suggested Caps Section */}

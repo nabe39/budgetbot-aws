@@ -381,7 +381,7 @@ TEMPLATES: dict[str, list[tuple[str, tuple[int, int]]]] = {
     # ── Transfer ─────────────────────────────────────────────────────────────
     "Transfer": [
         ("Chuyen khoan den {name} qua VietQR", (50_000, 5_000_000)),
-        ("Chuyen tien tra tien an trua cho {name}", (35_000, 250_000)),
+        ("Chuyen tien tra no ban be cho {name}", (100_000, 2_500_000)),
         ("Nap tien vao vi MoMo tu VCB", (100_000, 3_000_000)),
         ("Rut tien tu vi MoMo ve tai khoan ngan hang", (200_000, 5_000_000)),
         ("Chuyen tien vao tai khoan Tiet kiem online {tx_code}", (1_000_000, 20_000_000)),
@@ -404,7 +404,7 @@ TEMPLATES: dict[str, list[tuple[str, tuple[int, int]]]] = {
         ("Nap tien vi ZaloPay thang {month}", (100_000, 3_000_000)),
         ("Rut tien vi ZaloPay ve ngan hang {tx_code}", (200_000, 5_000_000)),
         ("CK tien thue nha thang {month} cho {name}", (2_500_000, 8_000_000)),
-        ("Chuyen tien mua sam nhom cho {name} {tx_code}", (200_000, 2_000_000)),
+        ("Chuyen tien cho vay tam ung {name} {tx_code}", (200_000, 2_000_000)),
     ],
 
     # ── Other ────────────────────────────────────────────────────────────────

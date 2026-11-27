@@ -24,7 +24,7 @@ const getCategoryIcon = (category) => {
 function Chat() {
   const { user } = useAuth();
   const { t, getCategoryName, language } = useLanguage();
-  const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'transaction'
+  const [activeTab, setActiveTab] = useState('transaction'); // 'transaction' or 'chat'
 
   // Ask AI states
   const [chatInput, setChatInput] = useState('');
@@ -99,12 +99,12 @@ function Chat() {
     }
   }, [txnHistory, user]);
 
-  const sendMessage = async () => {
+  const sendMessage = async (overrideMsg = null) => {
     if (activeTab === 'chat') {
-      if (!chatInput.trim()) return;
-      const msg = chatInput.trim();
+      const msg = (typeof overrideMsg === 'string' ? overrideMsg : chatInput).trim();
+      if (!msg) return;
       setChatHistory(prev => [...prev, { sender: 'user', text: msg }]);
-      setChatInput('');
+      if (typeof overrideMsg !== 'string') setChatInput('');
       setChatLoading(true);
       
       try {
@@ -134,12 +134,23 @@ function Chat() {
       
       try {
         const res = await apiClient.post('/chat/transaction', { message: msg });
-        if (res.data.status === 'saved') {
+        const st = res.data.status;
+        if (st === 'saved' || st === 'updated' || st === 'deleted') {
           setTxnHistory(prev => [...prev, {
             sender: 'bot',
-            text: res.data.message,
-            status: 'saved',
-            transaction: res.data.transaction
+            text: res.data.message || '',
+            status: st,
+            transaction: res.data.transaction,
+            previous: res.data.previous || null
+          }]);
+        } else if (st === 'ambiguous') {
+          setTxnHistory(prev => [...prev, {
+            sender: 'bot',
+            text: res.data.detail || '',
+            status: 'ambiguous',
+            action: res.data.action,
+            candidates: res.data.candidates || [],
+            updates: res.data.updates || null
           }]);
         } else {
           setTxnHistory(prev => [...prev, {
@@ -152,6 +163,28 @@ function Chat() {
         setTxnHistory(prev => [...prev, { sender: 'bot', text: t('chat.error_connect') }]);
       }
       setTxnLoading(false);
+    }
+  };
+
+  const handleResolveAmbiguous = async (msgIndex, candidate, action, updates) => {
+    try {
+      if (action === 'delete') {
+        await apiClient.delete(`/transactions/${encodeURIComponent(candidate.id)}`);
+        setTxnHistory(prev => prev.map((m, idx) =>
+          idx === msgIndex
+            ? { sender: 'bot', status: 'deleted', transaction: candidate, text: '' }
+            : m
+        ));
+      } else if (action === 'edit' && updates) {
+        const res = await apiClient.put(`/transactions/${encodeURIComponent(candidate.id)}`, updates);
+        setTxnHistory(prev => prev.map((m, idx) =>
+          idx === msgIndex
+            ? { sender: 'bot', status: 'updated', transaction: res.data.transaction || { ...candidate, ...updates }, previous: candidate, text: '' }
+            : m
+        ));
+      }
+    } catch (err) {
+      setTxnHistory(prev => [...prev, { sender: 'bot', text: t('chat.error_connect'), status: 'error' }]);
     }
   };
 
@@ -240,22 +273,6 @@ function Chat() {
         width: 'fit-content'
       }}>
         <button
-          onClick={() => setActiveTab('chat')}
-          style={{
-            padding: '0.6rem 1.2rem',
-            borderRadius: '10px',
-            border: 'none',
-            background: activeTab === 'chat' ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)' : 'transparent',
-            color: activeTab === 'chat' ? 'white' : 'var(--text-muted)',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: activeTab === 'chat' ? '0 4px 10px rgba(37,99,235,0.2)' : 'none'
-          }}
-        >
-          <i className="fa-solid fa-comments" style={{ marginRight: '8px' }}></i> {t('chat.tab_chat')}
-        </button>
-        <button
           onClick={() => setActiveTab('transaction')}
           style={{
             padding: '0.6rem 1.2rem',
@@ -271,6 +288,22 @@ function Chat() {
         >
           <i className="fa-solid fa-receipt" style={{ marginRight: '8px' }}></i> {t('chat.tab_transaction')}
         </button>
+        <button
+          onClick={() => setActiveTab('chat')}
+          style={{
+            padding: '0.6rem 1.2rem',
+            borderRadius: '10px',
+            border: 'none',
+            background: activeTab === 'chat' ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)' : 'transparent',
+            color: activeTab === 'chat' ? 'white' : 'var(--text-muted)',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: activeTab === 'chat' ? '0 4px 10px rgba(37,99,235,0.2)' : 'none'
+          }}
+        >
+          <i className="fa-solid fa-comments" style={{ marginRight: '8px' }}></i> {t('chat.tab_chat')}
+        </button>
       </div>
 
       <p style={{color:'var(--text-muted)', fontSize:'0.9rem', marginBottom: '1.5rem'}}>
@@ -281,7 +314,8 @@ function Chat() {
         display: 'flex',
         flexDirection: 'column',
         gap: '1rem',
-        height: '500px',
+        height: 'calc(100vh - 340px)',
+        minHeight: '420px',
         overflowY: 'auto',
         padding: '1.5rem',
         background: 'rgba(255,255,255,0.4)',
@@ -309,7 +343,24 @@ function Chat() {
             flexDirection: 'column',
             gap: '0.5rem'
           }}>
-            {msg.sender === 'bot' && <strong style={{color: 'var(--primary-dark)'}}>BudgetBot AI<br/></strong>}
+            {msg.sender === 'bot' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.15rem' }}>
+                <span style={{
+                  width: '22px',
+                  height: '22px',
+                  borderRadius: '7px',
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  color: 'var(--primary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.72rem'
+                }}>
+                  <i className="fa-solid fa-robot"></i>
+                </span>
+                <strong style={{ color: 'var(--primary-dark)', fontSize: '0.85rem' }}>BudgetBot AI</strong>
+              </div>
+            )}
             {msg.sender === 'bot' ? (
               <>
                 {msg.status === 'error' ? (
@@ -317,99 +368,190 @@ function Chat() {
                     <i className="fa-solid fa-circle-exclamation"></i>
                     <span>{msg.text}</span>
                   </div>
-                ) : (
+                ) : !( ['saved', 'updated', 'deleted', 'ambiguous'].includes(msg.status) ) && (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      p: ({ children }) => <p style={{ margin: '0.35rem 0' }}>{children}</p>,
-                      ul: ({ children }) => <ul style={{ margin: '0.35rem 0 0.35rem 1.2rem', paddingLeft: '1rem' }}>{children}</ul>,
-                      ol: ({ children }) => <ol style={{ margin: '0.35rem 0 0.35rem 1.2rem', paddingLeft: '1rem' }}>{children}</ol>,
+                      h3: ({ children }) => <h4 style={{ margin: '0.2rem 0 0.5rem 0', fontSize: '0.98rem', fontWeight: 700, color: 'var(--primary-dark)' }}>{children}</h4>,
+                      h4: ({ children }) => <h5 style={{ margin: '0.2rem 0 0.4rem 0', fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-main)' }}>{children}</h5>,
+                      p: ({ children }) => <p style={{ margin: '0.3rem 0' }}>{children}</p>,
+                      ul: ({ children }) => <ul style={{ margin: '0.3rem 0 0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ul>,
+                      ol: ({ children }) => <ol style={{ margin: '0.3rem 0 0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ol>,
                       li: ({ children }) => <li style={{ margin: '0.2rem 0' }}>{children}</li>,
                       strong: ({ children }) => <strong style={{ fontWeight: 700 }}>{children}</strong>,
-                      code: ({ children }) => <code style={{ background: 'rgba(37,99,235,0.08)', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>{children}</code>,
+                      code: ({ children }) => <code style={{ background: 'rgba(37,99,235,0.08)', color: 'var(--primary-dark)', padding: '0.1rem 0.4rem', borderRadius: '6px', fontWeight: 600, fontSize: '0.88em' }}>{children}</code>,
+                      table: ({ children }) => (
+                        <div style={{ overflowX: 'auto', margin: '0.5rem 0 0.25rem 0', borderRadius: '10px', border: '1px solid rgba(15, 23, 42, 0.08)', background: 'rgba(255,255,255,0.9)' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>{children}</table>
+                        </div>
+                      ),
+                      thead: ({ children }) => <thead style={{ background: 'rgba(37, 99, 235, 0.07)' }}>{children}</thead>,
+                      th: ({ children, style }) => <th style={{ ...style, padding: '0.55rem 0.75rem', fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.3px', borderBottom: '1px solid rgba(15, 23, 42, 0.08)' }}>{children}</th>,
+                      td: ({ children, style }) => <td style={{ ...style, padding: '0.5rem 0.75rem', borderBottom: '1px solid rgba(15, 23, 42, 0.05)' }}>{children}</td>,
                     }}
                   >
                     {msg.text}
                   </ReactMarkdown>
                 )}
 
-                {msg.status === 'saved' && msg.transaction && (
-                  <div style={{
-                    marginTop: '0.5rem',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    borderRadius: '12px',
-                    padding: '1rem',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.4rem',
-                    minWidth: '260px',
-                    color: 'var(--text-main)',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}>
-                    {/* Top colored highlight line */}
+                {['saved', 'updated', 'deleted'].includes(msg.status) && msg.transaction && (() => {
+                  const isDeleted = msg.status === 'deleted';
+                  const isUpdated = msg.status === 'updated';
+                  const accentColor = isDeleted ? '#dc2626' : isUpdated ? '#2563eb' : '#059669';
+                  const accentGrad = isDeleted
+                    ? 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)'
+                    : isUpdated
+                    ? 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)'
+                    : 'linear-gradient(90deg, #10b981 0%, #059669 100%)';
+                  const headerIcon = isDeleted ? 'fa-trash-can' : isUpdated ? 'fa-pen-to-square' : 'fa-circle-check';
+                  const headerTitle = isDeleted
+                    ? t('chat.card_deleted')
+                    : isUpdated
+                    ? t('chat.card_updated')
+                    : t('chat.card_saved');
+
+                  const conf = (msg.transaction.confidence || 'high').toLowerCase();
+                  const confStyle = conf === 'high'
+                    ? { bg: 'rgba(16, 185, 129, 0.12)', color: '#059669', label: t('chat.high_conf') }
+                    : conf === 'medium'
+                    ? { bg: 'rgba(245, 158, 11, 0.14)', color: '#d97706', label: t('chat.med_conf') }
+                    : { bg: 'rgba(239, 68, 68, 0.12)', color: '#dc2626', label: t('chat.low_conf') };
+                  return (
                     <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '4px',
-                      background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)'
-                    }} />
-                    
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--success)' }}>
-                        <i className="fa-solid fa-circle-check"></i> {t('chat.card_saved')}
-                      </span>
-                      <span style={{
-                        background: 'rgba(16, 185, 129, 0.1)',
-                        color: '#059669',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        fontSize: '0.7rem',
-                        fontWeight: 600
-                      }}>
-                        {msg.transaction.confidence === 'high' ? t('chat.high_conf') : msg.transaction.confidence === 'medium' ? t('chat.med_conf') : t('chat.low_conf')}
-                      </span>
-                    </div>
+                      marginTop: '0.2rem',
+                      background: 'rgba(255, 255, 255, 0.96)',
+                      border: `1px solid ${isDeleted ? 'rgba(239, 68, 68, 0.25)' : isUpdated ? 'rgba(37, 99, 235, 0.25)' : 'rgba(16, 185, 129, 0.22)'}`,
+                      borderRadius: '14px',
+                      padding: '0.95rem 1.1rem',
+                      boxShadow: '0 4px 14px rgba(0,0,0,0.04)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.45rem',
+                      minWidth: '300px',
+                      color: 'var(--text-main)',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: accentGrad
+                      }} />
 
-                    <hr style={{ border: 'none', borderTop: '1px dashed rgba(0,0,0,0.1)', margin: '0.4rem 0' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', fontWeight: 'bold', fontSize: '0.88rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: accentColor }}>
+                          <i className={`fa-solid ${headerIcon}`}></i> {headerTitle}
+                        </span>
+                        {!isDeleted && (
+                          <span style={{
+                            background: confStyle.bg,
+                            color: confStyle.color,
+                            padding: '2px 9px',
+                            borderRadius: '12px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700
+                          }}>
+                            {confStyle.label}
+                          </span>
+                        )}
+                      </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>{t('chat.card_desc')}</span>
-                      <strong style={{ textAlign: 'right' }}>{msg.transaction.description}</strong>
-                    </div>
+                      <hr style={{ border: 'none', borderTop: '1px dashed rgba(0,0,0,0.1)', margin: '0.25rem 0' }} />
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>{t('chat.card_date')}</span>
-                      <strong>{msg.transaction.date}</strong>
-                    </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', fontSize: '0.86rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>{t('chat.card_desc')}</span>
+                        <strong style={{ textAlign: 'right', textDecoration: isDeleted ? 'line-through' : 'none' }}>
+                          {isUpdated && msg.previous && msg.previous.description !== msg.transaction.description
+                            ? <><span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', fontWeight: 500, marginRight: '6px' }}>{msg.previous.description}</span>→ {msg.transaction.description}</>
+                            : msg.transaction.description}
+                        </strong>
+                      </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', alignItems: 'center' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>{t('chat.card_cat')}</span>
-                      <span style={{
-                        background: 'var(--primary-light)',
-                        color: 'var(--primary-dark)',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.25rem'
-                      }}>
-                        <i className={`fa-solid ${getCategoryIcon(msg.transaction.category)}`}></i> {getCategoryName(msg.transaction.category)}
-                      </span>
-                    </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', fontSize: '0.86rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>{t('chat.card_date')}</span>
+                        <strong>
+                          {isUpdated && msg.previous && msg.previous.date !== msg.transaction.date
+                            ? <><span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', fontWeight: 500, marginRight: '6px' }}>{msg.previous.date}</span>→ {msg.transaction.date}</>
+                            : msg.transaction.date}
+                        </strong>
+                      </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginTop: '0.2rem' }}>
-                      <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{t('chat.card_amt')}</span>
-                      <strong style={{ color: msg.transaction.amount >= 0 ? 'var(--success)' : 'var(--error)', fontSize: '1rem' }}>
-                        {msg.transaction.amount >= 0 ? '+' : '-'}{formatCurrency(Math.abs(msg.transaction.amount))}
-                      </strong>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', fontSize: '0.86rem', alignItems: 'center' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>{t('chat.card_cat')}</span>
+                        <span style={{
+                          background: 'var(--primary-light)',
+                          color: 'var(--primary-dark)',
+                          padding: '2px 9px',
+                          borderRadius: '12px',
+                          fontSize: '0.76rem',
+                          fontWeight: 600,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}>
+                          <i className={`fa-solid ${getCategoryIcon(msg.transaction.category)}`}></i> {getCategoryName(msg.transaction.category)}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', fontSize: '0.94rem', marginTop: '0.2rem', paddingTop: '0.35rem', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{t('chat.card_amt')}</span>
+                        <strong style={{ color: isDeleted ? '#94a3b8' : msg.transaction.amount >= 0 ? 'var(--success)' : 'var(--error)', fontSize: '1.02rem', textDecoration: isDeleted ? 'line-through' : 'none' }}>
+                          {msg.transaction.amount >= 0 ? '+' : '-'}{formatCurrency(Math.abs(msg.transaction.amount))}
+                        </strong>
+                      </div>
                     </div>
+                  );
+                })()}
+
+                {msg.status === 'ambiguous' && msg.candidates && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: '320px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--warn)' }}>
+                      <i className="fa-solid fa-circle-question" style={{ marginRight: '6px' }}></i>
+                      {msg.text}
+                    </div>
+                    {msg.candidates.map((cand) => (
+                      <div
+                        key={cand.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.75rem',
+                          padding: '0.55rem 0.75rem',
+                          borderRadius: '10px',
+                          background: '#ffffff',
+                          border: '1px solid rgba(15, 23, 42, 0.08)',
+                          fontSize: '0.84rem'
+                        }}
+                      >
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{cand.description}</div>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                            {cand.date} • {getCategoryName(cand.category)} • {cand.amount >= 0 ? '+' : '-'}{formatCurrency(Math.abs(cand.amount))}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleResolveAmbiguous(i, cand, msg.action, msg.updates)}
+                          style={{
+                            padding: '0.32rem 0.75rem',
+                            borderRadius: '8px',
+                            border: 'none',
+                            background: msg.action === 'delete' ? '#fee2e2' : 'rgba(37, 99, 235, 0.12)',
+                            color: msg.action === 'delete' ? '#dc2626' : 'var(--primary)',
+                            fontWeight: 700,
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {msg.action === 'delete' ? (language === 'vi' ? 'Xóa' : 'Delete') : (language === 'vi' ? 'Cập nhật' : 'Update')}
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </>
@@ -424,6 +566,33 @@ function Chat() {
           </div>
         )}
       </div>
+
+      {activeTab === 'chat' && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', marginBottom: '0.75rem' }}>
+          {[t('chat.quick_q1'), t('chat.quick_q2'), t('chat.quick_q3'), t('chat.quick_q4')].map((q) => (
+            <button
+              key={q}
+              type="button"
+              disabled={currentLoading}
+              onClick={() => sendMessage(q)}
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: '999px',
+                border: '1px solid rgba(37, 99, 235, 0.22)',
+                background: 'rgba(255, 255, 255, 0.75)',
+                color: 'var(--primary-dark)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <i className="fa-solid fa-sparkles" style={{ marginRight: '5px', fontSize: '0.72rem', color: 'var(--primary)' }}></i>
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
       
       <div className="chat-input" style={{display: 'flex', gap: '0.5rem'}}>
         <input 
@@ -435,7 +604,7 @@ function Chat() {
           style={{flex: 1}}
           disabled={currentLoading}
         />
-        <button className="btn-primary" onClick={sendMessage} disabled={currentLoading}>
+        <button className="btn-primary" onClick={() => sendMessage()} disabled={currentLoading}>
           <i className="fa-solid fa-paper-plane"></i>
         </button>
       </div>

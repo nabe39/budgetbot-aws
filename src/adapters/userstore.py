@@ -238,18 +238,25 @@ class PostgresUserStore:
         user_id: str,
         month: str | None = None,
         category: str | None = None,
+        search: str | None = None,
     ) -> int:
         sql = "SELECT COUNT(*) FROM transactions WHERE user_id = %s"
         params: list = [user_id]
         if month:
             if len(month) == 10:
                 sql += " AND txn_date = %s"
+            elif len(month) == 4:
+                sql += " AND to_char(txn_date, 'YYYY') = %s"
             else:
                 sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(%s)"
             params.append(category)
+        if search:
+            sql += " AND (LOWER(description) LIKE LOWER(%s) OR LOWER(category) LIKE LOWER(%s))"
+            like_val = f"%{search.strip()}%"
+            params.extend([like_val, like_val])
         with self._get_conn().cursor() as cur:
             cur.execute(sql, params)
             r = cur.fetchone()
@@ -262,6 +269,7 @@ class PostgresUserStore:
         category: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        search: str | None = None,
     ) -> list[dict]:
         sql = """
             SELECT id, txn_date, description, amount, category, confidence, engine, created_at, updated_at
@@ -272,12 +280,18 @@ class PostgresUserStore:
         if month:
             if len(month) == 10:
                 sql += " AND txn_date = %s"
+            elif len(month) == 4:
+                sql += " AND to_char(txn_date, 'YYYY') = %s"
             else:
                 sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(%s)"
             params.append(category)
+        if search:
+            sql += " AND (LOWER(description) LIKE LOWER(%s) OR LOWER(category) LIKE LOWER(%s))"
+            like_val = f"%{search.strip()}%"
+            params.extend([like_val, like_val])
         sql += " ORDER BY txn_date DESC, id DESC"
         if limit is not None:
             sql += " LIMIT %s"
@@ -307,7 +321,12 @@ class PostgresUserStore:
         sql = "SELECT category, SUM(amount), COUNT(*) FROM transactions WHERE user_id = %s"
         params: list = [user_id]
         if month:
-            sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
+            if len(month) == 10:
+                sql += " AND txn_date = %s"
+            elif len(month) == 4:
+                sql += " AND to_char(txn_date, 'YYYY') = %s"
+            else:
+                sql += " AND to_char(txn_date, 'YYYY-MM') = %s"
             params.append(month)
         sql += " GROUP BY category"
         with self._get_conn().cursor() as cur:
@@ -464,18 +483,25 @@ class SQLiteUserStore:
         user_id: str,
         month: str | None = None,
         category: str | None = None,
+        search: str | None = None,
     ) -> int:
         sql = "SELECT COUNT(*) FROM transactions WHERE user_id = ?"
         params: list = [user_id]
         if month:
             if len(month) == 10:
                 sql += " AND txn_date = ?"
+            elif len(month) == 4:
+                sql += " AND substr(txn_date, 1, 4) = ?"
             else:
                 sql += " AND substr(txn_date, 1, 7) = ?"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(?)"
             params.append(category)
+        if search:
+            sql += " AND (LOWER(description) LIKE LOWER(?) OR LOWER(category) LIKE LOWER(?))"
+            like_val = f"%{search.strip()}%"
+            params.extend([like_val, like_val])
         cur = self.conn.execute(sql, params)
         r = cur.fetchone()
         return int(r[0]) if r else 0
@@ -487,6 +513,7 @@ class SQLiteUserStore:
         category: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        search: str | None = None,
     ) -> list[dict]:
         sql = (
             "SELECT id, txn_date, description, amount, category, confidence, engine, created_at, updated_at "
@@ -496,12 +523,18 @@ class SQLiteUserStore:
         if month:
             if len(month) == 10:
                 sql += " AND txn_date = ?"
+            elif len(month) == 4:
+                sql += " AND substr(txn_date, 1, 4) = ?"
             else:
                 sql += " AND substr(txn_date, 1, 7) = ?"
             params.append(month)
         if category:
             sql += " AND LOWER(category) = LOWER(?)"
             params.append(category)
+        if search:
+            sql += " AND (LOWER(description) LIKE LOWER(?) OR LOWER(category) LIKE LOWER(?))"
+            like_val = f"%{search.strip()}%"
+            params.extend([like_val, like_val])
         sql += " ORDER BY txn_date DESC, id DESC"
         if limit is not None:
             sql += " LIMIT ?"
@@ -746,7 +779,12 @@ class MySQLUserStore:
         sql = "SELECT category, SUM(amount), COUNT(*) FROM transactions WHERE user_id = %s"
         params: list = [user_id]
         if month:
-            sql += " AND DATE_FORMAT(txn_date, '%%Y-%%m') = %s"
+            if len(month) == 10:
+                sql += " AND txn_date = %s"
+            elif len(month) == 4:
+                sql += " AND DATE_FORMAT(txn_date, '%%Y') = %s"
+            else:
+                sql += " AND DATE_FORMAT(txn_date, '%%Y-%%m') = %s"
             params.append(month)
         sql += " GROUP BY category"
         with self.conn.cursor() as cur:

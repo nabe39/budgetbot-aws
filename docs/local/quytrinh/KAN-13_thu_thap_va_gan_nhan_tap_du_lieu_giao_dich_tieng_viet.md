@@ -115,7 +115,7 @@ python scripts/generate_vietnamese_dataset.py --count 1000 --seed 42
 
 #### 4. Thống kê dòng tiền (Cash Flow Summary):
 * **Tổng thu nhập (Income):** `+716,514,000 ₫`
-* **Tổng chi tiêu (Expense):** `-712,182,000 ₫`
+* **Tổng chi tiêu (Expense):** `-717,018,000 ₫`
 
 ---
 
@@ -143,10 +143,19 @@ Dữ liệu giao dịch tiếng Việt có những thách thức rất riêng so
    * Ví dụ: `Highlands Coffee` thông thường là `Food`. Tuy nhiên, nếu là thanh toán tiền mặt bằng thì có thể là `Housing`. Trong bài toán cá nhân, ta gán vào nhãn có xác suất cao nhất (`Food`).
    * `Tiki` / `Shopee`: Có thể mua đồ ăn (`Food`), mua sách (`Shopping`), hoặc mua thẻ cào (`Utilities`). Cần dựa vào các từ đi kèm (`ShopeeFood` vs `Shopee mua ao`).
 
-### 4.3. Quy Chuẩn 10 Danh Mục PascalCase Của BudgetBot
+### 4.3. Quy Chuẩn 10 Danh Mục PascalCase & Quy Tắc Phân Định `Transfer`
 Để đảm bảo tính nhất quán giữa Backend (Python FastAPI) và Frontend (React Vite), nhãn bắt buộc phải là dạng **PascalCase không dấu cách**:
 * Đúng: `Food`, `Transport`, `Shopping`, `Utilities`, `Entertainment`, `Health`, `Subscriptions`, `Income`, `Transfer`, `Other`.
 * Sai: `food`, `ăn uống`, `Food & Drink`, `Shopping_Online`.
+
+**Quy tắc ranh giới cho danh mục `Transfer` (Quan trọng):**
+* **Nguyên tắc ưu tiên mục đích tiêu dùng:** "Chuyển khoản" chỉ là phương thức thanh toán. Mọi giao dịch chuyển khoản có ghi rõ mục đích chi tiêu cụ thể (ví dụ: `"CK tiền ăn trưa"`, `"chuyển khoản ăn xôi"`, `"chuyển khoản mua đồ"`, `"chuyển khoản 50k tiền nhậu"`) **phải** được phân loại theo danh mục tiêu dùng tương ứng (`Food`, `Shopping`, `Utilities`...), **không** gán vào `Transfer`.
+* **Khi nào mới gán `Transfer`:**
+  1. **Luân chuyển nội bộ / Ví điện tử:** chuyển giữa 2 tài khoản của bản thân, nạp/rút ví MoMo/ZaloPay.
+  2. **Tiết kiệm / Đầu tư:** chuyển tiền vào sổ tiết kiệm online.
+  3. **Nghĩa vụ tài chính / P2P đặc thù:** trả nợ cá nhân, vay tiêu dùng, ứng tiền hộ, gửi tiền chu cấp gia đình, tiền thuê phòng trọ (khi không có danh mục `Debt`/`Housing` riêng).
+  4. **Chuyển khoản P2P không rõ mục đích:** giao dịch chuyển cho cá nhân hoặc STK mà sao kê không nêu mục đích hàng hóa/dịch vụ (ví dụ: `"VCB IB ... CK DEN NGUYEN VAN A"`).
+* **Phân biệt với `Income` và `Other`:** Tiền nhận vào tài khoản (`amount > 0`, lương, hoàn tiền, nhận trả nợ) thuộc `Income`; mã giao dịch mờ đục hoàn toàn (`FT...`, `TRX...`), rút ATM và phí ngân hàng thuộc `Other`.
 
 ### 4.4. Quy Trình Gán Nhãn Bán Tự Động (Semi-Automated Annotation Workflow)
 Khi mở rộng dữ liệu lên 5,000 - 10,000 mẫu, không thể gán nhãn thủ công từng dòng. Quy trình chuẩn mực trong công nghiệp gồm 3 giai đoạn:
