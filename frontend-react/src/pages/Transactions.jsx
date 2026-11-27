@@ -3,6 +3,8 @@ import apiClient from '../api/client';
 import { formatCurrency } from '../utils/format';
 import { useUpload } from '../context/UploadContext';
 import { useLanguage } from '../context/LanguageContext';
+import GlassSelect from '../components/GlassSelect';
+import CalendarPicker from '../components/CalendarPicker';
 import './Transactions.css';
 
 const STANDARD_CATEGORIES = [
@@ -21,13 +23,63 @@ const STANDARD_CATEGORIES = [
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [periodMode, setPeriodMode] = useState('all'); // 'all' | 'day' | 'month' | 'year'
+  const [periodValue, setPeriodValue] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('');
   const [editingTxn, setEditingTxn] = useState(null);
   const [debug, setDebug] = useState(false);
 
   const { refreshTrigger } = useUpload();
   const { t, getCategoryName, getConfidenceLabel } = useLanguage();
+
+  const availableMonthsSet = useMemo(() => {
+    const s = new Set();
+    for (const item of transactions) {
+      const m = String(item.date || '').slice(0, 7);
+      if (m.length === 7) s.add(m);
+    }
+    return s;
+  }, [transactions]);
+
+  const categoryOptions = useMemo(() => [
+    { value: '', label: t('txn.all_categories'), icon: 'fa-solid fa-layer-group' },
+    ...STANDARD_CATEGORIES.map(cat => ({ value: cat, label: getCategoryName(cat) }))
+  ], [t, getCategoryName]);
+
+  const modalCategoryOptions = useMemo(
+    () => STANDARD_CATEGORIES.map(cat => ({ value: cat, label: getCategoryName(cat) })),
+    [getCategoryName]
+  );
+
+  const pageSizeOptions = useMemo(() => [
+    { value: 10, label: `10 ${t('txn.per_page')}` },
+    { value: 20, label: `20 ${t('txn.per_page')}` },
+    { value: 50, label: `50 ${t('txn.per_page')}` },
+  ], [t]);
+
+  const confidenceOptions = useMemo(() => [
+    { value: 'high', label: t('conf.high') },
+    { value: 'medium', label: t('conf.medium') },
+    { value: 'low', label: t('conf.low') },
+  ], [t]);
+
+  const buildFilterParams = () => {
+    const params = {};
+    if (periodMode === 'day' && periodValue) {
+      params.date = periodValue;
+    } else if ((periodMode === 'month' || periodMode === 'year') && periodValue) {
+      params.month = periodValue;
+    }
+    if (category) params.category = category;
+    return params;
+  };
+
+  const handlePeriodChange = (mode, val) => {
+    setPeriodMode(mode);
+    setPeriodValue(val);
+    setCurrentPage(1);
+  };
 
   useEffect(() => {
     window.enableDebug = () => setDebug(true);
@@ -54,13 +106,7 @@ function Transactions() {
   const refreshTransactions = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (selectedDate) {
-        params.date = selectedDate;
-        params.month = selectedDate;
-      }
-      if (category) params.category = category;
-      const res = await apiClient.get('/transactions', { params });
+      const res = await apiClient.get('/transactions', { params: buildFilterParams() });
       setTransactions(res.data.transactions || []);
     } catch (err) {
       console.error('Failed to load transactions:', err);
@@ -75,13 +121,7 @@ function Transactions() {
     const loadTransactions = async () => {
       setLoading(true);
       try {
-        const params = {};
-        if (selectedDate) {
-          params.date = selectedDate;
-          params.month = selectedDate;
-        }
-        if (category) params.category = category;
-        const res = await apiClient.get('/transactions', { params });
+        const res = await apiClient.get('/transactions', { params: buildFilterParams() });
         if (!isActive) return;
         setTransactions(res.data.transactions || []);
         setCurrentPage(1);
@@ -99,7 +139,7 @@ function Transactions() {
     return () => {
       isActive = false;
     };
-  }, [selectedDate, category, refreshTrigger]);
+  }, [periodMode, periodValue, category, refreshTrigger]);
 
   const handleDelete = async (id) => {
     if (!window.confirm(t('txn.delete_confirm'))) return;
@@ -111,12 +151,27 @@ function Transactions() {
     }
   };
 
+  const TWO_WAY_CATEGORIES = ['Transfer', 'Other'];
+
+  const resolveAmountByCategory = (categoryVal, directionVal, rawAmount) => {
+    const absVal = Math.abs(parseFloat(rawAmount));
+    if (categoryVal === 'Income') return absVal;
+    if (TWO_WAY_CATEGORIES.includes(categoryVal)) {
+      return directionVal === 'in' ? absVal : -absVal;
+    }
+    return -absVal;
+  };
+
+  const getNextTypeForCategory = (categoryVal, currentType) => {
+    if (categoryVal === 'Income') return 'in';
+    if (TWO_WAY_CATEGORIES.includes(categoryVal)) return currentType || 'out';
+    return 'out';
+  };
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      const finalAmount = editingTxn.type === 'out'
-        ? -Math.abs(parseFloat(editingTxn.amount))
-        : Math.abs(parseFloat(editingTxn.amount));
+      const finalAmount = resolveAmountByCategory(editingTxn.category, editingTxn.type, editingTxn.amount);
 
       await apiClient.put(`/transactions/${encodeURIComponent(editingTxn.id)}`, {
         date: editingTxn.date,
@@ -135,15 +190,14 @@ function Transactions() {
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     try {
-      const finalAmount = newTxn.type === 'out'
-        ? -Math.abs(parseFloat(newTxn.amount))
-        : Math.abs(parseFloat(newTxn.amount));
+      const cat = newTxn.category || 'Food';
+      const finalAmount = resolveAmountByCategory(cat, newTxn.type, newTxn.amount);
 
       await apiClient.post('/transactions', {
         date: newTxn.date,
         description: newTxn.description,
         amount: finalAmount,
-        category: newTxn.category || 'Food',
+        category: cat,
         confidence: 'high'
       });
       setAddingTxn(false);
@@ -169,8 +223,28 @@ function Transactions() {
     setSortConfig({ key, direction });
   };
 
+  const normalizeForSearch = (str) =>
+    String(str || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
+      .toLowerCase();
+
+  const filteredTransactions = useMemo(() => {
+    const q = normalizeForSearch(searchQuery.trim());
+    if (!q) return transactions;
+    return transactions.filter((item) => {
+      const desc = normalizeForSearch(item.description);
+      const catRaw = normalizeForSearch(item.category);
+      const catLabel = normalizeForSearch(getCategoryName(item.category));
+      const amtStr = String(Math.abs(Number(item.amount) || 0));
+      return desc.includes(q) || catRaw.includes(q) || catLabel.includes(q) || amtStr.includes(q);
+    });
+  }, [transactions, searchQuery, getCategoryName]);
+
   const sortedTransactions = useMemo(() => {
-    return [...transactions].sort((a, b) => {
+    return [...filteredTransactions].sort((a, b) => {
       let aVal = a[sortConfig.key];
       let bVal = b[sortConfig.key];
 
@@ -190,24 +264,24 @@ function Transactions() {
       }
       return 0;
     });
-  }, [transactions, sortConfig]);
+  }, [filteredTransactions, sortConfig]);
 
   // Quick summary stats for current view
   const summaryStats = useMemo(() => {
     let totalIn = 0;
     let totalOut = 0;
-    for (const t of transactions) {
+    for (const t of filteredTransactions) {
       const amt = Number(t.amount) || 0;
       if (amt >= 0) totalIn += amt;
       else totalOut += Math.abs(amt);
     }
     return {
-      count: transactions.length,
+      count: filteredTransactions.length,
       income: totalIn,
       expense: totalOut,
       net: totalIn - totalOut
     };
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // Pagination logic
   const totalPages = Math.max(1, Math.ceil(sortedTransactions.length / itemsPerPage));
@@ -304,50 +378,135 @@ function Transactions() {
     <div className="transactions-page">
       {/* ADD TRANSACTION MODAL */}
       {addingTxn && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease' }}>
-          <div className="card" style={{ width: '420px', background: 'var(--glass-bg)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ marginTop: 0 }}>
-              <i className="fa-solid fa-plus" style={{ color: 'var(--primary)', marginRight: '8px' }}></i> {t('txn.add_modal_title')}
-            </h3>
-            <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="type" checked={newTxn.type === 'out'} onChange={() => setNewTxn({ ...newTxn, type: 'out' })} />
-                  <span style={{ color: 'var(--error)', fontWeight: 600 }}>{t('txn.type_expense')}</span>
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="type" checked={newTxn.type === 'in'} onChange={() => setNewTxn({ ...newTxn, type: 'in' })} />
-                  <span style={{ color: 'var(--success)', fontWeight: 600 }}>{t('txn.type_income')}</span>
-                </label>
+        <div className="txn-modal-overlay" onClick={() => setAddingTxn(false)}>
+          <div className="txn-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="txn-modal-header">
+              <div className="txn-modal-title-group">
+                <span className="txn-modal-icon">
+                  <i className="fa-solid fa-plus"></i>
+                </span>
+                <h3 style={{ margin: 0, fontSize: '1.18rem', color: '#0f172a' }}>{t('txn.add_modal_title')}</h3>
+              </div>
+              <button type="button" className="txn-modal-close" onClick={() => setAddingTxn(false)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label className="txn-field-label">{t('txn.field_date')}</label>
+                  <CalendarPicker
+                    mode="day"
+                    value={newTxn.date}
+                    onChange={(_, val) => setNewTxn({ ...newTxn, date: val })}
+                    modes={['day']}
+                    allowClear={false}
+                  />
+                </div>
+                <div>
+                  <label className="txn-field-label">{t('txn.field_category')}</label>
+                  <GlassSelect
+                    fullWidth
+                    size="md"
+                    alignRight
+                    value={newTxn.category}
+                    options={modalCategoryOptions}
+                    onChange={val => setNewTxn({ ...newTxn, category: val, type: getNextTypeForCategory(val, newTxn.type) })}
+                  />
+                </div>
+              </div>
+
+              {TWO_WAY_CATEGORIES.includes(newTxn.category) && (
+                <div className="txn-type-segmented">
+                  <button
+                    type="button"
+                    className={`txn-type-btn ${newTxn.type === 'out' ? 'active-out' : ''}`}
+                    onClick={() => setNewTxn({ ...newTxn, type: 'out' })}
+                  >
+                    <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span>{t('txn.type_expense')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`txn-type-btn ${newTxn.type === 'in' ? 'active-in' : ''}`}
+                    onClick={() => setNewTxn({ ...newTxn, type: 'in' })}
+                  >
+                    <i className="fa-solid fa-arrow-down-left"></i>
+                    <span>{t('txn.type_income')}</span>
+                  </button>
+                </div>
+              )}
+
+              <div>
+                <label className="txn-field-label">{t('txn.field_desc')}</label>
+                <input
+                  type="text"
+                  className="txn-modal-input"
+                  placeholder="Ví dụ: Ăn trưa cơm tấm, CK mua hoa..."
+                  value={newTxn.description}
+                  onChange={e => setNewTxn({ ...newTxn, description: e.target.value })}
+                  required
+                  autoFocus
+                />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_date')}</label>
-                <input type="date" style={{ width: '100%' }} value={newTxn.date} onChange={e => setNewTxn({ ...newTxn, date: e.target.value })} required />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_desc')}</label>
-                <input type="text" style={{ width: '100%' }} value={newTxn.description} onChange={e => setNewTxn({ ...newTxn, description: e.target.value })} required />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_category')}</label>
-                <select style={{ width: '100%' }} value={newTxn.category} onChange={e => setNewTxn({ ...newTxn, category: e.target.value })}>
-                  {STANDARD_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{getCategoryName(cat)}</option>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label className="txn-field-label" style={{ marginBottom: 0 }}>{t('txn.field_amount')}</label>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    background: newTxn.type === 'in' ? 'rgba(5, 150, 105, 0.12)' : 'rgba(220, 38, 38, 0.1)',
+                    color: newTxn.type === 'in' ? 'var(--success)' : 'var(--error)'
+                  }}>
+                    {newTxn.type === 'in' ? t('txn.type_income') : t('txn.type_expense')}
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  step="1000"
+                  min="0"
+                  className="txn-modal-input"
+                  placeholder="Ví dụ: 50000"
+                  style={{ fontWeight: 700, fontSize: '1.02rem' }}
+                  value={newTxn.amount}
+                  onChange={e => setNewTxn({ ...newTxn, amount: e.target.value })}
+                  required
+                />
+                {newTxn.amount && !isNaN(parseFloat(newTxn.amount)) && parseFloat(newTxn.amount) > 0 && (
+                  <div style={{ fontSize: '0.84rem', color: newTxn.type === 'in' ? 'var(--success)' : 'var(--error)', fontWeight: 700, marginTop: '0.35rem' }}>
+                    {newTxn.type === 'in' ? '+' : '-'}{formatCurrency(parseFloat(newTxn.amount))}
+                  </div>
+                )}
+                <div className="txn-preset-row">
+                  {[
+                    { label: '50K', val: 50000 },
+                    { label: '100K', val: 100000 },
+                    { label: '200K', val: 200000 },
+                    { label: '500K', val: 500000 },
+                    { label: '1M', val: 1000000 },
+                  ].map(p => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      className={`txn-preset-chip ${String(newTxn.amount) === String(p.val) ? 'active' : ''}`}
+                      onClick={() => setNewTxn({ ...newTxn, amount: String(p.val) })}
+                    >
+                      {p.label}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_amount')}</label>
-                <input type="number" step="1000" min="0" style={{ width: '100%' }} value={newTxn.amount} onChange={e => setNewTxn({ ...newTxn, amount: e.target.value })} required />
-              </div>
-
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-primary" style={{ flex: 1, marginTop: '0' }}>{t('txn.submit_add')}</button>
-                <button type="button" className="btn-outline" style={{ flex: 1 }} onClick={() => setAddingTxn(false)}>{t('txn.cancel')}</button>
+              <div className="txn-modal-actions">
+                <button type="button" className="btn-outline" onClick={() => setAddingTxn(false)}>{t('txn.cancel')}</button>
+                <button type="submit" className="btn-primary" style={{ marginTop: 0 }}>
+                  <i className="fa-solid fa-check" style={{ marginRight: '6px' }}></i>
+                  {t('txn.submit_add')}
+                </button>
               </div>
             </form>
           </div>
@@ -356,59 +515,118 @@ function Transactions() {
 
       {/* EDIT TRANSACTION MODAL */}
       {editingTxn && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease' }}>
-          <div className="card" style={{ width: '420px', background: 'var(--glass-bg)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ marginTop: 0 }}>
-              <i className="fa-solid fa-pen-to-square" style={{ color: 'var(--primary)', marginRight: '8px' }}></i> {t('txn.edit_modal_title')}
-            </h3>
-            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="edit-type" checked={editingTxn.type === 'out'} onChange={() => setEditingTxn({ ...editingTxn, type: 'out' })} />
-                  <span style={{ color: 'var(--error)', fontWeight: 600 }}>{t('txn.type_expense')}</span>
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="edit-type" checked={editingTxn.type === 'in'} onChange={() => setEditingTxn({ ...editingTxn, type: 'in' })} />
-                  <span style={{ color: 'var(--success)', fontWeight: 600 }}>{t('txn.type_income')}</span>
-                </label>
+        <div className="txn-modal-overlay" onClick={() => setEditingTxn(null)}>
+          <div className="txn-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="txn-modal-header">
+              <div className="txn-modal-title-group">
+                <span className="txn-modal-icon">
+                  <i className="fa-solid fa-pen-to-square"></i>
+                </span>
+                <h3 style={{ margin: 0, fontSize: '1.18rem', color: '#0f172a' }}>{t('txn.edit_modal_title')}</h3>
               </div>
+              <button type="button" className="txn-modal-close" onClick={() => setEditingTxn(null)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label className="txn-field-label">{t('txn.field_date')}</label>
+                  <CalendarPicker
+                    mode="day"
+                    value={editingTxn.date}
+                    onChange={(_, val) => setEditingTxn({ ...editingTxn, date: val })}
+                    modes={['day']}
+                    allowClear={false}
+                  />
+                </div>
+                <div>
+                  <label className="txn-field-label">{t('txn.field_category')}</label>
+                  <GlassSelect
+                    fullWidth
+                    size="md"
+                    alignRight
+                    value={editingTxn.category}
+                    options={modalCategoryOptions}
+                    onChange={val => setEditingTxn({ ...editingTxn, category: val, type: getNextTypeForCategory(val, editingTxn.type) })}
+                  />
+                </div>
+              </div>
+
+              {TWO_WAY_CATEGORIES.includes(editingTxn.category) && (
+                <div className="txn-type-segmented">
+                  <button
+                    type="button"
+                    className={`txn-type-btn ${editingTxn.type === 'out' ? 'active-out' : ''}`}
+                    onClick={() => setEditingTxn({ ...editingTxn, type: 'out' })}
+                  >
+                    <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span>{t('txn.type_expense')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`txn-type-btn ${editingTxn.type === 'in' ? 'active-in' : ''}`}
+                    onClick={() => setEditingTxn({ ...editingTxn, type: 'in' })}
+                  >
+                    <i className="fa-solid fa-arrow-down-left"></i>
+                    <span>{t('txn.type_income')}</span>
+                  </button>
+                </div>
+              )}
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_date')}</label>
-                <input type="date" style={{ width: '100%' }} value={editingTxn.date} onChange={e => setEditingTxn({ ...editingTxn, date: e.target.value })} required />
+                <label className="txn-field-label">{t('txn.field_desc')}</label>
+                <input
+                  type="text"
+                  className="txn-modal-input"
+                  value={editingTxn.description}
+                  onChange={e => setEditingTxn({ ...editingTxn, description: e.target.value })}
+                  required
+                />
               </div>
 
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_desc')}</label>
-                <input type="text" style={{ width: '100%' }} value={editingTxn.description} onChange={e => setEditingTxn({ ...editingTxn, description: e.target.value })} required />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '0.75rem' }}>
+                <div>
+                  <label className="txn-field-label">{t('txn.field_confidence')}</label>
+                  <GlassSelect
+                    fullWidth
+                    size="md"
+                    value={editingTxn.confidence || 'high'}
+                    options={confidenceOptions}
+                    onChange={val => setEditingTxn({ ...editingTxn, confidence: val })}
+                  />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                    <label className="txn-field-label" style={{ marginBottom: 0 }}>{t('txn.field_amount')}</label>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      color: editingTxn.type === 'in' ? 'var(--success)' : 'var(--error)'
+                    }}>
+                      {editingTxn.type === 'in' ? '+' : '-'}
+                    </span>
+                  </div>
+                  <input
+                    type="number"
+                    step="1000"
+                    min="0"
+                    className="txn-modal-input"
+                    style={{ fontWeight: 700 }}
+                    value={editingTxn.amount}
+                    onChange={e => setEditingTxn({ ...editingTxn, amount: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_category')}</label>
-                <select style={{ width: '100%' }} value={editingTxn.category} onChange={e => setEditingTxn({ ...editingTxn, category: e.target.value })} required>
-                  {STANDARD_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{getCategoryName(cat)}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_confidence')}</label>
-                <select style={{ width: '100%' }} value={editingTxn.confidence || 'high'} onChange={e => setEditingTxn({ ...editingTxn, confidence: e.target.value })}>
-                  <option value="high">{t('conf.high')}</option>
-                  <option value="medium">{t('conf.medium')}</option>
-                  <option value="low">{t('conf.low')}</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('txn.field_amount')}</label>
-                <input type="number" step="1000" min="0" style={{ width: '100%' }} value={editingTxn.amount} onChange={e => setEditingTxn({ ...editingTxn, amount: e.target.value })} required />
-              </div>
-
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-primary" style={{ flex: 1, marginTop: '0' }}>{t('txn.save_changes')}</button>
-                <button type="button" className="btn-outline" style={{ flex: 1 }} onClick={() => setEditingTxn(null)}>{t('txn.cancel')}</button>
+              <div className="txn-modal-actions">
+                <button type="button" className="btn-outline" onClick={() => setEditingTxn(null)}>{t('txn.cancel')}</button>
+                <button type="submit" className="btn-primary" style={{ marginTop: 0 }}>
+                  <i className="fa-solid fa-check" style={{ marginRight: '6px' }}></i>
+                  {t('txn.save_changes')}
+                </button>
               </div>
             </form>
           </div>
@@ -457,76 +675,86 @@ function Transactions() {
 
         {/* FILTERS TOOLBAR */}
         <div className="filter-toolbar">
-          {/* Calendar date filter */}
-          <div className="filter-item">
-            <span className="filter-label">
-              <i className="fa-regular fa-calendar-days"></i> {t('txn.date_picker')}
-            </span>
+          {/* Row 1: Full-width Search input */}
+          <div className="filter-search-box">
+            <i className="fa-solid fa-magnifying-glass filter-search-icon"></i>
             <input
-              type="date"
-              value={selectedDate}
-              onChange={e => { setSelectedDate(e.target.value); setCurrentPage(1); }}
-              style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', cursor: 'pointer' }}
+              type="text"
+              className="filter-search-input"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              placeholder={t('txn.search_placeholder')}
             />
-            {selectedDate && (
+            {searchQuery && (
               <button
-                className="btn-outline"
-                onClick={() => { setSelectedDate(''); setCurrentPage(1); }}
+                type="button"
+                className="filter-search-clear"
+                onClick={() => { setSearchQuery(''); setCurrentPage(1); }}
                 title={t('txn.clear')}
-                style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
               >
-                <i className="fa-solid fa-xmark"></i> {t('txn.clear')}
+                <i className="fa-solid fa-xmark"></i>
               </button>
             )}
           </div>
 
-          {/* Category filter */}
-          <div className="filter-item">
-            <span className="filter-label">
-              <i className="fa-solid fa-tag"></i> {t('txn.category')}
-            </span>
-            <select
-              value={category}
-              onChange={e => { setCategory(e.target.value); setCurrentPage(1); }}
-              style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-            >
-              <option value="">{t('txn.all_categories')}</option>
-              {STANDARD_CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{getCategoryName(cat)}</option>
-              ))}
-            </select>
-            {category && (
+          {/* Row 2: Calendar Period, Category & Pagination controls */}
+          <div className="filter-controls-row">
+            {/* Visual Calendar Period picker: All / Day / Month / Year */}
+            <div className="filter-item">
+              <span className="filter-label">
+                <i className="fa-regular fa-calendar-days"></i> {t('txn.date_picker')}
+              </span>
+              <CalendarPicker
+                mode={periodMode}
+                value={periodValue}
+                onChange={handlePeriodChange}
+                modes={['all', 'day', 'month', 'year']}
+                availableMonths={availableMonthsSet}
+              />
+            </div>
+
+            {/* Category filter (Custom GlassSelect) */}
+            <div className="filter-item">
+              <span className="filter-label">
+                <i className="fa-solid fa-tag"></i> {t('txn.category')}
+              </span>
+              <GlassSelect
+                value={category}
+                options={categoryOptions}
+                onChange={val => { setCategory(val); setCurrentPage(1); }}
+                style={{ minWidth: '185px' }}
+              />
+              {category && (
+                <button
+                  className="btn-outline"
+                  onClick={() => { setCategory(''); setCurrentPage(1); }}
+                  title={t('txn.clear')}
+                  style={{ padding: '0.42rem 0.6rem', fontSize: '0.8rem' }}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              )}
+            </div>
+
+            {/* Rows per page & Refresh */}
+            <div className="filter-item" style={{ marginLeft: 'auto' }}>
+              <span className="filter-label">{t('txn.show')}</span>
+              <GlassSelect
+                value={itemsPerPage}
+                options={pageSizeOptions}
+                onChange={val => { setItemsPerPage(Number(val)); setCurrentPage(1); }}
+                alignRight
+                style={{ minWidth: '125px' }}
+              />
               <button
                 className="btn-outline"
-                onClick={() => { setCategory(''); setCurrentPage(1); }}
-                title={t('txn.clear')}
-                style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
+                onClick={refreshTransactions}
+                title={t('txn.refresh')}
+                style={{ padding: '0.46rem 0.78rem', fontSize: '0.85rem' }}
               >
-                <i className="fa-solid fa-xmark"></i> {t('txn.clear')}
+                <i className="fa-solid fa-arrows-rotate"></i>
               </button>
-            )}
-          </div>
-
-          {/* Rows per page & Refresh */}
-          <div className="filter-item" style={{ marginLeft: 'auto' }}>
-            <span className="filter-label">{t('txn.show')}</span>
-            <select
-              value={itemsPerPage}
-              onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-              style={{ padding: '0.45rem 0.6rem', fontSize: '0.85rem' }}
-            >
-              <option value={10}>10 {t('txn.per_page')}</option>
-              <option value={20}>20 {t('txn.per_page')}</option>
-              <option value={50}>50 {t('txn.per_page')}</option>
-            </select>
-            <button
-              className="btn-outline"
-              onClick={refreshTransactions}
-              title={t('txn.refresh')}
-              style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-            >
-              <i className="fa-solid fa-arrows-rotate"></i>
-            </button>
+            </div>
           </div>
         </div>
 
@@ -540,11 +768,11 @@ function Transactions() {
           <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-muted)' }}>
             <i className="fa-solid fa-receipt" style={{ fontSize: '2.5rem', marginBottom: '1rem', opacity: 0.35 }}></i>
             <p style={{ margin: 0, fontWeight: 500 }}>{t('txn.no_data')}</p>
-            {(selectedDate || category) && (
+            {(periodMode !== 'all' || category || searchQuery) && (
               <button
                 className="btn-outline"
                 style={{ marginTop: '1rem', fontSize: '0.85rem' }}
-                onClick={() => { setSelectedDate(''); setCategory(''); setCurrentPage(1); }}
+                onClick={() => { handlePeriodChange('all', ''); setCategory(''); setSearchQuery(''); setCurrentPage(1); }}
               >
                 {t('txn.clear_all')}
               </button>

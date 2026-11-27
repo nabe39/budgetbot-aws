@@ -4,6 +4,7 @@ import apiClient from '../api/client';
 import { formatCurrency } from '../utils/format';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import GlassSelect from './GlassSelect';
 import './ReviewModal.css';
 
 const STANDARD_CATEGORIES = [
@@ -295,18 +296,14 @@ function ReviewModal() {
 
                     {/* Category Dropdown (10 standard categories) */}
                     <div>
-                      <select
-                        className="review-category-select"
+                      <GlassSelect
+                        fullWidth
+                        alignRight
                         value={txn.category || 'Other'}
-                        onChange={(e) => handleReviewCategoryChange(txn.originalIndex, e.target.value)}
+                        options={STANDARD_CATEGORIES.map(cat => ({ value: cat, label: getCategoryName(cat) }))}
+                        onChange={(newCat) => handleReviewCategoryChange(txn.originalIndex, newCat)}
                         disabled={saving}
-                      >
-                        {STANDARD_CATEGORIES.map(cat => (
-                          <option key={cat} value={cat}>
-                            {getCategoryName(cat)}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     </div>
 
                     {/* Delete/Skip item action */}

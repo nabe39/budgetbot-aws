@@ -31,6 +31,12 @@ FOOD_INTENT_PATTERN = re.compile(
 )
 
 
+# Shopping intent pattern to disambiguate retail/gift purchases (e.g. chuyển khoản mua đồ, ck tiền mua hoa tặng quà)
+SHOPPING_INTENT_PATTERN = re.compile(
+    r"\b(mua đồ|mua do|mua sắm|mua sam|mua áo|mua ao|mua quần|mua quan|mua giày|mua giay|mua sách|mua sach|mua hoa|bó hoa|bo hoa|hoa tươi|hoa tuoi|quà tặng|qua tang|tặng quà|tang qua|mua quà)\b",
+    re.I,
+)
+
 # Transfer intent pattern for internal transfers, e-wallet top-ups/withdrawals, savings, debt, rent
 TRANSFER_INTENT_PATTERN = re.compile(
     r"\b(trả nợ|tra no|cho vay|tạm ứng|tam ung|tiết kiệm|tiet kiem|nạp ví|nap vi|rút ví|rut vi|phòng trọ|phong tro|tiền phòng|tien phong|thuê nhà|thue nha|chuyển khoản nội bộ|chuyen khoan noi bo)\b",
@@ -68,7 +74,8 @@ FALLBACK_KEYWORDS = {
         "shopee", "lazada", "tiki", "amazon", "store", "mall", "vincom", "shop",
         "siêu thị", "sieu thi", "mua sắm", "mua sam", "bách hóa", "winmart",
         "coopmart", "lotte mart", "aeon", "big c", "topmarket",
-        "mua đồ", "mua do", "mua áo", "mua ao", "mua quần", "mua quan", "mua sách", "mua sach"
+        "mua đồ", "mua do", "mua áo", "mua ao", "mua quần", "mua quan", "mua sách", "mua sach",
+        "mua hoa", "bó hoa", "bo hoa", "quà tặng", "qua tang", "tặng quà", "tang qua", "mua quà"
     ],
     "Utilities": [
         "electric", "evn", "water", "internet", "viettel", "vnpt", "fpt", "utility",
@@ -187,6 +194,15 @@ def predict_transaction(
                 "confidence_level": "high",
                 "engine": "food_intent_heuristic",
             }
+        if not is_income_keyword and (amount_num is None or amount_num <= 0) and (
+            SHOPPING_INTENT_PATTERN.search(raw_desc) or SHOPPING_INTENT_PATTERN.search(cleaned_unaccented)
+        ):
+            return {
+                "category": "Shopping",
+                "confidence": 0.88,
+                "confidence_level": "high",
+                "engine": "shopping_intent_heuristic",
+            }
 
         # Check rule heuristics / fallback keywords before returning generic Other
         if amount_num is not None and amount_num > 0:
@@ -233,13 +249,19 @@ def predict_transaction(
         else ("linear_svc" if "SVC" in type(classifier).__name__ or "Calibrated" in type(classifier).__name__ else "nlp_classifier")
     )
 
-    # Disambiguation: Food intent takes precedence over Shopping / Transfer for street food & meals
+    # Disambiguation: Food / Shopping intent takes precedence over generic Transfer for purchases & meals
     if not is_income_keyword and (
         FOOD_INTENT_PATTERN.search(raw_desc) or FOOD_INTENT_PATTERN.search(cleaned_unaccented)
     ):
         predicted_category = "Food"
         confidence_val = max(confidence_val, 0.90)
         engine_name = "food_intent_heuristic"
+    elif not is_income_keyword and (amount_num is None or amount_num <= 0) and (
+        SHOPPING_INTENT_PATTERN.search(raw_desc) or SHOPPING_INTENT_PATTERN.search(cleaned_unaccented)
+    ):
+        predicted_category = "Shopping"
+        confidence_val = max(confidence_val, 0.88)
+        engine_name = "shopping_intent_heuristic"
     elif not is_income_keyword and (amount_num is None or amount_num <= 0) and (
         TRANSFER_INTENT_PATTERN.search(raw_desc) or TRANSFER_INTENT_PATTERN.search(cleaned_unaccented)
     ):

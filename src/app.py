@@ -196,15 +196,17 @@ def summary(
 def list_transactions(
     month: Optional[str] = None,
     date: Optional[str] = None,
+    year: Optional[str] = None,
     category: Optional[str] = None,
+    search: Optional[str] = None,
     page: Optional[int] = None,
     page_size: Optional[int] = None,
     limit: Optional[int] = None,
     offset: Optional[int] = None,
     user_id: str = Depends(get_current_user),
 ) -> dict:
-    """Retrieve transactions with optional filtering (date, month, category) and pagination."""
-    filter_date = date or month
+    """Retrieve transactions with optional filtering (date, month, year, category, search) and pagination."""
+    filter_date = date or month or year
     return handlers.handle_list_transactions(
         user_id=user_id,
         month=filter_date,
@@ -214,6 +216,7 @@ def list_transactions(
         limit=limit,
         offset=offset,
         userstore=userstore,
+        search=search,
     )
 
 

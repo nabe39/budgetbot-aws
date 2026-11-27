@@ -25,7 +25,7 @@ function AppLayout() {
       <Sidebar />
       <main className="main-content" style={{ flex: 1, overflowY: 'auto', position: 'relative', background: 'transparent' }}>
         <Topbar />
-        <div style={{ padding: '0 1rem 2rem 1rem', maxWidth: '1000px', margin: '0 auto', animation: 'fadeIn 0.4s ease' }}>
+        <div style={{ padding: '0 1rem 2rem 1rem', width: '100%', maxWidth: '100%', margin: '0 auto', animation: 'fadeIn 0.4s ease' }}>
           <Outlet />
         </div>
       </main>

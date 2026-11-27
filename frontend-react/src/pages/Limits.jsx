@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import apiClient from '../api/client';
 import { formatCurrency } from '../utils/format';
 import { useLanguage } from '../context/LanguageContext';
+import GlassSelect from '../components/GlassSelect';
+import CalendarPicker from '../components/CalendarPicker';
 import './Limits.css';
 
 const CATEGORY_OPTIONS = [
@@ -36,7 +38,9 @@ function Limits() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   }, []);
 
+  const [periodMode, setPeriodMode] = useState('month'); // 'month' | 'year'
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
+  const [availableMonths, setAvailableMonths] = useState(new Set());
 
   // Modal State for Add / Edit
   const [modalData, setModalData] = useState({
@@ -47,15 +51,24 @@ function Limits() {
   });
   const [modalSaving, setModalSaving] = useState(false);
 
-  // Helper to format YYYY-MM
+  // Helper to format YYYY-MM or YYYY
   const formatMonthLabel = useCallback((mStr) => {
-    if (!mStr || !mStr.includes('-')) return mStr;
+    if (!mStr) return '';
+    if (mStr.length === 4) {
+      return language === 'vi' ? `Năm ${mStr}` : `Year ${mStr}`;
+    }
+    if (!mStr.includes('-')) return mStr;
     const [y, m] = mStr.split('-');
     return language === 'vi' ? `Tháng ${m}/${y}` : `${m}/${y}`;
   }, [language]);
 
-  // Month navigation helpers
-  const handlePrevMonth = () => {
+  // Period navigation helpers (steps by 1 month or 1 year depending on periodMode)
+  const handlePrevPeriod = () => {
+    if (periodMode === 'year') {
+      const y = parseInt(selectedMonth.slice(0, 4), 10);
+      if (!isNaN(y)) setSelectedMonth(String(y - 1));
+      return;
+    }
     if (!selectedMonth || !selectedMonth.includes('-')) return;
     const [yStr, mStr] = selectedMonth.split('-');
     let y = parseInt(yStr, 10);
@@ -67,7 +80,12 @@ function Limits() {
     setSelectedMonth(`${y}-${String(m).padStart(2, '0')}`);
   };
 
-  const handleNextMonth = () => {
+  const handleNextPeriod = () => {
+    if (periodMode === 'year') {
+      const y = parseInt(selectedMonth.slice(0, 4), 10);
+      if (!isNaN(y)) setSelectedMonth(String(y + 1));
+      return;
+    }
     if (!selectedMonth || !selectedMonth.includes('-')) return;
     const [yStr, mStr] = selectedMonth.split('-');
     let y = parseInt(yStr, 10);
@@ -78,6 +96,14 @@ function Limits() {
     }
     setSelectedMonth(`${y}-${String(m).padStart(2, '0')}`);
   };
+
+  // Load availableMonths dots once for calendar indicator
+  useEffect(() => {
+    apiClient.get('/summary').then(res => {
+      const trends = res.data?.monthly_trends || [];
+      setAvailableMonths(new Set(trends.map(item => item.month)));
+    }).catch(() => {});
+  }, []);
 
   // Fetch caps and spending for selected month
   const fetchData = useCallback(async (targetMonth = selectedMonth) => {
@@ -190,6 +216,8 @@ function Limits() {
     }
   };
 
+  const periodMultiplier = periodMode === 'year' ? 12 : 1;
+
   // Calculations for thresholds and totals
   const { exceededAlerts, warningAlerts, totalBudget, totalSpent, overallPct } = useMemo(() => {
     const exceeded = [];
@@ -197,7 +225,8 @@ function Limits() {
     let tBudget = 0;
     let tSpent = 0;
 
-    Object.entries(caps).forEach(([cat, limit]) => {
+    Object.entries(caps).forEach(([cat, monthlyLimit]) => {
+      const limit = monthlyLimit * periodMultiplier;
       const spent = currentSpends[cat] || 0;
       tBudget += limit;
       tSpent += spent;
@@ -219,7 +248,15 @@ function Limits() {
       totalSpent: tSpent,
       overallPct: oPct
     };
-  }, [caps, currentSpends]);
+  }, [caps, currentSpends, periodMultiplier]);
+
+  const modalCategoryOptions = useMemo(
+    () => CATEGORY_OPTIONS.map(cat => ({
+      value: cat,
+      label: `${getCategoryName(cat)}${caps[cat] ? ` (${formatCurrency(caps[cat])})` : ''}`,
+    })),
+    [getCategoryName, caps]
+  );
 
   const activeCapsCount = Object.keys(caps).length;
 
@@ -292,27 +329,32 @@ function Limits() {
           </div>
 
           <div className="limits-controls">
-            {/* Month Navigator */}
+            {/* Flexible Visual Month / Year Navigator */}
             <div className="limits-month-selector">
               <button
                 type="button"
-                onClick={handlePrevMonth}
-                title={language === 'vi' ? 'Tháng trước' : 'Previous Month'}
+                onClick={handlePrevPeriod}
+                title={periodMode === 'year' ? (language === 'vi' ? 'Năm trước' : 'Previous Year') : (language === 'vi' ? 'Tháng trước' : 'Previous Month')}
                 className="limits-month-nav-btn"
               >
                 <i className="fa-solid fa-chevron-left"></i>
               </button>
-              <input
-                type="month"
+              <CalendarPicker
+                mode={periodMode}
                 value={selectedMonth}
-                onChange={e => e.target.value && setSelectedMonth(e.target.value)}
-                onClick={e => e.target.showPicker && e.target.showPicker()}
-                className="limits-month-input"
+                onChange={(newMode, newVal) => {
+                  setPeriodMode(newMode);
+                  setSelectedMonth(newVal);
+                }}
+                modes={['month', 'year']}
+                availableMonths={availableMonths}
+                allowClear={false}
+                alignRight
               />
               <button
                 type="button"
-                onClick={handleNextMonth}
-                title={language === 'vi' ? 'Tháng sau' : 'Next Month'}
+                onClick={handleNextPeriod}
+                title={periodMode === 'year' ? (language === 'vi' ? 'Năm sau' : 'Next Year') : (language === 'vi' ? 'Tháng sau' : 'Next Month')}
                 className="limits-month-nav-btn"
               >
                 <i className="fa-solid fa-chevron-right"></i>
@@ -322,7 +364,10 @@ function Limits() {
             {selectedMonth !== currentMonthStr && (
               <button
                 type="button"
-                onClick={() => setSelectedMonth(currentMonthStr)}
+                onClick={() => {
+                  setPeriodMode('month');
+                  setSelectedMonth(currentMonthStr);
+                }}
                 className="btn-outline limits-reset-btn"
                 title={t('limits.jump_to_current')}
               >
@@ -403,7 +448,8 @@ function Limits() {
                   </td>
                 </tr>
               ) : (
-                Object.entries(caps).map(([cat, limit]) => {
+                Object.entries(caps).map(([cat, monthlyLimit]) => {
+                  const limit = monthlyLimit * periodMultiplier;
                   const spent = currentSpends[cat] || 0;
                   const pct = limit > 0 ? Math.round((spent / limit) * 100) : 0;
                   const isExceeded = pct > 100;
@@ -427,7 +473,12 @@ function Limits() {
 
                       {/* Limit */}
                       <td style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                        {formatCurrency(limit)}
+                        <div>{formatCurrency(limit)}</div>
+                        {periodMode === 'year' && (
+                          <div style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-muted)' }}>
+                            {formatCurrency(monthlyLimit)}/{language === 'vi' ? 'tháng' : 'mo'} × 12
+                          </div>
+                        )}
                       </td>
 
                       {/* Spent */}
@@ -472,7 +523,7 @@ function Limits() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
                           <button
                             type="button"
-                            onClick={() => handleOpenEditModal(cat, limit)}
+                            onClick={() => handleOpenEditModal(cat, monthlyLimit)}
                             className="limits-action-btn edit"
                             title={t('limits.edit_tooltip')}
                           >
@@ -531,12 +582,13 @@ function Limits() {
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.45rem', color: '#1e293b' }}>
                   {t('limits.cat_label')}
                 </label>
-                <select
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #cbd5e1' }}
+                <GlassSelect
+                  fullWidth
+                  size="md"
                   value={modalData.category}
                   disabled={modalData.isEdit}
-                  onChange={e => {
-                    const newCat = e.target.value;
+                  options={modalCategoryOptions}
+                  onChange={newCat => {
                     setModalData(prev => ({
                       ...prev,
                       category: newCat,
@@ -544,13 +596,7 @@ function Limits() {
                       amount: caps[newCat] ? String(caps[newCat]) : prev.amount
                     }));
                   }}
-                >
-                  {CATEGORY_OPTIONS.map(cat => (
-                    <option key={cat} value={cat}>
-                      {getCategoryName(cat)} {caps[cat] ? `(${formatCurrency(caps[cat])})` : ''}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
               {/* Monthly Amount Input */}

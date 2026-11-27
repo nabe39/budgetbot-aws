@@ -109,6 +109,7 @@ class TestFastAPIPredictIntegration:
             ("chuyển khoản ăn xôi", -20000, "Food"),
             ("chuyển khoản 50k tiền nhậu cho Tùng", -50000, "Food"),
             ("chuyển khoản mua đồ", -150000, "Shopping"),
+            ("ck tiền mua hoa tặng quà", -30000, "Shopping"),
             ("chuyển khoản trả nợ bạn", -500000, "Transfer"),
             ("mua banh mi 15k", None, "Food"),
             ("tiền điện EVN", -450000, "Utilities"),
@@ -124,6 +125,7 @@ class TestFastAPIPredictIntegration:
         local = LocalAI()
         assert local.categorize("chuyển khoản ăn xôi", -20000, "2026-11-27")["category"] == "Food"
         assert local.categorize("chuyển khoản mua đồ", -150000, "2026-11-27")["category"] == "Shopping"
+        assert local.categorize("ck tiền mua hoa tặng quà", -30000, "2026-11-27")["category"] == "Shopping"
         assert local.categorize("chuyển khoản 50k tiền nhậu cho Tùng", -50000, "2026-11-27")["category"] == "Food"
         assert local.categorize("chuyển khoản trả nợ bạn", -500000, "2026-11-27")["category"] == "Transfer"
         assert local.categorize("chuyển khoản đến Nguyễn Văn A", -500000, "2026-11-27")["category"] == "Transfer"
@@ -148,5 +150,67 @@ class TestFastAPIPredictIntegration:
             txn = data["transaction"]
             assert txn["amount"] == exp_amt
             assert txn["category"] == exp_cat
+
+    def test_chat_transaction_edit_and_delete(self, test_client):
+        """Verify POST /chat/transaction supports editing and deleting transactions in natural language."""
+        import uuid
+        from src.auth import create_access_token
+        uid = f"chat-crud-{uuid.uuid4().hex[:8]}"
+        token = create_access_token({"sub": uid})
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # 1. Add two transactions
+        r1 = test_client.post("/chat/transaction", json={"message": "ăn xôi 50k ngày 27-11-2026"}, headers=headers)
+        assert r1.status_code == 200
+        assert r1.json()["status"] == "saved"
+        assert r1.json()["transaction"]["date"] == "2026-11-27"
+        assert r1.json()["transaction"]["amount"] == -50000.0
+
+        r2 = test_client.post("/chat/transaction", json={"message": "ăn xôi 30k ngày 26-11-2026"}, headers=headers)
+        assert r2.status_code == 200
+        assert r2.json()["status"] == "saved"
+
+        # 2. Ambiguous delete when omitting date & amount across two distinct "ăn xôi" txns
+        r_amb = test_client.post("/chat/transaction", json={"message": "xoá giao dịch ăn xôi"}, headers=headers)
+        assert r_amb.status_code == 200
+        assert r_amb.json()["status"] == "ambiguous"
+        assert len(r_amb.json()["candidates"]) == 2
+
+        # 3. Specific edit: change "ăn xôi 50k ngày 27-11-2026" -> "ăn phở 60k"
+        r_edit = test_client.post(
+            "/chat/transaction",
+            json={"message": "đổi giao dịch ăn xôi 50k ngày 27-11-2026 thành ăn phở 60k"},
+            headers=headers,
+        )
+        assert r_edit.status_code == 200
+        ed = r_edit.json()
+        assert ed["status"] == "updated"
+        assert ed["transaction"]["description"] == "ăn phở"
+        assert ed["transaction"]["amount"] == -60000.0
+        assert ed["transaction"]["category"] == "Food"
+
+        # 4. Change category only
+        r_cat = test_client.post(
+            "/chat/transaction",
+            json={"message": "đổi danh mục giao dịch ăn phở sang Mua sắm"},
+            headers=headers,
+        )
+        assert r_cat.status_code == 200
+        assert r_cat.json()["status"] == "updated"
+        assert r_cat.json()["transaction"]["category"] == "Shopping"
+
+        # 5. Specific delete: "xoá giao dịch ăn phở 60k ngày 27-11-2026"
+        r_del = test_client.post(
+            "/chat/transaction",
+            json={"message": "xoá giao dịch ăn phở 60k ngày 27-11-2026"},
+            headers=headers,
+        )
+        assert r_del.status_code == 200
+        assert r_del.json()["status"] == "deleted"
+
+        # Verify only the 30k transaction remains
+        txns = test_client.get("/transactions", headers=headers).json()["transactions"]
+        assert len(txns) == 1
+        assert txns[0]["amount"] == -30000.0
 
 

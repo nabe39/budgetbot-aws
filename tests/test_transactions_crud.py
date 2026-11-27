@@ -258,6 +258,17 @@ def test_rest_api_transactions_crud_and_filters():
     assert util_data["total"] == 1
     assert util_data["transactions"][0]["category"] == "Utilities"
 
+    # 4b. GET /transactions (Filter by year & search)
+    get_year = client.get("/transactions?month=2026", headers=headers)
+    assert get_year.status_code == 200
+    assert get_year.json()["total"] >= 3
+
+    get_search = client.get("/transactions?search=Highlands", headers=headers)
+    assert get_search.status_code == 200
+    search_data = get_search.json()
+    assert search_data["total"] == 1
+    assert "Highlands" in search_data["transactions"][0]["description"]
+
     # 5. GET /transactions (Pagination: page & page_size)
     get_page1 = client.get("/transactions?page=1&page_size=2", headers=headers)
     assert get_page1.status_code == 200

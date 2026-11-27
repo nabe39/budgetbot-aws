@@ -345,7 +345,8 @@ class LocalAI:
             "shopee", "lazada", "tiki", "amazon", "store", "mall", "vincom", "shop",
             "siêu thị", "sieu thi", "mua sắm", "mua sam", "bách hóa", "winmart",
             "coopmart", "lotte mart", "aeon", "big c", "topmarket",
-            "mua đồ", "mua do", "mua áo", "mua ao", "mua quần", "mua quan", "mua sách", "mua sach"
+            "mua đồ", "mua do", "mua áo", "mua ao", "mua quần", "mua quan", "mua sách", "mua sach",
+            "mua hoa", "bó hoa", "bo hoa", "quà tặng", "qua tang", "tặng quà", "tang qua", "mua quà"
         ],
         "Utilities": [
             "electric", "evn", "water", "internet", "viettel", "vnpt", "fpt", "utility",
@@ -492,19 +493,22 @@ class LocalAI:
         if any(keyword in msg for keyword in income_keywords):
             summary = userstore.summary(user_id, month=month)
             if not summary:
-                return "Bạn chưa có giao dịch nào được lưu trữ. Hãy upload file CSV trước nhé!"
+                return "Bạn chưa có giao dịch nào được lưu trữ. Hãy tải sao kê hoặc thêm giao dịch trước nhé!"
 
             income_total = sum(v['total'] for v in summary.values() if v['total'] > 0)
             if income_total <= 0:
-                return "Mình chưa thấy khoản thu nhập nào trong dữ liệu hiện tại."
+                return f"Mình chưa ghi nhận khoản thu nhập nào trong **{period_text}**."
 
             formatted_income = f"{income_total:,.0f}".replace(",", ".")
-            return f"Thu nhập của bạn trong {period_text} là {formatted_income}đ."
+            return (
+                f"### Tổng Thu Nhập ({period_text})\n\n"
+                f"- **Tổng thu:** `+{formatted_income}đ`\n"
+            )
             
         if any(keyword in msg for keyword in expense_keywords):
             summary = userstore.summary(user_id, month=month)
             if not summary:
-                return "Bạn chưa có giao dịch nào được lưu trữ. Hãy upload file CSV trước nhé!"
+                return "Bạn chưa có giao dịch nào được lưu trữ. Hãy tải sao kê hoặc thêm giao dịch trước nhé!"
 
             target_category = _extract_category()
             if target_category:
@@ -512,31 +516,51 @@ class LocalAI:
                 if category_total < 0:
                     all_txns = userstore.list_transactions(user_id, month=month)
                     txns = [t for t in all_txns if t.get("category", "").lower() == target_category.lower()]
-                    txn_lines = []
-                    for t in txns:
+                    rows = ["| Ngày | Nội dung | Số tiền |", "| :--- | :--- | ---: |"]
+                    for t in txns[:15]:
                         amt = float(t.get("amount", 0))
                         formatted_amt = f"{abs(amt):,.0f}".replace(",", ".")
-                        txn_lines.append(f"- **{t.get('date')}**: {formatted_amt}đ - {t.get('description')}")
-                    
-                    lines_str = "\n".join(txn_lines)
+                        desc = str(t.get("description", "")).replace("|", "/")
+                        rows.append(f"| {t.get('date')} | {desc} | **-{formatted_amt}đ** |")
+                    if len(txns) > 15:
+                        rows.append(f"| ... | *Và {len(txns) - 15} giao dịch khác* | |")
+
+                    table_str = "\n".join(rows)
                     formatted_category_total = f"{-category_total:,.0f}".replace(",", ".")
                     return (
-                        f"Dựa trên **{period_text}**, chi tiêu cho **{target_category.lower()}** của bạn là **{formatted_category_total}đ**.\n\n"
-                        f"Chi tiết các giao dịch:\n{lines_str}"
+                        f"### Báo cáo chi tiêu: {target_category} ({period_text})\n\n"
+                        f"- **Tổng chi:** `-{formatted_category_total}đ` ({len(txns)} giao dịch)\n\n"
+                        f"{table_str}"
                     )
-                return f"Dựa trên **{period_text}**, mình chưa thấy khoản chi tiêu nào trong danh mục **{target_category.lower()}**."
+                return f"Trong **{period_text}**, chưa có khoản chi nào thuộc danh mục **{target_category}**."
             
             expenses = {k: v['total'] for k, v in summary.items() if v['total'] < 0}
             if not expenses:
-                return "Bạn chưa có khoản chi tiêu nào. Quản lý tài chính rất tốt!"
+                return "Bạn chưa có khoản chi tiêu nào trong kỳ này. Quản lý tài chính rất tốt!"
                 
             top_cat = min(expenses, key=expenses.get)
             total_expense = sum(expenses.values())
+            income_total = sum(v['total'] for v in summary.values() if v['total'] > 0)
 
             formatted_total_expense = f"{-total_expense:,.0f}".replace(",", ".")
             formatted_top_cat = f"{-expenses[top_cat]:,.0f}".replace(",", ".")
-            period_text_expense = "dữ liệu hiện tại" if period_text == "toàn bộ dữ liệu" else period_text
-            return f"Dựa trên **{period_text_expense}**, tổng chi tiêu của bạn là **{formatted_total_expense}đ**. Bạn đang tiêu tốn nhiều tiền nhất vào danh mục **{top_cat}** với **{formatted_top_cat}đ**. Bạn có muốn mình phân tích chi tiết hơn không?"
+            period_text_expense = "toàn bộ dữ liệu" if period_text == "toàn bộ dữ liệu" else period_text
+
+            sorted_cats = sorted(expenses.items(), key=lambda x: x[1])
+            cat_rows = ["| Danh mục | Số tiền | Tỷ trọng |", "| :--- | ---: | ---: |"]
+            abs_total = abs(total_expense) or 1.0
+            for cat_name, cat_val in sorted_cats:
+                amt_fmt = f"{-cat_val:,.0f}".replace(",", ".")
+                pct = (-cat_val / abs_total) * 100
+                cat_rows.append(f"| **{cat_name}** | -{amt_fmt}đ | {pct:.1f}% |")
+
+            income_line = f" | **Thu nhập:** `+{f'{income_total:,.0f}'.replace(',', '.')}đ`" if income_total > 0 else ""
+            return (
+                f"### Tóm tắt chi tiêu ({period_text_expense})\n\n"
+                f"- **Tổng chi tiêu:** `-{formatted_total_expense}đ`{income_line}\n"
+                f"- **Chi nhiều nhất:** **{top_cat}** (`-{formatted_top_cat}đ`)\n\n"
+                + "\n".join(cat_rows)
+            )
             
         elif re.search(r"\b(hi|hello|chào|xin chào)\b", msg):
             return "Xin chào! Mình là BudgetBot AI 🤖. Mình có thể giúp bạn xem thống kê chi tiêu nhanh chóng. Bạn muốn hỏi gì nào?"

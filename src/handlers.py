@@ -390,6 +390,7 @@ def handle_list_transactions(
     limit: Optional[int] = None,
     offset: Optional[int] = None,
     userstore = None,
+    search: Optional[str] = None,
 ) -> dict:
     eff_limit = limit if limit is not None else page_size
     eff_offset = offset
@@ -400,19 +401,45 @@ def handle_list_transactions(
     elif eff_limit is not None and eff_offset is None:
         eff_offset = 0
 
-    if hasattr(userstore, "count_transactions"):
-        total = userstore.count_transactions(user_id=user_id, month=month, category=category)
-    else:
-        all_txns = userstore.list_transactions(user_id=user_id, month=month, category=category)
-        total = len(all_txns)
+    clean_search = search.strip() if search and search.strip() else None
 
-    txns = userstore.list_transactions(
-        user_id=user_id,
-        month=month,
-        category=category,
-        limit=eff_limit,
-        offset=eff_offset,
-    )
+    import inspect
+    list_sig = inspect.signature(userstore.list_transactions)
+    supports_search = "search" in list_sig.parameters
+
+    if clean_search and not supports_search:
+        all_txns = userstore.list_transactions(user_id=user_id, month=month, category=category)
+        q = clean_search.lower()
+        filtered = [
+            t for t in all_txns
+            if q in str(t.get("description", "")).lower() or q in str(t.get("category", "")).lower()
+        ]
+        total = len(filtered)
+        if eff_offset is not None:
+            filtered = filtered[eff_offset:]
+        if eff_limit is not None:
+            filtered = filtered[:eff_limit]
+        txns = filtered
+    else:
+        if hasattr(userstore, "count_transactions"):
+            count_kwargs = {"user_id": user_id, "month": month, "category": category}
+            if clean_search and "search" in inspect.signature(userstore.count_transactions).parameters:
+                count_kwargs["search"] = clean_search
+            total = userstore.count_transactions(**count_kwargs)
+        else:
+            all_txns = userstore.list_transactions(user_id=user_id, month=month, category=category)
+            total = len(all_txns)
+
+        list_kwargs = {
+            "user_id": user_id,
+            "month": month,
+            "category": category,
+            "limit": eff_limit,
+            "offset": eff_offset,
+        }
+        if clean_search and supports_search:
+            list_kwargs["search"] = clean_search
+        txns = userstore.list_transactions(**list_kwargs)
 
     if eff_limit is not None and eff_limit > 0:
         total_pages = (total + eff_limit - 1) // eff_limit if total > 0 else 1
@@ -443,32 +470,34 @@ def handle_chat(user_id: str, message: str, ai_client, userstore, history: list[
         "reply": reply
     }
 
-def _parse_chat_txn(message: str) -> dict:
-    """Natural‑language parser for Vietnamese & English transaction sentences.
+def _norm_vi_text(text: str) -> str:
+    """Lowercase and strip Vietnamese diacritics for flexible matching."""
+    import unicodedata
+    s = str(text or "").strip().lower().replace("đ", "d")
+    nfd = unicodedata.normalize("NFD", s)
+    return "".join(c for c in nfd if unicodedata.category(c) != "Mn")
 
-    Extracts:
-      - date (YYYY-MM-DD): supports explicit dates ('2026-05-26', '26/05/2026') and relative ('hôm nay', 'hôm qua').
-      - amount (float): supports Vietnamese currency slang ('50k', '5 củ', '1.5 triệu', '200k', '2 lít', '50.000đ').
-      - description (str): clean transaction note.
-    """
+
+def _extract_txn_parts(message: str, default_today: bool = True) -> dict:
+    """Extract optional date (YYYY-MM-DD), amount (float), and cleaned description."""
     import re
     import datetime
     from dateutil import parser as date_parser
 
     msg = message.strip()
     if not msg:
-        return {}
+        return {"date": None, "description": "", "amount": None}
 
     today = datetime.date.today()
-    date_iso = today.isoformat()
+    date_iso = today.isoformat() if default_today else None
 
     # 1. Date extraction
-    if re.search(r"\b(hôm qua|hom qua)\b", msg, re.I):
+    if re.search(r"\b(hôm qua|hom qua|yesterday)\b", msg, re.I):
         date_iso = (today - datetime.timedelta(days=1)).isoformat()
-        msg = re.sub(r"\b(hôm qua|hom qua)\b", "", msg, flags=re.I)
-    elif re.search(r"\b(hôm nay|hom nay)\b", msg, re.I):
+        msg = re.sub(r"\b(hôm qua|hom qua|yesterday)\b", " ", msg, flags=re.I)
+    elif re.search(r"\b(hôm nay|hom nay|today)\b", msg, re.I):
         date_iso = today.isoformat()
-        msg = re.sub(r"\b(hôm nay|hom nay)\b", "", msg, flags=re.I)
+        msg = re.sub(r"\b(hôm nay|hom nay|today)\b", " ", msg, flags=re.I)
     else:
         date_match = re.search(
             r"\b(?:on\s+|ngày\s+|ngay\s+)?(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}(?:[-/]\d{2,4})?)\b",
@@ -478,7 +507,7 @@ def _parse_chat_txn(message: str) -> dict:
         if date_match:
             try:
                 d_str = date_match.group(1)
-                parsed_d = date_parser.parse(d_str, dayfirst=True)
+                parsed_d = date_parser.parse(d_str, dayfirst=True, default=datetime.datetime(today.year, today.month, today.day))
                 date_iso = parsed_d.date().isoformat()
                 msg = msg[:date_match.start()] + " " + msg[date_match.end():]
             except Exception:
@@ -495,7 +524,6 @@ def _parse_chat_txn(message: str) -> dict:
     amount = None
     amount_span = None
 
-    # Match number with unit (e.g. '50k', '5 củ', '1.5 triệu', '2 lít', '500k vnd')
     pattern_unit = re.search(
         r"(?i)(?:\$|usd)?\s*(\d+(?:[.,]\d+)?)\s*(k|nghìn|nghin|ngàn|ngan|lít|lit|loét|loet|củ|cu|triệu|trieu|tr|chai)\b",
         msg,
@@ -511,7 +539,6 @@ def _parse_chat_txn(message: str) -> dict:
         except ValueError:
             pass
     else:
-        # Match plain numbers (e.g. '50000', '50.000', '50,000', '50000đ', '$50')
         pattern_plain = re.search(
             r"(?i)(?:\$|usd)?\s*(\d{1,3}(?:[.,]\d{3})+|\d+)\s*(?:đ|vnd|đồng)?\b",
             msg,
@@ -527,29 +554,220 @@ def _parse_chat_txn(message: str) -> dict:
     if amount is not None and amount_span is not None:
         msg = msg[:amount_span[0]] + " " + msg[amount_span[1]:]
 
-    # 3. Clean description
-    cleaned_desc = re.sub(r"(?i)\b(on|ngày|ngay|hôm nay|hom nay|hôm qua|hom qua|tầm|khoảng|khoang)\b", "", msg)
-    cleaned_desc = re.sub(r"\s+", " ", cleaned_desc).strip(" .,-\"")
-
-    if not cleaned_desc or amount is None:
-        return {}
+    # 3. Clean filler words from description
+    cleaned_desc = re.sub(
+        r"(?i)\b(on|ngày|ngay|hôm nay|hom nay|hôm qua|hom qua|yesterday|today|tầm|khoảng|khoang|giao dịch|giao dich|khoản|khoan)\b",
+        " ",
+        msg,
+    )
+    cleaned_desc = re.sub(r"\s+", " ", cleaned_desc).strip(" .,-\"'")
 
     return {"date": date_iso, "description": cleaned_desc, "amount": amount}
 
+
+def _parse_chat_txn(message: str) -> dict:
+    """Natural‑language parser for Vietnamese & English transaction sentences."""
+    parts = _extract_txn_parts(message, default_today=True)
+    if not parts["description"] or parts["amount"] is None:
+        return {}
+    return parts
+
+
+_CATEGORY_ALIAS_MAP = {
+    "food": "Food", "an uong": "Food", "tien an": "Food",
+    "transport": "Transport", "di chuyen": "Transport", "di lai": "Transport",
+    "shopping": "Shopping", "mua sam": "Shopping",
+    "utilities": "Utilities", "hoa don": "Utilities", "tien ich": "Utilities",
+    "entertainment": "Entertainment", "giai tri": "Entertainment",
+    "health": "Health", "y te": "Health", "suc khoe": "Health",
+    "subscriptions": "Subscriptions", "subscription": "Subscriptions", "dich vu dinh ky": "Subscriptions",
+    "income": "Income", "thu nhap": "Income",
+    "transfer": "Transfer", "chuyen khoan": "Transfer", "chuyen tien": "Transfer",
+    "other": "Other", "khac": "Other",
+}
+
+
+def _detect_explicit_category(text: str) -> Optional[str]:
+    norm = _norm_vi_text(text)
+    norm = norm.strip(" .,-\"'")
+    if norm in _CATEGORY_ALIAS_MAP:
+        return _CATEGORY_ALIAS_MAP[norm]
+    return None
+
+
+def _find_matching_txns(userstore, user_id: str, query_desc: str, query_date: Optional[str], query_amount: Optional[float]) -> list[dict]:
+    txns = userstore.list_transactions(user_id, month=query_date) if query_date else userstore.list_transactions(user_id)
+    q_norm = _norm_vi_text(query_desc)
+    q_tokens = [tok for tok in q_norm.split() if tok]
+
+    matched = []
+    for t in txns:
+        if query_amount is not None:
+            if abs(abs(float(t.get("amount", 0))) - query_amount) >= 1.0:
+                continue
+        if q_norm:
+            d_norm = _norm_vi_text(t.get("description", ""))
+            if q_norm not in d_norm and not all(tok in d_norm for tok in q_tokens):
+                continue
+        matched.append(t)
+
+    matched.sort(key=lambda x: (str(x.get("date", "")), str(x.get("id", ""))), reverse=True)
+    return matched
+
+
+def _are_distinct_txns(txns: list[dict]) -> bool:
+    if len(txns) <= 1:
+        return False
+    sigs = {(str(t.get("date", "")), _norm_vi_text(t.get("description", "")), round(float(t.get("amount", 0)), 2)) for t in txns}
+    return len(sigs) > 1
+
+
 def handle_chat_transaction(user_id: str, message: str, ai_client, userstore) -> dict:
     """
-    Parse a free‑form spend message, categorize via AI, persist to DynamoDB,
-    and return a friendly confirmation.
+    Parse natural-language Add, Edit, or Delete transaction commands,
+    execute against userstore, and return a structured status card payload.
     """
-    txn = _parse_chat_txn(message)
+    import re
+    raw_msg = (message or "").strip()
+    if not raw_msg:
+        return {"status": "error", "detail": "Vui lòng nhập nội dung giao dịch."}
+
+    ai_engine = getattr(ai_client, "primary", ai_client)
+
+    # 1. Check DELETE intent
+    del_match = re.match(
+        r"^(?:hãy\s+|hay\s+|làm ơn\s+|lam on\s+|giúp tôi\s+|giup toi\s+|mình muốn\s+|minh muon\s+)?(?:xóa|xoá|xoa|huỷ|hủy|huy|bỏ|bo|delete|remove)\b(?:\s+(?:giao dịch|giao dich|khoản|khoan|mục|muc))?\s*(.*)$",
+        raw_msg,
+        re.I,
+    )
+    if del_match:
+        target_str = del_match.group(1).strip()
+        parts = _extract_txn_parts(target_str, default_today=False)
+        if not parts["description"] and parts["amount"] is None and not parts["date"]:
+            return {
+                "status": "error",
+                "detail": "Vui lòng nêu rõ giao dịch cần xóa (ví dụ: 'xóa giao dịch ăn xôi 50k ngày 27-11-2026')."
+            }
+
+        matches = _find_matching_txns(userstore, user_id, parts["description"], parts["date"], parts["amount"])
+        if not matches:
+            return {
+                "status": "error",
+                "detail": "Không tìm thấy giao dịch nào khớp để xóa. Bạn hãy kiểm tra lại tên, số tiền hoặc ngày."
+            }
+        if _are_distinct_txns(matches):
+            return {
+                "status": "ambiguous",
+                "action": "delete",
+                "candidates": matches[:5],
+                "detail": f"Tìm thấy {len(matches)} giao dịch phù hợp. Hãy chọn đúng giao dịch cần xóa:"
+            }
+
+        target = matches[0]
+        userstore.delete_transaction(user_id, target["id"])
+        formatted_amount = f"{abs(float(target.get('amount', 0))):,.0f}".replace(",", ".")
+        sign = "+" if float(target.get("amount", 0)) >= 0 else "-"
+        return {
+            "status": "deleted",
+            "transaction": target,
+            "message": f"Đã xóa giao dịch {sign}{formatted_amount}đ ({target.get('description')}) ngày {target.get('date')}."
+        }
+
+    # 2. Check EDIT / UPDATE intent ("sửa/đổi giao dịch A thành/sang B")
+    edit_match = re.match(
+        r"^(?:hãy\s+|hay\s+|làm ơn\s+|lam on\s+|giúp tôi\s+|giup toi\s+|mình muốn\s+|minh muon\s+)?(?:sửa|sua|đổi|doi|chỉnh sửa|chinh sua|chỉnh|chinh|cập nhật|cap nhat|update|edit|change)\s+(.+?)\s+(?:thành|thanh|sang|->|=>|to)\s+(.+)$",
+        raw_msg,
+        re.I,
+    )
+    if edit_match:
+        target_raw = edit_match.group(1).strip()
+        new_raw = edit_match.group(2).strip()
+        is_cat_command = bool(re.search(r"\b(danh mục|danh muc|category|loại|loai)\b", target_raw, re.I))
+        target_clean = re.sub(r"(?i)\b(danh mục|danh muc|category|loại|loai|của|cua)\b", " ", target_raw).strip()
+
+        q_parts = _extract_txn_parts(target_clean, default_today=False)
+        if not q_parts["description"] and q_parts["amount"] is None and not q_parts["date"]:
+            return {
+                "status": "error",
+                "detail": "Không xác định được giao dịch cần sửa. Ví dụ: 'đổi giao dịch ăn xôi 50k thành ăn phở 60k'."
+            }
+
+        matches = _find_matching_txns(userstore, user_id, q_parts["description"], q_parts["date"], q_parts["amount"])
+        if not matches:
+            return {
+                "status": "error",
+                "detail": "Không tìm thấy giao dịch nào khớp để sửa. Bạn hãy kiểm tra lại tên hoặc ngày giao dịch."
+            }
+
+        # Build update payload from new_raw
+        explicit_cat = _detect_explicit_category(new_raw)
+        updates: dict = {}
+
+        if explicit_cat and (is_cat_command or _detect_explicit_category(new_raw) is not None):
+            updates["category"] = explicit_cat
+            updates["confidence"] = "high"
+            updates["engine"] = "user_confirmed"
+        else:
+            new_parts = _extract_txn_parts(new_raw, default_today=False)
+            if new_parts["date"]:
+                updates["date"] = new_parts["date"]
+            if new_parts["description"]:
+                updates["description"] = new_parts["description"]
+            if new_parts["amount"] is not None:
+                updates["amount"] = new_parts["amount"]
+
+            if not updates:
+                return {
+                    "status": "error",
+                    "detail": "Không đọc được thông tin mới cần cập nhật (tên mới, số tiền mới, ngày mới hoặc danh mục mới)."
+                }
+
+        # Preview/apply against target (or return ambiguous list)
+        def _finalize_updates(base_txn: dict, raw_updates: dict) -> dict:
+            final_u = dict(raw_updates)
+            eff_desc = final_u.get("description", base_txn.get("description", ""))
+            eff_date = final_u.get("date", base_txn.get("date", ""))
+            eff_abs_amt = abs(float(final_u.get("amount", base_txn.get("amount", 0))))
+
+            if "category" not in final_u and "description" in final_u:
+                cat_res = ai_engine.categorize(description=eff_desc, amount=eff_abs_amt, date=eff_date)
+                final_u["category"] = cat_res.get("category", base_txn.get("category", "Other"))
+                final_u["confidence"] = cat_res.get("confidence_level", cat_res.get("confidence", "high"))
+                final_u["engine"] = cat_res.get("engine", "nlp_ml")
+
+            eff_cat = final_u.get("category", base_txn.get("category", "Other"))
+            if "amount" in final_u or "category" in final_u:
+                final_u["amount"] = eff_abs_amt if str(eff_cat).lower() == "income" else -eff_abs_amt
+            return final_u
+
+        if _are_distinct_txns(matches):
+            sample_updates = _finalize_updates(matches[0], updates)
+            return {
+                "status": "ambiguous",
+                "action": "edit",
+                "candidates": matches[:5],
+                "updates": sample_updates,
+                "detail": f"Tìm thấy {len(matches)} giao dịch phù hợp. Hãy chọn đúng giao dịch muốn cập nhật:"
+            }
+
+        target = matches[0]
+        final_updates = _finalize_updates(target, updates)
+        updated_txn = userstore.update_transaction(user_id, target["id"], final_updates)
+        return {
+            "status": "updated",
+            "transaction": updated_txn or {**target, **final_updates},
+            "previous": target,
+            "message": f"Đã cập nhật giao dịch thành công."
+        }
+
+    # 3. Default ADD intent
+    txn = _parse_chat_txn(raw_msg)
     if not txn:
         return {
             "status": "error",
-            "detail": "Could not parse transaction. Please provide amount, description and date (e.g. 'I spent $12 on coffee yesterday')."
+            "detail": "Không thể trích xuất giao dịch. Ví dụ: 'Ăn xôi 50k', 'Sửa giao dịch ăn xôi thành ăn phở 60k', hoặc 'Xóa giao dịch ăn xôi 50k hôm nay'."
         }
 
-    # Ask AI to categorize (force Bedrock bypassing Local fallback)
-    ai_engine = getattr(ai_client, "primary", ai_client)
     cat_result = ai_engine.categorize(
         description=txn["description"],
         amount=txn["amount"],
@@ -561,7 +779,6 @@ def handle_chat_transaction(user_id: str, message: str, ai_client, userstore) ->
     if "confidence_score" in cat_result:
         txn["confidence_score"] = cat_result["confidence_score"]
 
-    # Convert spending amount to negative (outflow), except for Income
     if txn["category"].lower() == "income":
         txn["amount"] = abs(txn["amount"])
         sign = "+"
@@ -569,14 +786,14 @@ def handle_chat_transaction(user_id: str, message: str, ai_client, userstore) ->
         txn["amount"] = -abs(txn["amount"])
         sign = "-"
 
-    # Persist
-    userstore.add_transaction(user_id, txn)
+    created = userstore.add_transaction(user_id, txn)
+    saved_txn = created or txn
 
-    formatted_amount = f"{abs(txn['amount']):,.0f}".replace(",", ".")
+    formatted_amount = f"{abs(saved_txn['amount']):,.0f}".replace(",", ".")
     return {
         "status": "saved",
-        "transaction": txn,
-        "message": f"Saved {sign}{formatted_amount}đ on {txn['date']} as {txn['category']} (confidence {txn['confidence']})."
+        "transaction": saved_txn,
+        "message": f"Saved {sign}{formatted_amount}đ on {saved_txn['date']} as {saved_txn['category']} (confidence {saved_txn['confidence']})."
     }
 
 

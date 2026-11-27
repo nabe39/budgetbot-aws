@@ -65,6 +65,8 @@
   align-items: center;
   gap: 1.25rem;
   margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 30;
 }
 
 .limits-title-group {
@@ -145,25 +147,17 @@
   color: var(--primary);
 }
 
-.limits-month-input {
-  width: 105px !important;
-  min-width: 105px !important;
-  max-width: 105px !important;
-  border: none !important;
-  background: transparent !important;
-  font-weight: 700 !important;
-  font-size: 0.88rem !important;
-  color: var(--text-main) !important;
-  padding: 0.35rem 0.2rem !important;
-  cursor: pointer;
-  box-shadow: none !important;
-  text-align: center;
+.limits-month-selector .cal-picker-trigger {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0.35rem 0.65rem;
 }
 
-.limits-month-input::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.6;
-  margin-left: 2px;
+.limits-month-selector .cal-picker-trigger:hover {
+  background: rgba(37, 99, 235, 0.08);
+  transform: none;
+  box-shadow: none;
 }
 
 /* Alert Notification Bars */

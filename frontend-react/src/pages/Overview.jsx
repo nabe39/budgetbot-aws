@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import apiClient from '../api/client';
 import { formatCurrency, formatShortVND } from '../utils/format';
 import {
@@ -16,34 +16,16 @@ import {
 } from 'recharts';
 import { useUpload } from '../context/UploadContext';
 import { useLanguage } from '../context/LanguageContext';
-
-const MONTH_NAMES_VI = [
-  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-  'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-  'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
-];
-
-const MONTH_NAMES_EN = [
-  'Jan', 'Feb', 'Mar', 'Apr',
-  'May', 'Jun', 'Jul', 'Aug',
-  'Sep', 'Oct', 'Nov', 'Dec'
-];
+import CalendarPicker from '../components/CalendarPicker';
 
 function Overview() {
   const [uploadMsg, setUploadMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
+  const [periodMode, setPeriodMode] = useState('all'); // 'all' | 'month' | 'year'
   const [month, setMonth] = useState('');
   const { submitUpload, refreshTrigger } = useUpload();
   const { t, getCategoryName, language } = useLanguage();
-
-  // Calendar popover state
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [calendarYear, setCalendarYear] = useState(() => {
-    const d = new Date();
-    return d.getFullYear();
-  });
-  const calendarRef = useRef(null);
 
   // Helper strings for current and previous month (e.g. 2026-05)
   const currentMonthStr = useMemo(() => {
@@ -57,34 +39,36 @@ function Overview() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   }, []);
 
-  // Sync calendar year when month state changes
-  useEffect(() => {
-    if (month && month.includes('-')) {
-      const y = parseInt(month.split('-')[0], 10);
-      if (!isNaN(y)) setCalendarYear(y);
-    }
-  }, [month]);
-
-  // Click outside to close calendar popover
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (calendarRef.current && !calendarRef.current.contains(e.target)) {
-        setIsCalendarOpen(false);
-      }
-    };
-    if (isCalendarOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isCalendarOpen]);
-
   // Set of months that have data in monthly_trends
   const availableMonthsSet = useMemo(() => {
     if (!summaryData || !summaryData.monthly_trends) return new Set();
     return new Set(summaryData.monthly_trends.map(item => item.month));
   }, [summaryData]);
+
+  // Build all 12 months (01..12) of the target calendar year (e.g. 01/26 .. 12/26)
+  const last12MonthsTrends = useMemo(() => {
+    const trends = summaryData?.monthly_trends || [];
+    const trendMap = new Map(trends.map(item => [item.month, item]));
+
+    let targetYear = parseInt(currentMonthStr.slice(0, 4), 10);
+    if (month && month.length >= 4) {
+      const selectedY = parseInt(month.slice(0, 4), 10);
+      if (!isNaN(selectedY)) targetYear = selectedY;
+    } else if (trends.length > 0) {
+      const latestY = parseInt(trends[trends.length - 1].month.slice(0, 4), 10);
+      if (!isNaN(latestY) && latestY > targetYear) targetYear = latestY;
+    }
+
+    const result = [];
+    for (let m = 1; m <= 12; m++) {
+      const mKey = `${targetYear}-${String(m).padStart(2, '0')}`;
+      const existing = trendMap.get(mKey);
+      result.push(
+        existing || { month: mKey, income: 0, expense: 0, net: 0 }
+      );
+    }
+    return result;
+  }, [summaryData, currentMonthStr, month]);
 
   // Fetch summary and transactions
   const fetchData = async () => {
@@ -216,7 +200,9 @@ function Overview() {
           alignItems: 'center',
           marginBottom: '1.75rem',
           flexWrap: 'wrap',
-          gap: '1rem'
+          gap: '1rem',
+          position: 'relative',
+          zIndex: 30
         }}>
           <div>
             <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -226,7 +212,9 @@ function Overview() {
             {month ? (
                 <span style={{ fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px', marginTop: '0.35rem' }}>
                   <i className="fa-solid fa-calendar-check"></i>
-                  {language === 'vi' ? `Đang xem: Tháng ${month.split('-')[1]}/${month.split('-')[0]}` : `Viewing: ${month}`}
+                  {month.length === 4
+                    ? (language === 'vi' ? `Đang xem: Năm ${month}` : `Viewing: ${month}`)
+                    : (language === 'vi' ? `Đang xem: Tháng ${month.split('-')[1]}/${month.split('-')[0]}` : `Viewing: ${month}`)}
                 </span>
                 ) : (
                   <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '5px', marginTop: '0.35rem' }}>
@@ -236,7 +224,7 @@ function Overview() {
             )}
                 </div>
 
-                {/* Filter Pills (Tabs) & Calendar Picker Popover */}
+                {/* Filter Pills (Tabs) & Visual Calendar Picker */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                   {/* Quick Tabs: Tổng quan | Tháng này | Tháng trước */}
                   <div style={{
@@ -250,7 +238,7 @@ function Overview() {
                   }}>
                     <button
                       type="button"
-                      onClick={() => setMonth('')}
+                      onClick={() => { setPeriodMode('all'); setMonth(''); }}
                       style={{
                         background: month === '' ? '#ffffff' : 'transparent',
                         color: month === '' ? 'var(--primary)' : 'var(--text-muted)',
@@ -272,7 +260,7 @@ function Overview() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setMonth(currentMonthStr)}
+                      onClick={() => { setPeriodMode('month'); setMonth(currentMonthStr); }}
                       style={{
                         background: month === currentMonthStr ? '#ffffff' : 'transparent',
                         color: month === currentMonthStr ? 'var(--primary)' : 'var(--text-muted)',
@@ -290,7 +278,7 @@ function Overview() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setMonth(previousMonthStr)}
+                      onClick={() => { setPeriodMode('month'); setMonth(previousMonthStr); }}
                       style={{
                         background: month === previousMonthStr ? '#ffffff' : 'transparent',
                         color: month === previousMonthStr ? 'var(--primary)' : 'var(--text-muted)',
@@ -308,222 +296,17 @@ function Overview() {
                     </button>
                   </div>
 
-                      {/* Calendar Popover Trigger Button ("Chọn lịch") */ }
-                      < div ref={calendarRef} style={{ position: 'relative' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      <button
-                        type="button"
-                        onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          padding: '0.45rem 0.95rem',
-                          borderRadius: month ? '10px 0 0 10px' : '10px',
-                          border: isCalendarOpen || month ? '1.5px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.9)',
-                          background: isCalendarOpen || month ? 'rgba(37, 99, 235, 0.09)' : 'rgba(255, 255, 255, 0.65)',
-                          color: isCalendarOpen || month ? 'var(--primary)' : 'var(--text-main)',
-                          fontSize: '0.85rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        <i className="fa-regular fa-calendar-days" style={{ color: 'var(--primary)', fontSize: '0.95rem' }}></i>
-                        <span>
-                          {month
-                            ? (language === 'vi' ? `Tháng ${month.split('-')[1]}/${month.split('-')[0]}` : month)
-                            : (language === 'vi' ? 'Chọn lịch' : 'Pick Month')}
-                        </span>
-                        <i className={`fa-solid ${isCalendarOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`} style={{ fontSize: '0.7rem', opacity: 0.7 }}></i>
-                      </button>
-
-                      {month && (
-                        <button
-                          type="button"
-                          onClick={() => setMonth('')}
-                          title={t('txn.clear')}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '32px',
-                            height: '35px',
-                            borderRadius: '0 10px 10px 0',
-                            border: '1.5px solid var(--primary)',
-                            borderLeft: 'none',
-                            background: 'rgba(37, 99, 235, 0.09)',
-                            color: 'var(--error)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                          }}
-                        >
-                          <i className="fa-solid fa-xmark"></i>
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Visual 12-Month Calendar Popover */}
-                    {isCalendarOpen && (
-                      <div style={{
-                        position: 'absolute',
-                        top: 'calc(100% + 8px)',
-                        right: 0,
-                        zIndex: 1000,
-                        width: '280px',
-                        background: 'rgba(255, 255, 255, 0.98)',
-                        backdropFilter: 'blur(16px)',
-                        borderRadius: '16px',
-                        boxShadow: '0 14px 40px rgba(0, 0, 0, 0.16)',
-                        border: '1px solid rgba(255, 255, 255, 0.95)',
-                        padding: '1rem'
-                      }}>
-                        {/* Year selector header */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-                          <button
-                            type="button"
-                            onClick={() => setCalendarYear(y => y - 1)}
-                            style={{
-                              background: 'rgba(0,0,0,0.04)',
-                              border: 'none',
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'var(--text-main)'
-                            }}
-                            title={language === 'vi' ? 'Năm trước' : 'Previous Year'}
-                          >
-                            <i className="fa-solid fa-chevron-left" style={{ fontSize: '0.75rem' }}></i>
-                          </button>
-
-                          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-main)', letterSpacing: '0.5px' }}>
-                            {calendarYear}
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={() => setCalendarYear(y => y + 1)}
-                            style={{
-                              background: 'rgba(0,0,0,0.04)',
-                              border: 'none',
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'var(--text-main)'
-                            }}
-                            title={language === 'vi' ? 'Năm sau' : 'Next Year'}
-                          >
-                            <i className="fa-solid fa-chevron-right" style={{ fontSize: '0.75rem' }}></i>
-                          </button>
-                        </div>
-
-                        {/* 12 Months Grid */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.45rem', marginBottom: '0.85rem' }}>
-                          {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
-                            const mKey = `${calendarYear}-${String(m).padStart(2, '0')}`;
-                            const isSelected = month === mKey;
-                            const isCurrent = currentMonthStr === mKey;
-                            const hasData = availableMonthsSet.has(mKey);
-                            const mName = language === 'vi' ? MONTH_NAMES_VI[m - 1] : MONTH_NAMES_EN[m - 1];
-
-                            return (
-                              <button
-                                key={m}
-                                type="button"
-                                onClick={() => handleSelectCalendarMonth(m)}
-                                style={{
-                                  padding: '0.6rem 0.25rem',
-                                  border: isSelected ? '1.5px solid var(--primary)' : isCurrent ? '1.5px dashed var(--primary)' : '1px solid rgba(0,0,0,0.05)',
-                                  borderRadius: '10px',
-                                  background: isSelected ? 'var(--primary)' : hasData ? 'rgba(37, 99, 235, 0.08)' : 'rgba(0,0,0,0.02)',
-                                  color: isSelected ? '#ffffff' : 'var(--text-main)',
-                                  fontSize: '0.82rem',
-                                  fontWeight: isSelected ? 700 : 500,
-                                  cursor: 'pointer',
-                                  transition: 'all 0.15s ease',
-                                  position: 'relative',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  alignItems: 'center',
-                                  justifyContent: 'center'
-                                }}
-                              >
-                                <span>{mName}</span>
-                                {hasData && (
-                                  <span
-                                    style={{
-                                      position: 'absolute',
-                                      bottom: '3px',
-                                      width: '4px',
-                                      height: '4px',
-                                      borderRadius: '50%',
-                                      background: isSelected ? '#ffffff' : '#10b981'
-                                    }}
-                                    title={language === 'vi' ? 'Có dữ liệu' : 'Has data'}
-                                  ></span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Popover Footer Shortcuts */}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          paddingTop: '0.65rem',
-                          borderTop: '1px solid rgba(0,0,0,0.06)',
-                          fontSize: '0.8rem'
-                        }}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMonth('');
-                              setIsCalendarOpen(false);
-                            }}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: 'var(--text-muted)',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              padding: '2px 6px'
-                            }}
-                          >
-                            {t('overview.all_time')}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMonth(currentMonthStr);
-                              setIsCalendarOpen(false);
-                            }}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: 'var(--primary)',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              padding: '2px 6px'
-                            }}
-                          >
-                            {t('overview.current_month')}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <CalendarPicker
+                    mode={periodMode}
+                    value={month}
+                    onChange={(newMode, newVal) => {
+                      setPeriodMode(newMode);
+                      setMonth(newVal);
+                    }}
+                    modes={['all', 'month', 'year']}
+                    availableMonths={availableMonthsSet}
+                    alignRight
+                  />
                 </div>
               </div>
 
@@ -534,7 +317,7 @@ function Overview() {
             ) : (
               <>
                 {/* 1. 4 SUMMARY TOTAL TILES */}
-                <div className="summary-totals" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+                <div className="summary-totals" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(195px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
                   {(() => {
                     const byCat = summaryData.by_category || {};
                     const totalIncome = summaryData.total_income ?? Object.values(byCat).filter(v => v.total > 0).reduce((s, v) => s + v.total, 0);
@@ -631,8 +414,8 @@ function Overview() {
                   </div>
                 )}
 
-                {/* 2. BIỂU ĐỒ CỘT SO SÁNH THU NHẬP VÀ CHI PHÍ ĐA THÁNG */}
-                {summaryData.monthly_trends && summaryData.monthly_trends.length > 0 && (
+                {/* 2. BIỂU ĐỒ CỘT SO SÁNH THU NHẬP VÀ CHI PHÍ 12 THÁNG GẦN NHẤT */}
+                {last12MonthsTrends.length > 0 && (
                   <div style={{ marginBottom: '2.5rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem' }}>
                       <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -640,19 +423,22 @@ function Overview() {
                         {t('overview.monthly_comparison')}
                       </h4>
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                        {summaryData.monthly_trends.length} {language === 'vi' ? 'tháng' : 'months'}
+                        {language === 'vi'
+                          ? `Năm ${last12MonthsTrends[0]?.month.slice(0, 4)} (12 tháng)`
+                          : `Year ${last12MonthsTrends[0]?.month.slice(0, 4)} (12 months)`}
                       </span>
                     </div>
                     <div style={{ height: '320px', width: '100%' }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
-                          data={summaryData.monthly_trends}
+                          data={last12MonthsTrends}
                           margin={{ top: 15, right: 15, left: 10, bottom: 5 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0, 0, 0, 0.06)" />
                           <XAxis
                             dataKey="month"
                             tickFormatter={formatMonthAxis}
+                            interval={0}
                             stroke="var(--text-muted)"
                             fontSize={12}
                             tickLine={false}
@@ -781,55 +567,6 @@ function Overview() {
                     </div>
                   </div>
                 </div>
-
-                {/* 4. 50 / 30 / 20 FINANCIAL HEALTH BENCHMARK NGUYÊN BẢN */}
-                {(() => {
-                  const totalInc = summaryData.total_income || 0;
-                  if (totalInc <= 0) return null;
-
-                  const needsCats = ['Food', 'Transport', 'Utilities', 'Health'];
-                  const wantsCats = ['Shopping', 'Entertainment', 'Subscriptions', 'Transfer', 'Other'];
-
-                  const allocList = summaryData.spending_allocation || [];
-                  const needsSpend = allocList.filter(a => needsCats.includes(a.category)).reduce((s, a) => s + a.amount, 0);
-                  const wantsSpend = allocList.filter(a => wantsCats.includes(a.category)).reduce((s, a) => s + a.amount, 0);
-
-                  const needsPct = Math.min(100, Math.round((needsSpend / totalInc) * 100));
-                  const wantsPct = Math.min(100, Math.round((wantsSpend / totalInc) * 100));
-                  const savingsPct = Math.max(0, 100 - needsPct - wantsPct);
-
-                  return (
-                    <div style={{
-                      marginTop: '2rem',
-                      padding: '1.25rem 1.5rem',
-                      background: 'rgba(255,255,255,0.4)',
-                      borderRadius: '16px',
-                      border: '1px solid rgba(255,255,255,0.8)'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        <div>
-                          <h4 style={{ margin: 0, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
-                            <i className="fa-solid fa-scale-balanced" style={{ color: 'var(--primary)' }}></i>
-                            {t('overview.benchmark_title')}
-                          </h4>
-                          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            {t('overview.benchmark_sub')}
-                          </p>
-                        </div>
-                        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.82rem', fontWeight: 600 }}>
-                          <span style={{ color: '#3b82f6' }}>● {t('overview.needs')}: {needsPct}%</span>
-                          <span style={{ color: '#f59e0b' }}>● {t('overview.wants')}: {wantsPct}%</span>
-                          <span style={{ color: '#10b981' }}>● {t('overview.savings')}: {savingsPct}%</span>
-                        </div>
-                      </div>
-                      <div style={{ height: '14px', borderRadius: '7px', overflow: 'hidden', display: 'flex', background: 'rgba(0,0,0,0.06)' }}>
-                        <div style={{ width: `${needsPct}%`, background: '#3b82f6', transition: 'width 0.8s ease' }} title={`Needs: ${needsPct}%`}></div>
-                        <div style={{ width: `${wantsPct}%`, background: '#f59e0b', transition: 'width 0.8s ease' }} title={`Wants: ${wantsPct}%`}></div>
-                        <div style={{ width: `${savingsPct}%`, background: '#10b981', transition: 'width 0.8s ease' }} title={`Savings: ${savingsPct}%`}></div>
-                      </div>
-                    </div>
-                  );
-                })()}
               </>
             )}
           </div>
