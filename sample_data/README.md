@@ -49,7 +49,7 @@ BudgetBot phân loại chi tiêu theo chuẩn 10 danh mục thống nhất từ 
 6. **`Health`**: Khám chữa bệnh, thuốc men, bệnh viện, nha khoa, tiêm phòng (Long Châu, Pharmacity, Bạch Mai, VNVC...).
 7. **`Subscriptions`**: Thuê bao dịch vụ định kỳ, phần mềm bản quyền (Netflix, Spotify, ChatGPT Plus, iCloud, Cursor Pro...).
 8. **`Income`**: Thu nhập, lương, thưởng, hoàn tiền, nhận chuyển khoản (Lương công ty, thưởng KPI, hoàn tiền Shopee...).
-9. **`Transfer`**: Chuyển khoản ví điện tử, gửi tiết kiệm, trả nợ cá nhân, tiền thuê trọ (VietQR, MoMo, Napas 247...).
+9. **`Transfer`**: Luân chuyển tiền nội bộ, nạp/rút ví điện tử (MoMo, ZaloPay), gửi tiết kiệm, vay/trả nợ cá nhân, tiền thuê trọ, hoặc chuyển khoản P2P cho cá nhân **không nêu rõ mục đích hàng hóa/dịch vụ tiêu dùng** (VietQR, Napas 247...). *(Lưu ý: Các giao dịch chuyển khoản có ghi rõ mục đích tiêu dùng như "CK tiền ăn trưa", "chuyển khoản mua đồ" được ưu tiên phân loại vào `Food`, `Shopping`... thay vì `Transfer`.)*
 10. **`Other`**: Phí ngân hàng, mã giao dịch không rõ nội dung, rút ATM, từ thiện (Phí duy trì tài khoản, mã `FT...`, rút tiền mặt...).
 
 ---

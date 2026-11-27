@@ -24,23 +24,27 @@ _CACHED_CLASSIFIER = None
 CONFIDENCE_HIGH_THRESHOLD = 0.70
 CONFIDENCE_MEDIUM_THRESHOLD = 0.45
 
-# Food intent pattern to disambiguate street food / snacks (e.g. mua xôi, ck 5k tiền xôi)
+# Food intent pattern to disambiguate street food / snacks / meals (e.g. mua xôi, ck 5k tiền xôi, tiền nhậu, bữa lẩu)
 FOOD_INTENT_PATTERN = re.compile(
-    r"\b(xôi|xoi|bánh mì|banh mi|bún chả|bun cha|cơm tấm|com tam|phở|pho\s+bo|pho\s+ga|quan\s+pho|an\s+pho|hủ tiếu|hu tieu|bánh cuốn|banh cuon|trà sữa|tra sua|trà đá|tra da|ăn sáng|an sang|ăn trưa|an trua|ăn tối|an toi|tiền ăn|tien an|bún bò|bun bo|cơm trưa|com trua)\b",
+    r"\b(xôi|xoi|bánh mì|banh mi|bún chả|bun cha|cơm tấm|com tam|phở|pho\s+bo|pho\s+ga|quan\s+pho|an\s+pho|hủ tiếu|hu tieu|bánh cuốn|banh cuon|trà sữa|tra sua|trà đá|tra da|ăn sáng|an sang|ăn trưa|an trua|ăn tối|an toi|tiền ăn|tien an|bún bò|bun bo|cơm trưa|com trua|bữa lẩu|bua lau|tiền lẩu|tien lau|đi nhậu|di nhau|tiền nhậu|tien nhau|bữa nhậu|bua nhau|nhậu|ăn vặt|an vat)\b",
     re.I,
 )
 
 
-# Fallback keywords for out-of-vocabulary terms
+# Transfer intent pattern for internal transfers, e-wallet top-ups/withdrawals, savings, debt, rent
+TRANSFER_INTENT_PATTERN = re.compile(
+    r"\b(trả nợ|tra no|cho vay|tạm ứng|tam ung|tiết kiệm|tiet kiem|nạp ví|nap vi|rút ví|rut vi|phòng trọ|phong tro|tiền phòng|tien phong|thuê nhà|thue nha|chuyển khoản nội bộ|chuyen khoan noi bo)\b",
+    re.I,
+)
+
+
+# Fallback keywords for out-of-vocabulary terms (Transfer placed after consumption categories)
 FALLBACK_KEYWORDS = {
     "Income": [
         "salary", "deposit credit", "payroll", "incoming transfer", "bonus",
         "lương", "luong", "thu nhập", "thu nhap", "tiền thưởng", "tien thuong",
-        "nhận tiền", "nhan tien", "tra luong", "chuyển khoản đến", "lì xì", "li xi"
-    ],
-    "Transfer": [
-        "transfer to", "transfer from", "moved to savings",
-        "chuyển khoản", "chuyen khoan", "chuyển tiền", "chuyen tien", "chuyển sang"
+        "nhận tiền", "nhan tien", "tra luong", "nhận chuyển khoản", "nhan chuyen khoan",
+        "hoàn tiền", "hoan tien", "lì xì", "li xi"
     ],
     "Subscriptions": [
         "subscription", "netflix", "spotify", "openai", "chatgpt", "anthropic",
@@ -52,7 +56,8 @@ FALLBACK_KEYWORDS = {
         "grab food", "shopee food", "lunch", "dinner", "bakery", "cà phê", "ca phe",
         "cơm", "com", "bún", "bun", "ăn uống", "an uong", "quán ăn", "quan an",
         "nhà hàng", "nha hang", "trà sữa", "tra sua", "phúc long", "phuc long",
-        "kfc", "lotteria", "mcdonald"
+        "kfc", "lotteria", "mcdonald", "xôi", "xoi", "bánh mì", "banh mi",
+        "nhậu", "tiền nhậu", "tien nhau", "bữa lẩu", "bua lau"
     ],
     "Transport": [
         "grab", "uber", " be ", "xanh sm", "taxi", "metro", "bus", "petrol", "shell",
@@ -62,7 +67,8 @@ FALLBACK_KEYWORDS = {
     "Shopping": [
         "shopee", "lazada", "tiki", "amazon", "store", "mall", "vincom", "shop",
         "siêu thị", "sieu thi", "mua sắm", "mua sam", "bách hóa", "winmart",
-        "coopmart", "lotte mart", "aeon", "big c", "topmarket"
+        "coopmart", "lotte mart", "aeon", "big c", "topmarket",
+        "mua đồ", "mua do", "mua áo", "mua ao", "mua quần", "mua quan", "mua sách", "mua sach"
     ],
     "Utilities": [
         "electric", "evn", "water", "internet", "viettel", "vnpt", "fpt", "utility",
@@ -77,6 +83,12 @@ FALLBACK_KEYWORDS = {
         "pharmacy", "hospital", "clinic", "guardian", "long chau", "medlatec",
         "thuốc", "thuoc", "khám bệnh", "kham benh", "bệnh viện", "benh vien",
         "nhà thuốc", "nha thuoc", "pharmacity", "an khang"
+    ],
+    "Transfer": [
+        "transfer to", "transfer from", "moved to savings",
+        "chuyển khoản", "chuyen khoan", "chuyển tiền", "chuyen tien", "chuyển sang",
+        "nạp ví", "nap vi", "rút ví", "rut vi", "tiết kiệm", "tiet kiem",
+        "trả nợ", "tra no", "cho vay", "phòng trọ", "phong tro", "thuê nhà", "thue nha"
     ],
 }
 
@@ -228,6 +240,12 @@ def predict_transaction(
         predicted_category = "Food"
         confidence_val = max(confidence_val, 0.90)
         engine_name = "food_intent_heuristic"
+    elif not is_income_keyword and (amount_num is None or amount_num <= 0) and (
+        TRANSFER_INTENT_PATTERN.search(raw_desc) or TRANSFER_INTENT_PATTERN.search(cleaned_unaccented)
+    ):
+        predicted_category = "Transfer"
+        confidence_val = max(confidence_val, 0.88)
+        engine_name = "transfer_intent_heuristic"
 
     # Business heuristic: Amount sign check
     # If amount is strictly positive and description mentions income keywords

@@ -23,7 +23,9 @@ Categories: {categories}
 
 IMPORTANT GUIDELINES:
 - If the transaction is about receiving money, salary, or incoming transfers (e.g., "nhận", "lương", "được chuyển", "thu", "lì xì"), you MUST categorize it as "Income".
-- If the transaction is about spending or outgoing money (e.g., "mua", "trả", "chuyển khoản cho", "chi", "ăn", "uống", "đóng"), categorize it into the most appropriate expense category (Food, Transport, etc.).
+- If a transfer explicitly mentions a consumption purpose (e.g., "chuyển khoản ăn xôi", "CK 50k tiền nhậu", "chuyển khoản mua đồ", "CK tiền điện"), categorize it into that expense category (Food, Shopping, Utilities, etc.), NOT "Transfer".
+- Use "Transfer" ONLY for internal account transfers, e-wallet top-ups/withdrawals, savings, debt repayment/lending, rent, or P2P transfers with no clear consumption purpose (e.g., "CK den Nguyen Van A", "Nap vi MoMo", "Chuyen tien tra no").
+- If the transaction is about spending or outgoing money (e.g., "mua", "trả", "chi", "ăn", "uống", "đóng"), categorize it into the most appropriate expense category (Food, Transport, etc.).
 - IMPORTANT FOR CONFIDENCE: If the description looks like an opaque transaction code (e.g., 'FT0024...', 'TRX...', random alphanumeric strings with no obvious meaning) or is highly ambiguous, assign confidence "low". Otherwise, if it's somewhat ambiguous, assign "medium". Usually assign "high".
 
 Transaction: "{description}"
@@ -39,6 +41,8 @@ Categories: {categories}
 
 IMPORTANT GUIDELINES:
 - If the transaction is about receiving money, salary, or incoming transfers (or positive amounts), categorize it as "Income".
+- If a transfer explicitly mentions a consumption purpose (e.g., "chuyển khoản ăn xôi", "CK tiền nhậu", "CK mua đồ"), categorize it into that expense category (Food, Shopping, etc.), NOT "Transfer".
+- Use "Transfer" ONLY for internal transfers, e-wallet top-ups/withdrawals, savings, debt repayment/lending, rent, or P2P transfers without a clear consumption purpose.
 - If the transaction is about spending or outgoing money (or negative amounts), categorize it into the most appropriate expense category.
 - Ensure dates are formatted as YYYY-MM-DD. If year is missing, assume current year.
 - Ensure amounts are positive absolute numbers. The sign is determined by the category later.
@@ -304,18 +308,18 @@ class HybridAI:
 class LocalAI:
     """Rule-based categorizer. Keyword matching only. Use for development."""
 
-    # Order matters: first match wins. Subscriptions BEFORE Entertainment so
-    # "Netflix monthly subscription" → Subscriptions (subscription keyword fires).
+    # Order matters: first match wins.
+    # 1. Income comes first (incoming money / salary / refunds).
+    # 2. Subscriptions BEFORE Entertainment ("Netflix monthly subscription" -> Subscriptions).
+    # 3. Specific expense categories BEFORE Transfer so "chuyển khoản ăn xôi" / "chuyển khoản mua đồ"
+    #    classify by consumption purpose (Food / Shopping) rather than payment method (Transfer).
     # Bilingual keywords: supports both English and Vietnamese bank statement descriptions
     KEYWORDS = {
         "Income": [
             "salary", "deposit credit", "payroll", "incoming transfer", "bonus",
             "lương", "luong", "thu nhập", "thu nhap", "tiền thưởng", "tien thuong",
-            "nhận tiền", "nhan tien", "tra luong", "chuyển khoản đến", "lì xì", "li xi"
-        ],
-        "Transfer": [
-            "transfer to", "transfer from", "moved to savings",
-            "chuyển khoản", "chuyen khoan", "chuyển tiền", "chuyen tien", "chuyển sang"
+            "nhận tiền", "nhan tien", "tra luong", "nhận chuyển khoản", "nhan chuyen khoan",
+            "hoàn tiền", "hoan tien", "lì xì", "li xi"
         ],
         "Subscriptions": [
             "subscription", "netflix", "spotify", "openai", "chatgpt", "anthropic",
@@ -324,20 +328,24 @@ class LocalAI:
         ],
         "Food": [
             "restaurant", "cafe", "coffee", "starbucks", "highlands", "phở", "pho", "food",
-            "grab food", "shopee food", "lunch", "dinner", "bakery", "cà phê", "ca phe",
-            "cơm", "com", "bún", "bun", "ăn uống", "an uong", "quán ăn", "quan an",
-            "nhà hàng", "nha hang", "trà sữa", "tra sua", "phúc long", "phuc long",
-            "kfc", "lotteria", "mcdonald"
+            "grab food", "grabfood", "shopee food", "shopeefood", "lunch", "dinner", "bakery",
+            "cà phê", "ca phe", "cơm", "com", "bún", "bun", "ăn uống", "an uong",
+            "quán ăn", "quan an", "nhà hàng", "nha hang", "trà sữa", "tra sua",
+            "phúc long", "phuc long", "kfc", "lotteria", "mcdonald", "xôi", "xoi",
+            "bánh mì", "banh mi", "ăn sáng", "an sang", "ăn trưa", "an trua",
+            "ăn tối", "an toi", "tiền ăn", "tien an", "nhậu", "tiền nhậu", "tien nhau",
+            "bữa lẩu", "bua lau"
         ],
         "Transport": [
-            "grab", "uber", " be ", "xanh sm", "taxi", "metro", "bus", "petrol", "shell",
+            "grab", "uber", "be", "xanh sm", "taxi", "metro", "bus", "petrol", "shell",
             "vinfast", "fuel", "xăng", "xang", "gửi xe", "gui xe", "vé xe", "ve xe",
             "mai linh", "gojek"
         ],
         "Shopping": [
             "shopee", "lazada", "tiki", "amazon", "store", "mall", "vincom", "shop",
             "siêu thị", "sieu thi", "mua sắm", "mua sam", "bách hóa", "winmart",
-            "coopmart", "lotte mart", "aeon", "big c", "topmarket"
+            "coopmart", "lotte mart", "aeon", "big c", "topmarket",
+            "mua đồ", "mua do", "mua áo", "mua ao", "mua quần", "mua quan", "mua sách", "mua sach"
         ],
         "Utilities": [
             "electric", "evn", "water", "internet", "viettel", "vnpt", "fpt", "utility",
@@ -353,13 +361,26 @@ class LocalAI:
             "thuốc", "thuoc", "khám bệnh", "kham benh", "bệnh viện", "benh vien",
             "nhà thuốc", "nha thuoc", "pharmacity", "an khang"
         ],
+        "Transfer": [
+            "transfer to", "transfer from", "moved to savings",
+            "chuyển khoản", "chuyen khoan", "chuyển tiền", "chuyen tien", "chuyển sang",
+            "nạp ví", "nap vi", "rút ví", "rut vi", "tiết kiệm", "tiet kiem",
+            "trả nợ", "tra no", "cho vay", "phòng trọ", "phong tro", "thuê nhà", "thue nha"
+        ],
     }
+
+    @staticmethod
+    def _keyword_matches(kw: str, text_lower: str) -> bool:
+        """Match keyword on word boundaries so 'pho' does not match 'phong' or 'com' match 'vincom'."""
+        return bool(re.search(rf"(?<!\w){re.escape(kw.strip())}(?!\w)", text_lower))
 
     def categorize(self, description: str, amount: float, date: str) -> dict:
         desc_lower = description.lower()
         for category, keywords in self.KEYWORDS.items():
+            if category == "Income" and amount is not None and amount < 0:
+                continue
             for kw in keywords:
-                if kw in desc_lower:
+                if self._keyword_matches(kw, desc_lower):
                     # Đã có trong từ khoá thì chắc chắn đúng, confidence = high
                     return {
                         "category": category,

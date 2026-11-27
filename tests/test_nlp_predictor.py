@@ -106,6 +106,10 @@ class TestFastAPIPredictIntegration:
             ("mua xoi het 20k", 20000, "Food"),
             ("ck 5k tien xoi", 5000, "Food"),
             ("ck tien tra sua", -35000, "Food"),
+            ("chuyển khoản ăn xôi", -20000, "Food"),
+            ("chuyển khoản 50k tiền nhậu cho Tùng", -50000, "Food"),
+            ("chuyển khoản mua đồ", -150000, "Shopping"),
+            ("chuyển khoản trả nợ bạn", -500000, "Transfer"),
             ("mua banh mi 15k", None, "Food"),
             ("tiền điện EVN", -450000, "Utilities"),
         ]
@@ -113,6 +117,17 @@ class TestFastAPIPredictIntegration:
             res = predict_transaction(desc, amount=amt)
             assert res["category"] == exp_cat
             assert res["confidence_level"] in ("high", "medium")
+
+    def test_local_ai_transfer_vs_consumption_priority(self):
+        """Verify LocalAI prioritizes consumption purpose over generic 'chuyển khoản' keyword."""
+        from src.adapters.ai import LocalAI
+        local = LocalAI()
+        assert local.categorize("chuyển khoản ăn xôi", -20000, "2026-11-27")["category"] == "Food"
+        assert local.categorize("chuyển khoản mua đồ", -150000, "2026-11-27")["category"] == "Shopping"
+        assert local.categorize("chuyển khoản 50k tiền nhậu cho Tùng", -50000, "2026-11-27")["category"] == "Food"
+        assert local.categorize("chuyển khoản trả nợ bạn", -500000, "2026-11-27")["category"] == "Transfer"
+        assert local.categorize("chuyển khoản đến Nguyễn Văn A", -500000, "2026-11-27")["category"] == "Transfer"
+        assert local.categorize("Chuyen tien tra phong tro thang 05", -4500000, "2026-11-27")["category"] == "Transfer"
 
     def test_chat_transaction_slang_parsing(self, test_client):
         """Verify _parse_chat_txn via POST /chat/transaction handles Vietnamese slang amounts and categories."""

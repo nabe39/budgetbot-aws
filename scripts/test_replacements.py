@@ -34,9 +34,10 @@ replacements = [
     ("Khach hang chuyen khoan tien thue nha thang nay", "Income"),
     ("Lixi dau nam moi tu sep phong kinh doanh", "Income"),
     ("Tien thuong cuoc thi sang tao ky thuat so", "Income"),
-    # Transfer (4)
+    # Food (1)
+    ("Chia tien bua lau toi qua gui lai Truong", "Food"),
+    # Transfer (3)
     ("Gui tien tieu vat cho em gai hoc dai hoc xa nha", "Transfer"),
-    ("Chia tien bua lau toi qua gui lai Truong", "Transfer"),
     ("Chuyen khoan tra no tien mua ho do hom truoc", "Transfer"),
     ("Chuyen tien dat coc thue can ho studio", "Transfer"),
     # Other (6)

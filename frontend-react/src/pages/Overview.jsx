@@ -788,7 +788,7 @@ function Overview() {
                   if (totalInc <= 0) return null;
 
                   const needsCats = ['Food', 'Transport', 'Utilities', 'Health'];
-                  const wantsCats = ['Shopping', 'Entertainment', 'Subscriptions', 'Other'];
+                  const wantsCats = ['Shopping', 'Entertainment', 'Subscriptions', 'Transfer', 'Other'];
 
                   const allocList = summaryData.spending_allocation || [];
                   const needsSpend = allocList.filter(a => needsCats.includes(a.category)).reduce((s, a) => s + a.amount, 0);

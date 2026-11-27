@@ -1,4 +1,4 @@
-﻿date,description,amount,true_category
+date,description,amount,true_category
 2026-01-05,Highlands Coffee Nguyen Trai,-55000,Food
 2026-01-08,GrabFood don hang Com tam Ba Ghien,-89000,Food
 2026-02-10,Thanh toan Phuc Long Tea & Coffee,-65000,Food
@@ -125,7 +125,7 @@
 2026-04-15,Rut tien tu vi ShopeePay ve tai khoan Techcombank,-500000,Transfer
 2026-05-01,CHUYEN KHOAN TIEN PHONG,-4800000,Transfer
 2026-05-20,Chuyen khoan gop tien sinh nhat Le Van Cuong,-200000,Transfer
-2026-06-10,Chia tien bua lau toi qua gui lai Truong,-300000,Transfer
+2026-06-10,Chia tien bua lau toi qua gui lai Truong,-300000,Food
 2026-07-01,Chuyen khoan tra no tien mua ho do hom truoc,-2000000,Transfer
 2026-08-15,Chuyen tien dat coc thue can ho studio,-1500000,Transfer
 2026-09-01,Chuyen tien tra no ban be Pham Minh Duc,-800000,Transfer
