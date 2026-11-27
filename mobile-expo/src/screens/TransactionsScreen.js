@@ -20,6 +20,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { formatCurrency } from '../utils/format';
 import GlassCard from '../components/GlassCard';
 import DatePickerModal from '../components/DatePickerModal';
+import CalendarPickerModal from '../components/CalendarPickerModal';
 import { COLORS } from '../theme';
 
 const STANDARD_CATEGORIES = [
@@ -35,13 +36,17 @@ const STANDARD_CATEGORIES = [
   'Other',
 ];
 
+const CONFIDENCE_OPTIONS = ['high', 'medium', 'low'];
+
 export default function TransactionsScreen() {
   const { t, getCategoryName, getConfidenceLabel, language, toggleLanguage } = useLanguage();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Filters & Pagination
-  const [selectedDate, setSelectedDate] = useState('');
+  // Filters & Pagination (matching web Transactions.jsx)
+  const [periodMode, setPeriodMode] = useState('all'); // 'all' | 'day' | 'month' | 'year'
+  const [periodValue, setPeriodValue] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -49,7 +54,7 @@ export default function TransactionsScreen() {
   // Picker modals
   const [catFilterOpen, setCatFilterOpen] = useState(false);
   const [pageSizeOpen, setPageSizeOpen] = useState(false);
-  const [filterDateOpen, setFilterDateOpen] = useState(false);
+  const [filterCalOpen, setFilterCalOpen] = useState(false);
   const [formDateOpen, setFormDateOpen] = useState(false);
 
   // Add / Edit modal state
@@ -65,16 +70,21 @@ export default function TransactionsScreen() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  const buildFilterParams = useCallback(() => {
+    const params = {};
+    if (periodMode === 'day' && periodValue) {
+      params.date = periodValue;
+    } else if ((periodMode === 'month' || periodMode === 'year') && periodValue) {
+      params.month = periodValue;
+    }
+    if (category) params.category = category;
+    return params;
+  }, [periodMode, periodValue, category]);
+
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (selectedDate.trim()) {
-        params.date = selectedDate.trim();
-        params.month = selectedDate.trim();
-      }
-      if (category) params.category = category;
-      const res = await api.get('/transactions', { params });
+      const res = await api.get('/transactions', { params: buildFilterParams() });
       setTransactions(res.data.transactions || []);
       setCurrentPage(1);
     } catch {
@@ -82,39 +92,68 @@ export default function TransactionsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, category]);
+  }, [buildFilterParams]);
 
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  const sortedTransactions = useMemo(() => {
-    return [...transactions].sort((a, b) =>
-      (b.date || '').localeCompare(a.date || '')
-    );
+  const availableMonthsSet = useMemo(() => {
+    const s = new Set();
+    for (const item of transactions) {
+      const m = String(item.date || '').slice(0, 7);
+      if (m.length === 7) s.add(m);
+    }
+    return s;
   }, [transactions]);
+
+  const filteredTransactions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const base = q
+      ? transactions.filter(
+          (item) =>
+            (item.description || '').toLowerCase().includes(q) ||
+            getCategoryName(item.category).toLowerCase().includes(q)
+        )
+      : transactions;
+    return [...base].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  }, [transactions, searchQuery, getCategoryName]);
 
   const summaryStats = useMemo(() => {
     let totalIn = 0;
     let totalOut = 0;
-    for (const item of transactions) {
+    for (const item of filteredTransactions) {
       const amt = Number(item.amount) || 0;
       if (amt >= 0) totalIn += amt;
       else totalOut += Math.abs(amt);
     }
     return {
-      count: transactions.length,
+      count: filteredTransactions.length,
       income: totalIn,
       expense: totalOut,
       net: totalIn - totalOut,
     };
-  }, [transactions]);
+  }, [filteredTransactions]);
 
-  const totalPages = Math.max(1, Math.ceil(sortedTransactions.length / itemsPerPage));
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage));
   const currentTransactions = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return sortedTransactions.slice(start, start + itemsPerPage);
-  }, [sortedTransactions, currentPage, itemsPerPage]);
+    return filteredTransactions.slice(start, start + itemsPerPage);
+  }, [filteredTransactions, currentPage, itemsPerPage]);
+
+  const formatPeriodLabel = () => {
+    if (!periodValue || periodMode === 'all') {
+      return language === 'vi' ? 'Chọn lịch: Tất cả' : 'Calendar: All';
+    }
+    if (periodMode === 'day') {
+      return periodValue.split('-').reverse().join('/');
+    }
+    if (periodMode === 'month') {
+      const [y, m] = periodValue.split('-');
+      return language === 'vi' ? `Tháng ${m}/${y}` : `${m}/${y}`;
+    }
+    return language === 'vi' ? `Năm ${periodValue}` : `Year ${periodValue}`;
+  };
 
   const openAddModal = () => {
     setEditingId(null);
@@ -138,7 +177,7 @@ export default function TransactionsScreen() {
       amount: String(Math.abs(amt)),
       category: txn.category || 'Other',
       type: amt >= 0 ? 'in' : 'out',
-      confidence: txn.confidence || 'high',
+      confidence: (txn.confidence || 'high').toLowerCase(),
     });
     setFormVisible(true);
   };
@@ -226,7 +265,7 @@ export default function TransactionsScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* 4 KPI Cards giống hệt Web */}
+          {/* 4 KPI Cards */}
           <View style={styles.kpiGrid}>
             <View style={styles.kpiTile}>
               <Text style={styles.kpiLabel}>{t('txn.total_txns')}</Text>
@@ -276,37 +315,59 @@ export default function TransactionsScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Filter Bar */}
+            {/* Filter Bar: Search + CalendarPicker (All/Day/Month/Year) + Category + PageSize */}
             <View style={styles.filterBox}>
+              {/* Ô tìm kiếm giống web */}
+              <View style={styles.filterRow}>
+                <Ionicons name="search-outline" size={16} color={COLORS.textMuted} />
+                <TextInput
+                  style={styles.searchInput}
+                  value={searchQuery}
+                  onChangeText={(v) => {
+                    setSearchQuery(v);
+                    setCurrentPage(1);
+                  }}
+                  placeholder={
+                    language === 'vi'
+                      ? 'Tìm kiếm giao dịch...'
+                      : 'Search transactions...'
+                  }
+                  placeholderTextColor={COLORS.textMuted}
+                />
+                {searchQuery ? (
+                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                    <Ionicons name="close-circle" size={17} color={COLORS.textMuted} />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+
+              {/* Chọn lịch đa chế độ */}
               <TouchableOpacity
                 style={styles.filterRow}
-                onPress={() => setFilterDateOpen(true)}
+                onPress={() => setFilterCalOpen(true)}
                 activeOpacity={0.75}
               >
                 <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
                 <Text
                   style={[
                     styles.datePickerText,
-                    !selectedDate && { color: COLORS.textMuted },
+                    !periodValue && { color: COLORS.textMuted },
                   ]}
                 >
-                  {selectedDate
-                    ? `${selectedDate.split('-').reverse().join('/')}`
-                    : language === 'vi'
-                    ? 'Chọn lịch: dd/mm/yyyy'
-                    : 'Pick date: mm/dd/yyyy'}
+                  {formatPeriodLabel()}
                 </Text>
-                {selectedDate ? (
+                {periodValue ? (
                   <TouchableOpacity
                     onPress={(e) => {
                       e.stopPropagation();
-                      setSelectedDate('');
+                      setPeriodMode('all');
+                      setPeriodValue('');
                     }}
                   >
                     <Ionicons name="close-circle" size={18} color={COLORS.textMuted} />
                   </TouchableOpacity>
                 ) : (
-                  <Ionicons name="calendar-clear-outline" size={16} color={COLORS.textMuted} />
+                  <Ionicons name="chevron-down" size={15} color={COLORS.textMuted} />
                 )}
               </TouchableOpacity>
 
@@ -345,12 +406,14 @@ export default function TransactionsScreen() {
               <View style={styles.emptyBox}>
                 <Ionicons name="receipt-outline" size={38} color="#cbd5e1" />
                 <Text style={styles.emptyText}>{t('txn.no_data')}</Text>
-                {(selectedDate || category) && (
+                {(periodValue || category || searchQuery) && (
                   <TouchableOpacity
                     style={styles.clearFilterBtn}
                     onPress={() => {
-                      setSelectedDate('');
+                      setPeriodMode('all');
+                      setPeriodValue('');
                       setCategory('');
+                      setSearchQuery('');
                     }}
                   >
                     <Text style={styles.clearFilterText}>{t('txn.clear_all')}</Text>
@@ -415,7 +478,6 @@ export default function TransactionsScreen() {
                   );
                 })}
 
-                {/* Pagination */}
                 {totalPages > 1 && (
                   <View style={styles.paginationRow}>
                     <TouchableOpacity
@@ -521,7 +583,6 @@ export default function TransactionsScreen() {
                 {editingId ? t('txn.edit_modal_title') : t('txn.add_modal_title')}
               </Text>
 
-              {/* Toggle Thu / Chi */}
               <View style={styles.typeRow}>
                 <TouchableOpacity
                   style={[styles.typeBtn, formState.type === 'out' && styles.typeBtnOutActive]}
@@ -604,6 +665,33 @@ export default function TransactionsScreen() {
                 </View>
               </ScrollView>
 
+              {editingId && (
+                <>
+                  <Text style={styles.inputLabel}>{t('txn.field_confidence')}</Text>
+                  <View style={styles.typeRow}>
+                    {CONFIDENCE_OPTIONS.map((conf) => (
+                      <TouchableOpacity
+                        key={conf}
+                        style={[
+                          styles.typeBtn,
+                          formState.confidence === conf && styles.catChipActive,
+                        ]}
+                        onPress={() => setFormState((s) => ({ ...s, confidence: conf }))}
+                      >
+                        <Text
+                          style={[
+                            styles.typeBtnText,
+                            formState.confidence === conf && { color: '#fff', fontWeight: '700' },
+                          ]}
+                        >
+                          {getConfidenceLabel(conf)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </>
+              )}
+
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={styles.cancelBtn}
@@ -629,18 +717,23 @@ export default function TransactionsScreen() {
           </Pressable>
         </Modal>
 
-        {/* Calendar Picker cho bộ lọc */}
-        <DatePickerModal
-          visible={filterDateOpen}
-          value={selectedDate}
-          onSelect={(iso) => setSelectedDate(iso)}
-          onClear={() => setSelectedDate('')}
-          onClose={() => setFilterDateOpen(false)}
+        {/* Calendar Picker đa chế độ cho bộ lọc */}
+        <CalendarPickerModal
+          visible={filterCalOpen}
+          mode={periodMode}
+          value={periodValue}
+          modes={['all', 'day', 'month', 'year']}
+          availableMonths={availableMonthsSet}
           language={language}
-          showClear
+          onChange={(newMode, newVal) => {
+            setPeriodMode(newMode);
+            setPeriodValue(newVal);
+            setCurrentPage(1);
+          }}
+          onClose={() => setFilterCalOpen(false)}
         />
 
-        {/* Calendar Picker cho form Thêm/Sửa */}
+        {/* Calendar Picker 1 ngày cho form Thêm/Sửa */}
         <DatePickerModal
           visible={formDateOpen}
           value={formState.date}
@@ -724,21 +817,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 7,
   },
-  datePickerText: { flex: 1, fontSize: 13, color: COLORS.textMain, paddingVertical: 4, fontWeight: '500' },
-  modalDateBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 10,
-  },
-  modalDateText: { fontSize: 14, color: COLORS.textMain, fontWeight: '600' },
+  searchInput: { flex: 1, fontSize: 13, color: COLORS.textMain, paddingVertical: 2 },
+  datePickerText: { flex: 1, fontSize: 13, color: COLORS.textMain, paddingVertical: 3, fontWeight: '500' },
   filterActionRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   selectBtn: {
     flex: 1,
@@ -880,6 +962,18 @@ const styles = StyleSheet.create({
   typeBtnInActive: { backgroundColor: 'rgba(5, 150, 105, 0.12)' },
   typeBtnText: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted },
   inputLabel: { fontSize: 12, fontWeight: '700', color: COLORS.textMain, marginBottom: 4 },
+  modalDateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  modalDateText: { fontSize: 14, color: COLORS.textMain, fontWeight: '600' },
   modalInput: {
     borderWidth: 1,
     borderColor: '#cbd5e1',

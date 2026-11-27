@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -21,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatCurrency, formatShortVND } from '../utils/format';
 import GlassCard from '../components/GlassCard';
+import CalendarPickerModal from '../components/CalendarPickerModal';
 import { COLORS } from '../theme';
 
 const PIE_COLORS = [
@@ -35,27 +34,16 @@ const PIE_COLORS = [
   '#64748b',
 ];
 
-const MONTH_NAMES_VI = [
-  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-  'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-  'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
-];
-
-const MONTH_NAMES_EN = [
-  'Jan', 'Feb', 'Mar', 'Apr',
-  'May', 'Jun', 'Jul', 'Aug',
-  'Sep', 'Oct', 'Nov', 'Dec',
-];
-
 export default function OverviewScreen() {
   const { user, logout } = useAuth();
   const { t, getCategoryName, language, toggleLanguage } = useLanguage();
   const [summaryData, setSummaryData] = useState(null);
+  const [periodMode, setPeriodMode] = useState('all'); // 'all' | 'month' | 'year'
   const [month, setMonth] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
+  const [selectedTrend, setSelectedTrend] = useState(null);
 
   const currentMonthStr = useMemo(() => {
     const d = new Date();
@@ -68,17 +56,33 @@ export default function OverviewScreen() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   }, []);
 
-  useEffect(() => {
-    if (month && month.includes('-')) {
-      const y = parseInt(month.split('-')[0], 10);
-      if (!Number.isNaN(y)) setCalendarYear(y);
-    }
-  }, [month]);
-
   const availableMonthsSet = useMemo(() => {
     if (!summaryData?.monthly_trends) return new Set();
     return new Set(summaryData.monthly_trends.map((item) => item.month));
   }, [summaryData]);
+
+  // Build all 12 months (01..12) of the target calendar year matching web Overview.jsx
+  const last12MonthsTrends = useMemo(() => {
+    const trends = summaryData?.monthly_trends || [];
+    const trendMap = new Map(trends.map((item) => [item.month, item]));
+
+    let targetYear = parseInt(currentMonthStr.slice(0, 4), 10);
+    if (month && month.length >= 4) {
+      const selectedY = parseInt(month.slice(0, 4), 10);
+      if (!Number.isNaN(selectedY)) targetYear = selectedY;
+    } else if (trends.length > 0) {
+      const latestY = parseInt(trends[trends.length - 1].month.slice(0, 4), 10);
+      if (!Number.isNaN(latestY) && latestY > targetYear) targetYear = latestY;
+    }
+
+    const result = [];
+    for (let m = 1; m <= 12; m++) {
+      const mKey = `${targetYear}-${String(m).padStart(2, '0')}`;
+      const existing = trendMap.get(mKey);
+      result.push(existing || { month: mKey, income: 0, expense: 0, net: 0 });
+    }
+    return result;
+  }, [summaryData, currentMonthStr, month]);
 
   const fetchSummary = useCallback(async () => {
     setLoading(true);
@@ -94,6 +98,7 @@ export default function OverviewScreen() {
   }, [month]);
 
   useEffect(() => {
+    setSelectedTrend(null);
     fetchSummary();
   }, [fetchSummary]);
 
@@ -128,9 +133,13 @@ export default function OverviewScreen() {
     }
   };
 
-  const handleSelectCalendarMonth = (m) => {
-    setMonth(`${calendarYear}-${String(m).padStart(2, '0')}`);
-    setIsCalendarOpen(false);
+  const formatPeriodLabel = (val) => {
+    if (!val) return t('overview.pick_month');
+    if (val.length === 4) {
+      return language === 'vi' ? `Năm ${val}` : `Year ${val}`;
+    }
+    const [y, m] = val.split('-');
+    return language === 'vi' ? `Tháng ${m}/${y}` : `${m}/${y}`;
   };
 
   const byCat = summaryData?.by_category || {};
@@ -187,25 +196,27 @@ export default function OverviewScreen() {
     }));
 
   const barData = useMemo(() => {
-    const trends = summaryData?.monthly_trends || [];
     const items = [];
-    trends.forEach((mItem) => {
+    last12MonthsTrends.forEach((mItem) => {
       const parts = (mItem.month || '').split('-');
       const shortLabel = parts.length === 2 ? `${parts[1]}/${parts[0].slice(2)}` : mItem.month;
+      const isSelected = selectedTrend?.month === mItem.month;
       items.push({
         value: mItem.income || 0,
         label: shortLabel,
         spacing: 4,
         labelWidth: 36,
-        frontColor: '#10b981',
+        frontColor: isSelected ? '#059669' : '#10b981',
+        onPress: () => setSelectedTrend(mItem),
       });
       items.push({
         value: mItem.expense || 0,
-        frontColor: '#f43f5e',
+        frontColor: isSelected ? '#e11d48' : '#f43f5e',
+        onPress: () => setSelectedTrend(mItem),
       });
     });
     return items;
-  }, [summaryData]);
+  }, [last12MonthsTrends, selectedTrend]);
 
   return (
     <LinearGradient colors={COLORS.bgGradient} style={styles.container}>
@@ -214,7 +225,7 @@ export default function OverviewScreen() {
           contentContainerStyle={styles.scroll}
           refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchSummary} />}
         >
-          {/* Header giống Topbar web */}
+          {/* Header */}
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>{t('overview.title')}</Text>
@@ -232,7 +243,7 @@ export default function OverviewScreen() {
             </View>
           </View>
 
-          {/* Card 1: Upload sao kê giống hệt web */}
+          {/* Card 1: Upload sao kê */}
           <GlassCard>
             <TouchableOpacity
               style={styles.uploadBox}
@@ -252,7 +263,7 @@ export default function OverviewScreen() {
             </TouchableOpacity>
           </GlassCard>
 
-          {/* Card 2: Tổng quan Chi tiêu giống hệt web */}
+          {/* Card 2: Tổng quan Chi tiêu */}
           <GlassCard>
             <View style={styles.summaryHeader}>
               <View style={styles.summaryTitleRow}>
@@ -273,19 +284,22 @@ export default function OverviewScreen() {
                 >
                   {month
                     ? language === 'vi'
-                      ? `Đang xem: Tháng ${month.split('-')[1]}/${month.split('-')[0]}`
-                      : `Viewing: ${month}`
+                      ? `Đang xem: ${formatPeriodLabel(month)}`
+                      : `Viewing: ${formatPeriodLabel(month)}`
                     : t('overview.all_time')}
                 </Text>
               </View>
             </View>
 
-            {/* Quick filter tabs + Chọn lịch */}
+            {/* Quick filter tabs + CalendarPicker */}
             <View style={styles.filterControls}>
               <View style={styles.pillGroup}>
                 <TouchableOpacity
                   style={[styles.pillTab, month === '' && styles.pillTabActive]}
-                  onPress={() => setMonth('')}
+                  onPress={() => {
+                    setPeriodMode('all');
+                    setMonth('');
+                  }}
                 >
                   <Ionicons
                     name="layers-outline"
@@ -299,7 +313,10 @@ export default function OverviewScreen() {
 
                 <TouchableOpacity
                   style={[styles.pillTab, month === currentMonthStr && styles.pillTabActive]}
-                  onPress={() => setMonth(currentMonthStr)}
+                  onPress={() => {
+                    setPeriodMode('month');
+                    setMonth(currentMonthStr);
+                  }}
                 >
                   <Text
                     style={[
@@ -313,7 +330,10 @@ export default function OverviewScreen() {
 
                 <TouchableOpacity
                   style={[styles.pillTab, month === previousMonthStr && styles.pillTabActive]}
-                  onPress={() => setMonth(previousMonthStr)}
+                  onPress={() => {
+                    setPeriodMode('month');
+                    setMonth(previousMonthStr);
+                  }}
                 >
                   <Text
                     style={[
@@ -338,11 +358,7 @@ export default function OverviewScreen() {
                       month && { color: COLORS.primary },
                     ]}
                   >
-                    {month
-                      ? language === 'vi'
-                        ? `Tháng ${month.split('-')[1]}/${month.split('-')[0]}`
-                        : month
-                      : t('overview.pick_month')}
+                    {formatPeriodLabel(month)}
                   </Text>
                   <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
                 </TouchableOpacity>
@@ -350,7 +366,10 @@ export default function OverviewScreen() {
                 {month ? (
                   <TouchableOpacity
                     style={styles.clearMonthBtn}
-                    onPress={() => setMonth('')}
+                    onPress={() => {
+                      setPeriodMode('all');
+                      setMonth('');
+                    }}
                   >
                     <Ionicons name="close" size={16} color={COLORS.error} />
                   </TouchableOpacity>
@@ -397,17 +416,19 @@ export default function OverviewScreen() {
                   </View>
 
                   <View style={styles.kpiTile}>
-                    <View style={styles.rateHeader}>
-                      <Text style={styles.kpiLabel}>{t('overview.savings_rate')}</Text>
+                    <Text style={styles.kpiLabel} numberOfLines={1}>
+                      {t('overview.savings_rate')}
+                    </Text>
+                    <View style={styles.rateValueRow}>
+                      <Text style={[styles.kpiVal, { color: savingsBadge.color, marginTop: 0 }]}>
+                        {savingsRate}%
+                      </Text>
                       <View style={[styles.rateBadge, { backgroundColor: savingsBadge.bg }]}>
                         <Text style={[styles.rateBadgeText, { color: savingsBadge.color }]}>
                           {savingsBadge.text}
                         </Text>
                       </View>
                     </View>
-                    <Text style={[styles.kpiVal, { color: savingsBadge.color }]}>
-                      {savingsRate}%
-                    </Text>
                     <View style={styles.progressTrack}>
                       <View
                         style={[
@@ -425,7 +446,6 @@ export default function OverviewScreen() {
                 {/* Top 3 Drivers — Podium Chart (2 - 1 - 3) */}
                 {summaryData.top_3_drivers?.length > 0 && (() => {
                   const drivers = summaryData.top_3_drivers.slice(0, 3);
-                  // Sắp xếp vị trí bục: Hạng 2 (trái) - Hạng 1 (giữa) - Hạng 3 (phải)
                   const podiumOrder =
                     drivers.length === 3 ? [1, 0, 2] : drivers.length === 2 ? [1, 0] : [0];
                   const maxAmount = Math.max(...drivers.map((d) => Math.abs(d.total || 0)), 1);
@@ -458,7 +478,9 @@ export default function OverviewScreen() {
                   };
 
                   const periodBadge = month
-                    ? language === 'vi'
+                    ? month.length === 4
+                      ? `${language === 'vi' ? 'NĂM' : 'YEAR'} ${month}`
+                      : language === 'vi'
                       ? `THÁNG ${parseInt(month.split('-')[1], 10)}`
                       : month
                     : t('overview.all_time').toUpperCase();
@@ -542,7 +564,7 @@ export default function OverviewScreen() {
                   );
                 })()}
 
-                {/* Biểu đồ cột Thu / Chi theo tháng */}
+                {/* Biểu đồ cột Thu / Chi đủ 12 tháng trong năm */}
                 {barData.length > 0 && (
                   <View style={styles.chartBlock}>
                     <Text style={styles.subSectionTitle}>
@@ -574,6 +596,79 @@ export default function OverviewScreen() {
                         height={180}
                       />
                     </ScrollView>
+
+                    {selectedTrend ? (
+                      (() => {
+                        const incVal = selectedTrend.income || 0;
+                        const expVal = selectedTrend.expense || 0;
+                        const netVal = incVal - expVal;
+                        const parts = (selectedTrend.month || '').split('-');
+                        const monthTitle =
+                          parts.length === 2
+                            ? language === 'vi'
+                              ? `Tháng ${parts[1]}/${parts[0]}`
+                              : `${parts[1]}/${parts[0]}`
+                            : selectedTrend.month;
+
+                        return (
+                          <View style={styles.trendDetailCard}>
+                            <View style={styles.trendDetailHeader}>
+                              <View style={styles.trendDetailTitleRow}>
+                                <Ionicons name="calendar" size={15} color={COLORS.primary} />
+                                <Text style={styles.trendDetailTitle}>{monthTitle}</Text>
+                              </View>
+                              <TouchableOpacity onPress={() => setSelectedTrend(null)}>
+                                <Ionicons name="close-circle" size={18} color={COLORS.textMuted} />
+                              </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.trendDetailRow}>
+                              <Text style={[styles.trendLabel, { color: '#10b981' }]}>
+                                {t('overview.income_bar')}:
+                              </Text>
+                              <Text style={[styles.trendValue, { color: '#10b981' }]}>
+                                +{formatCurrency(incVal)}
+                              </Text>
+                            </View>
+
+                            <View style={styles.trendDetailRow}>
+                              <Text style={[styles.trendLabel, { color: '#f43f5e' }]}>
+                                {t('overview.expense_bar')}:
+                              </Text>
+                              <Text style={[styles.trendValue, { color: '#f43f5e' }]}>
+                                -{formatCurrency(expVal)}
+                              </Text>
+                            </View>
+
+                            <View style={[styles.trendDetailRow, styles.trendNetRow]}>
+                              <Text
+                                style={[
+                                  styles.trendLabel,
+                                  { color: netVal >= 0 ? '#10b981' : '#f43f5e' },
+                                ]}
+                              >
+                                {t('overview.net_savings')}:
+                              </Text>
+                              <Text
+                                style={[
+                                  styles.trendValue,
+                                  { color: netVal >= 0 ? '#10b981' : '#f43f5e' },
+                                ]}
+                              >
+                                {netVal >= 0 ? '+' : '-'}
+                                {formatCurrency(Math.abs(netVal))}
+                              </Text>
+                            </View>
+                          </View>
+                        );
+                      })()
+                    ) : (
+                      <Text style={styles.trendHint}>
+                        {language === 'vi'
+                          ? 'Chạm vào cột tháng bất kỳ để xem chi tiết thu chi.'
+                          : 'Tap any month bar to view details.'}
+                      </Text>
+                    )}
                   </View>
                 )}
 
@@ -604,92 +699,19 @@ export default function OverviewScreen() {
           </GlassCard>
         </ScrollView>
 
-        {/* Modal Chọn lịch (12 tháng) giống hệt Popover trên web */}
-        <Modal
+        <CalendarPickerModal
           visible={isCalendarOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setIsCalendarOpen(false)}
-        >
-          <Pressable style={styles.modalBackdrop} onPress={() => setIsCalendarOpen(false)}>
-            <Pressable style={styles.calendarModal} onPress={() => {}}>
-              <View style={styles.calYearRow}>
-                <TouchableOpacity
-                  style={styles.calArrowBtn}
-                  onPress={() => setCalendarYear((y) => y - 1)}
-                >
-                  <Ionicons name="chevron-back" size={18} color={COLORS.textMain} />
-                </TouchableOpacity>
-                <Text style={styles.calYearText}>{calendarYear}</Text>
-                <TouchableOpacity
-                  style={styles.calArrowBtn}
-                  onPress={() => setCalendarYear((y) => y + 1)}
-                >
-                  <Ionicons name="chevron-forward" size={18} color={COLORS.textMain} />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.calGrid}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
-                  const mKey = `${calendarYear}-${String(m).padStart(2, '0')}`;
-                  const isSelected = month === mKey;
-                  const isCurrent = currentMonthStr === mKey;
-                  const hasMonthData = availableMonthsSet.has(mKey);
-                  const mName = language === 'vi' ? MONTH_NAMES_VI[m - 1] : MONTH_NAMES_EN[m - 1];
-
-                  return (
-                    <TouchableOpacity
-                      key={m}
-                      style={[
-                        styles.calCell,
-                        isCurrent && styles.calCellCurrent,
-                        hasMonthData && styles.calCellHasData,
-                        isSelected && styles.calCellSelected,
-                      ]}
-                      onPress={() => handleSelectCalendarMonth(m)}
-                    >
-                      <Text
-                        style={[
-                          styles.calCellText,
-                          isSelected && { color: '#fff', fontWeight: '700' },
-                        ]}
-                      >
-                        {mName}
-                      </Text>
-                      {hasMonthData && (
-                        <View
-                          style={[
-                            styles.calDot,
-                            isSelected && { backgroundColor: '#fff' },
-                          ]}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              <View style={styles.calFooter}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setMonth('');
-                    setIsCalendarOpen(false);
-                  }}
-                >
-                  <Text style={styles.calFooterMuted}>{t('overview.all_time')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setMonth(currentMonthStr);
-                    setIsCalendarOpen(false);
-                  }}
-                >
-                  <Text style={styles.calFooterPrimary}>{t('overview.current_month')}</Text>
-                </TouchableOpacity>
-              </View>
-            </Pressable>
-          </Pressable>
-        </Modal>
+          mode={periodMode}
+          value={month}
+          modes={['all', 'month', 'year']}
+          availableMonths={availableMonthsSet}
+          language={language}
+          onChange={(newMode, newVal) => {
+            setPeriodMode(newMode);
+            setMonth(newVal);
+          }}
+          onClose={() => setIsCalendarOpen(false)}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -806,7 +828,14 @@ const styles = StyleSheet.create({
   },
   kpiLabel: { fontSize: 11, fontWeight: '700', color: COLORS.textMuted, textTransform: 'uppercase' },
   kpiVal: { fontSize: 16, fontWeight: '800', marginTop: 4 },
-  rateHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 4 },
+  rateValueRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
   rateBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
   rateBadgeText: { fontSize: 10, fontWeight: '700' },
   progressTrack: {
@@ -879,6 +908,43 @@ const styles = StyleSheet.create({
   barLegend: { flexDirection: 'row', gap: 16, marginBottom: 8 },
   barLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   barLegendText: { fontSize: 12, color: COLORS.textMain, fontWeight: '600' },
+  trendHint: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  trendDetailCard: {
+    marginTop: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+    gap: 6,
+  },
+  trendDetailHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  trendDetailTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  trendDetailTitle: { fontSize: 14, fontWeight: '800', color: COLORS.textMain },
+  trendDetailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  trendNetRow: {
+    marginTop: 2,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+  },
+  trendLabel: { fontSize: 13, fontWeight: '600' },
+  trendValue: { fontSize: 13, fontWeight: '800' },
 
   pieWrap: { alignItems: 'center', gap: 14, marginTop: 4 },
   legend: { width: '100%', gap: 8 },
@@ -886,70 +952,4 @@ const styles = StyleSheet.create({
   dot: { width: 10, height: 10, borderRadius: 5 },
   legendLabel: { flex: 1, fontSize: 13, color: COLORS.textMain },
   legendVal: { fontSize: 13, fontWeight: '700', color: COLORS.textMain },
-
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.35)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  calendarModal: {
-    width: '100%',
-    maxWidth: 340,
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.2,
-    shadowRadius: 24,
-    elevation: 10,
-  },
-  calYearRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  calArrowBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  calYearText: { fontSize: 17, fontWeight: '800', color: COLORS.textMain },
-  calGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  calCell: {
-    width: '31%',
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: 'rgba(0,0,0,0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  calCellCurrent: { borderStyle: 'dashed', borderColor: COLORS.primary },
-  calCellHasData: { backgroundColor: 'rgba(37, 99, 235, 0.08)' },
-  calCellSelected: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  calCellText: { fontSize: 13, fontWeight: '500', color: COLORS.textMain },
-  calDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#10b981',
-    marginTop: 3,
-  },
-  calFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.06)',
-  },
-  calFooterMuted: { fontSize: 13, fontWeight: '600', color: COLORS.textMuted },
-  calFooterPrimary: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
 });

@@ -1,110 +1,142 @@
-# BudgetBot — W7 Capstone Starter
+# BudgetBot — Hệ thống Quản lý Chi tiêu Cá nhân (Web & Mobile)
 
-**Domain:** FinTech. Upload bank statement CSV → AI categorizes each transaction → spending summary by category.
+Ứng dụng quản lý tài chính cá nhân hỗ trợ phân loại giao dịch tiếng Việt bằng NLP (**TF-IDF + Linear SVC**), nhập sao kê ngân hàng (`.csv`, `.xlsx`, `.pdf`, ảnh), thiết lập hạn mức chi tiêu và trợ lý hỏi đáp AI.
 
-Runs **fully locally** with rule-based categorization stub. Flip env vars to use Bedrock Haiku in production.
+Dự án gồm 3 thành phần chính:
+* **Backend API:** FastAPI + Python + Module NLP (`src/`)
+* **Web App:** React + Vite (`frontend-react/`)
+* **Mobile App:** React Native + Expo (`mobile-expo/`)
 
 ---
 
-## Run locally (2 minutes)
+## 1. Cấu trúc thư mục
 
+```text
+budgetbot-aws/
+├── src/                  # Backend FastAPI, NLP, adapters (PostgreSQL / SQLite)
+├── database/migrations/  # Script SQL khởi tạo bảng & dữ liệu mẫu PostgreSQL
+├── frontend-react/       # Giao diện Web (React + Vite, chạy cổng 5173)
+├── mobile-expo/          # Ứng dụng Mobile (React Native + Expo Go)
+├── sample_data/          # Dữ liệu sao kê & tập dữ liệu tiếng Việt mẫu
+├── docker-compose.yml    # Khởi chạy PostgreSQL 15 bằng Docker
+├── requirements.txt      # Thư viện Python cho Backend
+└── .env.example          # File cấu hình mẫu cho Backend
+```
+
+---
+
+## 2. Yêu cầu cài đặt trước
+
+* **Python** >= 3.10 (khuyên dùng 3.12)
+* **Node.js** >= 18 & `npm`
+* **PostgreSQL 15** (chạy qua Docker Desktop hoặc kết nối tới máy khác qua LAN / Radmin VPN)
+* Ứng dụng **Expo Go** trên điện thoại iOS / Android (để chạy thử app mobile)
+
+---
+
+## 3. Bước 1: Chuẩn bị Database & file `.env` cho Backend
+
+### Cách A: Chạy PostgreSQL bằng Docker trên máy cá nhân
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-.venv\Scripts\activate
+docker compose up -d
+```
+
+### Cách B: Kết nối tới PostgreSQL Docker trên máy khác (cùng Wi-Fi hoặc qua Radmin VPN)
+1. Lấy IP của máy chạy Docker PostgreSQL (dạng `192.168.x.x` hoặc IP Radmin `26.x.x.x`).
+2. Trên máy chạy Docker, đảm bảo đã mở Firewall cho port TCP `5432`.
+
+### Tạo file `.env` ở thư mục gốc (`budgetbot-aws/.env`)
+Copy từ `.env.example` sang `.env` và chỉnh lại thông tin kết nối:
+
+```ini
+AI_BACKEND=nlp_ml
+STORAGE_BACKEND=local
+STORAGE_LOCAL_DIR=./_data/uploads
+
+# Chọn postgres (hoặc sqlite nếu muốn chạy nhanh không cần PostgreSQL)
+USERSTORE_BACKEND=postgres
+USERSTORE_POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/budgetbot
+USERSTORE_SQLITE_PATH=./_data/transactions.db
+
+JWT_SECRET=budgetbot-secure-jwt-secret-key-32bytes-auth-token
+JWT_ALGORITHM=HS256
+JWT_EXP_MINUTES=60
+CORS_ORIGINS=*
+```
+*(Nếu dùng PostgreSQL ở máy khác, thay `localhost` trong `USERSTORE_POSTGRES_URL` bằng IP của máy đó.)*
+
+---
+
+## 4. Bước 2: Chạy Backend FastAPI
+
+Mở terminal tại thư mục gốc `budgetbot-aws/`:
+
+```powershell
+# (Khuyên dùng) Tạo môi trường ảo Python
+python -m venv .venv
+.\.venv\Scripts\activate
+
+# Cài đặt thư viện
 pip install -r requirements.txt
 
-cp .env.example .env
-uvicorn src.app:app --reload --port 8000
-
-# In another terminal:
-curl http://localhost:8000/health
-open http://localhost:8000
-
-# End-to-end smoke:
-curl -X POST http://localhost:8000/upload \
-  -H "X-User-Id: alice" \
-  -F "file=@sample_data/sample_statement.csv"
-
-curl "http://localhost:8000/summary?month=2026-05" \
-  -H "X-User-Id: alice"
+# Chạy server Backend (dùng --host 0.0.0.0 để điện thoại cùng Wi-Fi truy cập được)
+uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Run tests:
-```bash
-pytest -v
-```
+Kiểm tra Backend hoạt động: mở trình duyệt vào `http://localhost:8000/health` (kết quả trả về `"status": "ok"`).
 
 ---
 
-## What's in the code
+## 5. Bước 3: Chạy Giao diện Web (`frontend-react`)
 
-```
-src/
-├── app.py               FastAPI app + routes. Runs on Lambda, ECS, EC2, App Runner.
-├── config.py            Env-driven settings.
-├── handlers.py          CSV parsing + categorization orchestration + aggregation.
-└── adapters/
-    ├── ai.py            BedrockAI (real InvokeModel Converse) | LocalAI (rule-based)
-    ├── storage.py       S3Storage | LocalStorage (filesystem)
-    ├── userstore.py     DynamoDBUserStore | PostgresUserStore | SQLiteUserStore
-    └── factory.py       Picks adapter based on env
+Mở một terminal mới tại `budgetbot-aws/`:
+
+```powershell
+cd frontend-react
+npm install
+npm run dev
 ```
 
-**No vector store** — BudgetBot uses direct InvokeModel for one-shot classification. This is a key architecture difference from StudyBot and DocHub (which use RAG).
+* Truy cập Web tại: **http://localhost:5173/**
+* *(Tùy chọn)* Nếu Backend chạy ở địa chỉ khác `http://localhost:8000`, tạo file `frontend-react/.env` từ `frontend-react/.env.example` và sửa `VITE_API_BASE`.
 
 ---
 
-## 9 deployment decisions still yours
+## 6. Bước 4: Chạy App Mobile (`mobile-expo`) bằng Expo Go
 
-Same matrix as the other apps. Notable points for BudgetBot:
+Mở một terminal mới tại `budgetbot-aws/`:
 
-- **DB choice trade-off:** Aggregations like `SELECT category, SUM(amount) FROM transactions WHERE user_id=? GROUP BY category` are natural fits for SQL (Postgres). DynamoDB requires a Scan or careful GSI design. Document this trade-off in your Evidence Pack.
-- **RDS Proxy:** With Lambda + Postgres, you'll want RDS Proxy to handle connection pooling. The code uses `psycopg2.connect()` — Lambda containers each open their own connection.
-- **Cost:** RDS db.t3.micro (~$1.25/48h in Singapore) is the biggest fixed cost. Single-AZ. Skip Multi-AZ for hackathon.
+1. **Cài đặt thư viện:**
+   ```powershell
+   cd mobile-expo
+   npm install
+   ```
 
----
+2. **Cấu hình địa chỉ Backend cho điện thoại:**
+   * Xem IPv4 Wi-Fi của máy tính bằng lệnh `ipconfig` (ví dụ: `192.168.170.233`).
+   * Tạo file `mobile-expo/.env` với nội dung:
+     ```ini
+     EXPO_PUBLIC_API_BASE=http://<IP_WIFI_CUA_MAY_TINH>:8000
+     ```
+     *(Nếu dùng Android Emulator thì không cần tạo `.env`, app mặc định gọi `http://10.0.2.2:8000`.)*
 
-## Deploy hints
-
-Env flip:
-```diff
-- AI_BACKEND=local
-+ AI_BACKEND=bedrock
-+ AI_MODEL_ID=anthropic.claude-3-5-haiku-20241022-v1:0
-
-- STORAGE_BACKEND=local
-+ STORAGE_BACKEND=s3
-+ STORAGE_BUCKET=budgetbot-statements-g<N>-<accountid>
-
-- USERSTORE_BACKEND=sqlite
-+ USERSTORE_BACKEND=postgres          # OR dynamodb
-+ USERSTORE_POSTGRES_URL=postgresql://user:pw@your-rds-endpoint:5432/budgetbot
-```
-
-For DynamoDB, set `USERSTORE_TABLE=...` instead of the postgres URL.
-
-Lambda packaging: wrap `from src.app import app` with `Mangum` (`pip install mangum`).
+3. **Khởi chạy Expo:**
+   ```powershell
+   npx expo start -c
+   ```
+   * Mở ứng dụng **Expo Go** trên điện thoại (chung mạng Wi-Fi với máy tính) và quét mã QR hiện trên terminal.
 
 ---
 
-## Customization ideas (Criterion I)
+## 7. Xử lý một số lỗi thường gặp
 
-- **Budget goals + alerts** — let users set "max $200/month on Food" with SNS notification when crossed
-- **Recurring transaction detection** — flag subscriptions automatically (Netflix, Spotify, etc.)
-- **Multi-currency** — detect VND vs USD, convert on the fly
-- **Forecasting** — given 2 months of data, predict next month per category
-- **Anomaly detection** — flag transactions >2σ from category mean (real-time use case for AWS Lookout for Metrics OR a simple Lambda)
-- **Receipt OCR** — accept PDF receipts, extract via Textract → categorize
-
----
-
-## Sample CSV format
-
-```
-date,description,amount
-2026-05-02,Highlands Coffee - Bui Vien,-65000
-2026-05-04,Salary deposit credit,18500000
-```
-
-Header row optional. Negative amounts = expenses; positive = income. Currency assumed VND in the local stub but Bedrock doesn't care — describe the transaction and the LLM figures it out.
+* **Lỗi `[WinError 10013]` khi chạy `uvicorn` trên port `8000`:**
+  Port `8000` đang bị một tiến trình Python cũ chiếm giữ. Tìm và tắt tiến trình cũ trước khi chạy lại:
+  ```powershell
+  netstat -ano | Select-String ":8000"
+  Stop-Process -Id <PID> -Force
+  ```
+* **App Mobile báo `Login failed. Check API connection`:**
+  * Kiểm tra lại Backend đã chạy với `--host 0.0.0.0` chưa.
+  * Kiểm tra IP trong `mobile-expo/.env` có khớp với IPv4 hiện tại của máy tính (`ipconfig`) không, sau đó chạy lại `npx expo start -c`.
+  * Nếu điện thoại vẫn không vào được `http://<IP_WIFI>:8000/health`, mở Windows Firewall cho phép port `8000`.

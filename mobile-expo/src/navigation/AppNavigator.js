@@ -13,7 +13,9 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import OverviewScreen from '../screens/OverviewScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
-import PlaceholderScreen from '../screens/PlaceholderScreen';
+import ChatScreen from '../screens/ChatScreen';
+import CoachScreen from '../screens/CoachScreen';
+import LimitsScreen from '../screens/LimitsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -131,9 +133,9 @@ function MainTabs() {
     >
       <Tab.Screen name="Overview" component={OverviewScreen} options={{ title: t('nav.overview') }} />
       <Tab.Screen name="Transactions" component={TransactionsScreen} options={{ title: t('nav.transactions') }} />
-      <Tab.Screen name="Chat" component={ChatTab} options={{ title: t('nav.ask_ai') }} />
-      <Tab.Screen name="Coach" component={CoachTab} options={{ title: t('nav.budget_coach') }} />
-      <Tab.Screen name="Limits" component={LimitsTab} options={{ title: t('nav.caps_alerts') }} />
+      <Tab.Screen name="Chat" component={ChatScreen} options={{ title: t('nav.ask_ai') }} />
+      <Tab.Screen name="Coach" component={CoachScreen} options={{ title: t('nav.budget_coach') }} />
+      <Tab.Screen name="Limits" component={LimitsScreen} options={{ title: t('nav.caps_alerts') }} />
     </Tab.Navigator>
   );
 }
